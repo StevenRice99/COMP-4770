@@ -15,6 +15,7 @@ namespace A1
         private void Start()
         {
             _meshRenderer = GetComponent<MeshRenderer>();
+            Clean();
         }
 
         public void Clean()

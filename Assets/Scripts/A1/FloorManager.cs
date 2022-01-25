@@ -76,7 +76,6 @@ namespace A1
             Floors.Clear();
             
             Vector2 offsets = new Vector2((floorSize.x - 1) / 2f, (floorSize.y - 1) / 2f) * scale;
-            Debug.Log(offsets);
             for (int x = 0; x < floorSize.x; x++)
             {
                 for (int y = 0; y < floorSize.y; y++)
@@ -86,6 +85,7 @@ namespace A1
             }
 
             _cleanerAgent = Instantiate(cleanerAgentPrefab, Vector3.zero, quaternion.identity).GetComponent<CleanerAgent>();
+            _cleanerAgent.name = "Cleaner Agent";
         }
 
         private void GenerateSection(Vector2 position, Vector2 offsets)
