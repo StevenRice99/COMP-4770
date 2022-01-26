@@ -1,6 +1,6 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using SimpleIntelligence.Actions;
 using SimpleIntelligence.Actuators;
 using SimpleIntelligence.Base;
 using SimpleIntelligence.Minds;
@@ -8,6 +8,7 @@ using SimpleIntelligence.Percepts;
 using SimpleIntelligence.PerformanceMeasures;
 using SimpleIntelligence.Sensors;
 using UnityEngine;
+using Action = SimpleIntelligence.Actions.Action;
 
 namespace SimpleIntelligence.Agents
 {
@@ -199,12 +200,12 @@ namespace SimpleIntelligence.Agents
                 _sensors[i].agent = this;
                 _percepts[i] = null;
             }
+            
+            AgentManager.Singleton.FindAgents();
         }
 
-        protected override void Update()
+        public void Perform()
         {
-            base.Update();
-
             if (_mind != null)
             {
                 if (Sense())
@@ -246,12 +247,31 @@ namespace SimpleIntelligence.Agents
                 }
             }
 
-            Look();
-
             if (_performanceMeasure != null)
             {
                 Performace = _performanceMeasure.GetPerformance();
             }
+        }
+
+        protected override void Update()
+        {
+            base.Update();
+            Look();
+        }
+
+        protected virtual void OnEnable()
+        {
+            AgentManager.Singleton.FindAgents();
+        }
+
+        protected virtual void OnDisable()
+        {
+            AgentManager.Singleton.FindAgents();
+        }
+
+        protected virtual void OnDestroy()
+        {
+            AgentManager.Singleton.FindAgents();
         }
 
         private bool Sense()

@@ -8,7 +8,7 @@ namespace A1.PerformanceMeasures
     {
         protected override float CalculatePerformance()
         {
-            List<Floor> floors = FloorManager.Singleton.Floors;
+            List<Floor> floors = FloorManager.FloorManagerSingleton.Floors;
             if (floors == null || floors.Count == 0)
             {
                 return 100;

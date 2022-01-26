@@ -15,8 +15,7 @@ namespace A1.Actuators
                 return false;
             }
 
-            cleanAction.Complete = true;
-            Floor floor = FloorManager.Singleton.Floors
+            Floor floor = FloorManager.FloorManagerSingleton.Floors
                 .OrderBy(f => Vector3.Distance(agent.transform.position, f.transform.position))
                 .FirstOrDefault();
 
@@ -26,6 +25,7 @@ namespace A1.Actuators
             }
             
             floor.Clean();
+            cleanAction.Complete = true;
             return true;
         }
     }

@@ -1,77 +1,73 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using SimpleIntelligence.Base;
 using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace A1
 {
-    public class FloorManager : MonoBehaviour
+    public class FloorManager : AgentManager
     {
-        public static FloorManager Singleton;
+        public static FloorManager FloorManagerSingleton => Singleton as FloorManager;
         
         public readonly List<Floor> Floors = new List<Floor>();
 
         [SerializeField]
+        [Tooltip("The prefab for the cleaning agent that will be spawned in.")]
         private GameObject cleanerAgentPrefab;
 
         [SerializeField]
+        [Tooltip("How many floor sections will be generated.")]
         private Vector2 floorSize = new Vector2(3, 1);
 
         [SerializeField]
         [Min(1)]
+        [Tooltip("How many units wide will each floor section be generated as.")]
         private int floorScale = 1;
 
         [SerializeField]
         [Range(0, 1)]
-        private float LikelyToGetDirtyChance;
+        [Tooltip("The percentage chance that any floor section during generation will be likely to get dirty meaning the odds in increases in dirt level every time are double that of other floor sections.")]
+        private float likelyToGetDirtyChance;
 
         [SerializeField]
         [Min(0)]
-        private float dirtTickRate = 1;
+        [Tooltip("How many seconds between every time dirt is randomly added to the floor.")]
+        private float timeBetweenDirtGeneration = 5;
 
         [SerializeField]
         [Range(0, 1)]
+        [Tooltip("The percentage chance that a floor section will increase in dirt level during dirt generation.")]
         private float chanceDirty;
 
         [SerializeField]
+        [Tooltip("The material applied to normal floor sections when they are clean.")]
         private Material materialCleanNormal;
 
         [SerializeField]
+        [Tooltip("The material applied to like to get dirty floor sections when they are clean.")]
         private Material materialCleanLikelyToGetDirty;
 
         [SerializeField]
+        [Tooltip("The material applied to a floor section when it is dirty.")]
         private Material materialDirty;
 
         [SerializeField]
+        [Tooltip("The material applied to a floor section when it is very dirty.")]
         private Material materialVeryDirty;
 
         [SerializeField]
+        [Tooltip("The material applied to a floor section when it is extremely dirty.")]
         private Material materialExtremelyDirty;
 
         private GameObject _cleanerAgent;
 
         private float _elapsedTime;
 
-        private void Awake()
+        protected override void Start()
         {
-            if (Singleton == this)
-            {
-                return;
-            }
-
-            if (Singleton != null)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            Singleton = this;
-            DontDestroyOnLoad(gameObject);
-        }
-
-        private void Start()
-        {
+            base.Start();
             GenerateFloor();
         }
 
@@ -110,15 +106,16 @@ namespace A1
             go.name = $"Floor {position.x} {position.y}";
             Destroy(go.GetComponent<Collider>());
             Floor floor = go.AddComponent<Floor>();
-            bool likelyToGetDirty = Random.value < LikelyToGetDirtyChance;
+            bool likelyToGetDirty = Random.value < likelyToGetDirtyChance;
             floor.Setup(likelyToGetDirty, likelyToGetDirty ? materialCleanLikelyToGetDirty : materialCleanNormal, materialDirty, materialVeryDirty, materialExtremelyDirty);
             Floors.Add(floor);
         }
 
-        private void Update()
+        protected override void Update()
         {
+            base.Update();
             _elapsedTime += Time.deltaTime;
-            if (_elapsedTime < dirtTickRate)
+            if (_elapsedTime < timeBetweenDirtGeneration)
             {
                 return;
             }

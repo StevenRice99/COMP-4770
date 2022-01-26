@@ -10,7 +10,7 @@ namespace A1.Sensors
     {
         protected override Percept Sense()
         {
-            List<Floor> floors = FloorManager.Singleton.Floors;
+            List<Floor> floors = FloorManager.FloorManagerSingleton.Floors;
             
             FloorsPercept percept = new FloorsPercept
             {
