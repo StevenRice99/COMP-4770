@@ -1,7 +1,7 @@
-﻿using ArtificialIntelligence.Actions;
-using ArtificialIntelligence.Percepts;
+﻿using SimpleIntelligence.Actions;
+using SimpleIntelligence.Percepts;
 
-namespace ArtificialIntelligence.Minds
+namespace SimpleIntelligence.Minds
 {
     public abstract class Mind : AIComponent
     {

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace ArtificialIntelligence.Agents
+namespace SimpleIntelligence.Agents
 {
     public class CharacterAgent : TransformAgent
     {

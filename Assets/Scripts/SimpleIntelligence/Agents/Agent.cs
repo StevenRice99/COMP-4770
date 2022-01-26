@@ -1,19 +1,16 @@
 using System.Collections.Generic;
 using System.Linq;
-using ArtificialIntelligence.Actions;
-using ArtificialIntelligence.Actuators;
-using ArtificialIntelligence.Minds;
-using ArtificialIntelligence.Percepts;
-using ArtificialIntelligence.Sensors;
+using SimpleIntelligence.Actions;
+using SimpleIntelligence.Actuators;
+using SimpleIntelligence.Minds;
+using SimpleIntelligence.Percepts;
+using SimpleIntelligence.Sensors;
 using UnityEngine;
 
-namespace ArtificialIntelligence.Agents
+namespace SimpleIntelligence.Agents
 {
-    public abstract class Agent : AIComponent
+    public abstract class Agent : TimedComponent
     {
-        [SerializeField]
-        private Mind mind;
-        
         [SerializeField]
         protected float moveSpeed;
         
@@ -36,6 +33,8 @@ namespace ArtificialIntelligence.Agents
         public bool DidLook { get; private set; }
 
         public float AgentElapsedTime => ElapsedTime;
+        
+        private Mind _mind;
 
         private Sensor[] _sensors;
 
@@ -44,6 +43,12 @@ namespace ArtificialIntelligence.Agents
         private Actuator[] _actuators;
 
         private Action[] _actions;
+
+        public void AssignMind(Mind mind)
+        {
+            _mind = mind;
+            ConfigureMind();
+        }
 
         public void MoveToTarget()
         {
@@ -130,20 +135,20 @@ namespace ArtificialIntelligence.Agents
 
         protected virtual void Start()
         {
-            if (mind == null)
+            if (_mind == null)
             {
-                mind = GetComponent<Mind>();
-                if (mind == null)
+                _mind = GetComponent<Mind>();
+                if (_mind == null)
                 {
-                    mind = GetComponentInChildren<Mind>();
-                    if (mind == null)
+                    _mind = GetComponentInChildren<Mind>();
+                    if (_mind == null)
                     {
-                        mind = FindObjectOfType<Mind>();
+                        _mind = FindObjectOfType<Mind>();
                     }
                 }
             }
 
-            mind.Agent = this;
+            ConfigureMind();
 
             List<Actuator> actuators = GetComponents<Actuator>().ToList();
             actuators.AddRange(GetComponentsInChildren<Actuator>());
@@ -165,59 +170,70 @@ namespace ArtificialIntelligence.Agents
             }
         }
 
-        protected virtual void Update()
+        protected override void Update()
         {
-            ElapsedTime += Time.deltaTime;
-            if (ElapsedTime >= time)
+            base.Update();
+
+            if (_mind != null)
             {
-                Sense();
-                Action[] decisions = mind.Think(_percepts);
-
-                if (decisions == null)
+                if (Sense())
                 {
-                    _actions = null;
-                }
-                else
-                {
-                    List<Action> updated = decisions.Where(a => a != null).ToList();
-
-                    if (_actions != null)
+                    Action[] decisions = _mind.Think(_percepts);
+                    ElapsedTime = 0;
+                
+                    if (decisions == null)
                     {
-                        foreach (Action action in _actions)
+                        _actions = null;
+                    }
+                    else
+                    {
+                        List<Action> updated = decisions.Where(a => a != null).ToList();
+
+                        if (_actions != null)
                         {
-                            if (action == null)
+                            foreach (Action action in _actions)
                             {
-                                continue;
-                            }
-                    
-                            if (!updated.Exists(a => a.GetType() == action.GetType()))
-                            {
-                                updated.Add(action);
+                                if (action == null)
+                                {
+                                    continue;
+                                }
+                
+                                if (!updated.Exists(a => a.GetType() == action.GetType()))
+                                {
+                                    updated.Add(action);
+                                }
                             }
                         }
-                    }
-                
-                    _actions = updated.ToArray();
             
-                    Act();
+                        _actions = updated.ToArray();
+                    }
                 }
 
-                ElapsedTime = 0;
+                if (_actions != null)
+                {
+                    Act();
+                }
             }
 
             Look();
         }
 
-        private void Sense()
+        private bool Sense()
         {
+            bool sensed = false;
             for (int i = 0; i < _percepts.Length; i++)
             {
                 Percept percept = _sensors[i].Read();
-                if (percept != null)
+                if (percept == null)
                 {
-                    _percepts[i] = percept;
+                    continue;
                 }
+
+                _percepts[i] = percept;
+                sensed = true;
             }
+
+            return sensed;
         }
 
         private void Act()
@@ -256,6 +272,14 @@ namespace ArtificialIntelligence.Agents
             rotation = Quaternion.Lerp(t.rotation, Quaternion.LookRotation(t.position - goal), lookSpeed * Time.deltaTime);
             visuals.rotation = rotation;
             DidLook = rotation != lastRotation;
+        }
+
+        private void ConfigureMind()
+        {
+            if (_mind != null)
+            {
+                _mind.Agent = this;
+            }
         }
     }
 }

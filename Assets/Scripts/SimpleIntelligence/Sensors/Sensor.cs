@@ -1,13 +1,11 @@
-﻿using ArtificialIntelligence.Percepts;
+﻿using SimpleIntelligence.Percepts;
 
-namespace ArtificialIntelligence.Sensors
+namespace SimpleIntelligence.Sensors
 {
     public abstract class Sensor : AIComponent
     {
         public Percept Read()
         {
-            ElapsedTime += Agent.AgentElapsedTime;
-
             if (ElapsedTime < time)
             {
                 return null;

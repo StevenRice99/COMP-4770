@@ -1,20 +1,20 @@
 ﻿using System.Collections.Generic;
-using ArtificialIntelligence.Actions;
+using System.Linq;
+using SimpleIntelligence.Actions;
 
-namespace ArtificialIntelligence.Actuators
+namespace SimpleIntelligence.Actuators
 {
     public abstract class Actuator :  AIComponent
     {
         public void Act(IEnumerable<Action> actions)
         {
-            ElapsedTime += Agent.AgentElapsedTime;
             if (ElapsedTime < time)
             {
                 return;
             }
 
             bool actionPerformed = false;
-            foreach (Action action in actions)
+            foreach (Action action in actions.Where(a => !a.Complete))
             {
                 if (Act(action))
                 {

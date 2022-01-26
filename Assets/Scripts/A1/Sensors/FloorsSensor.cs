@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using A1.Percepts;
-using ArtificialIntelligence.Percepts;
-using ArtificialIntelligence.Sensors;
+using SimpleIntelligence.Percepts;
+using SimpleIntelligence.Sensors;
 using UnityEngine;
 
 namespace A1.Sensors

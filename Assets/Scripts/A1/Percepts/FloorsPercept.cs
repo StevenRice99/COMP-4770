@@ -1,4 +1,4 @@
-﻿using ArtificialIntelligence.Percepts;
+﻿using SimpleIntelligence.Percepts;
 using UnityEngine;
 
 namespace A1.Percepts

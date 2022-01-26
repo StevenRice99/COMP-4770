@@ -1,9 +1,9 @@
-﻿using ArtificialIntelligence.Agents;
+﻿using SimpleIntelligence.Agents;
 using UnityEngine;
 
-namespace ArtificialIntelligence
+namespace SimpleIntelligence
 {
-    public abstract class AIComponent : MonoBehaviour
+    public abstract class AIComponent : TimedComponent
     {
         [HideInInspector]
         public Agent Agent;
@@ -11,7 +11,5 @@ namespace ArtificialIntelligence
         [SerializeField]
         [Min(0)]
         protected float time;
-
-        protected float ElapsedTime;
     }
 }

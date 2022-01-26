@@ -2,9 +2,9 @@
 using System.Linq;
 using A1.Actions;
 using A1.Percepts;
-using ArtificialIntelligence.Actions;
-using ArtificialIntelligence.Minds;
-using ArtificialIntelligence.Percepts;
+using SimpleIntelligence.Actions;
+using SimpleIntelligence.Minds;
+using SimpleIntelligence.Percepts;
 using UnityEngine;
 
 namespace A1.Minds

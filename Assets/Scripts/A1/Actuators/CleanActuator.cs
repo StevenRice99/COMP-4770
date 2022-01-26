@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using A1.Actions;
-using ArtificialIntelligence.Actions;
-using ArtificialIntelligence.Actuators;
+using SimpleIntelligence.Actions;
+using SimpleIntelligence.Actuators;
 using UnityEngine;
 
 namespace A1.Actuators

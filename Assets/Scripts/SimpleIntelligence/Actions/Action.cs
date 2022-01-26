@@ -1,4 +1,4 @@
-﻿namespace ArtificialIntelligence.Actions
+﻿namespace SimpleIntelligence.Actions
 {
     public abstract class Action
     {
