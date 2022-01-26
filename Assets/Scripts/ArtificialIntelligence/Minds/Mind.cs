@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+﻿using ArtificialIntelligence.Actions;
+using ArtificialIntelligence.Percepts;
 
-namespace ArtificialIntelligence
+namespace ArtificialIntelligence.Minds
 {
     public abstract class Mind : AIComponent
     {

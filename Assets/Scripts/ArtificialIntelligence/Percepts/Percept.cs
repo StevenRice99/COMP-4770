@@ -1,4 +1,4 @@
-﻿namespace ArtificialIntelligence
+﻿namespace ArtificialIntelligence.Percepts
 {
     public class Percept
     {

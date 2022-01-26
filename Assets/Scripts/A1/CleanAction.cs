@@ -1,4 +1,4 @@
-﻿using ArtificialIntelligence;
+﻿using ArtificialIntelligence.Actions;
 
 namespace A1
 {

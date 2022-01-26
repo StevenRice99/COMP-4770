@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using ArtificialIntelligence;
+using ArtificialIntelligence.Percepts;
+using ArtificialIntelligence.Sensors;
 using UnityEngine;
 
 namespace A1

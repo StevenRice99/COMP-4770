@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using ArtificialIntelligence.Actions;
 
-namespace ArtificialIntelligence
+namespace ArtificialIntelligence.Actuators
 {
     public abstract class Actuator :  AIComponent
     {

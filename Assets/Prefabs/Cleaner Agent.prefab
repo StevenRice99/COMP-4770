@@ -285,7 +285,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mind: {fileID: 3411514612979016314}
-  tickRate: 0
+  timeBetweenDecisions: 0
   moveSpeed: 10
   lookSpeed: 30
   visuals: {fileID: 3481397138808591294}
@@ -302,7 +302,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Agent: {fileID: 0}
-  tickSteps: 1
+  timeBetweenReads: 0
 --- !u!114 &2801934450942198308
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -316,7 +316,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Agent: {fileID: 0}
-  tickSteps: 1
+  timeBetweenReads: 0
 --- !u!114 &937719451698429125
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -330,4 +330,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Agent: {fileID: 0}
-  ticksToClean: 5
+  timeToClean: 2

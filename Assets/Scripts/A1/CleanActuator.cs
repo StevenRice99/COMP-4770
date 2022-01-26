@@ -1,5 +1,6 @@
 ﻿using System.Linq;
-using ArtificialIntelligence;
+using ArtificialIntelligence.Actions;
+using ArtificialIntelligence.Actuators;
 using UnityEngine;
 
 namespace A1
@@ -7,25 +8,20 @@ namespace A1
     public class CleanActuator : Actuator
     {
         [SerializeField]
-        [Min(1)]
-        private int ticksToClean;
+        [Min(0)]
+        private float timeToClean;
 
-        private int tick;
+        private float _elapsedTime;
         
         protected override void Act(Action action)
         {
-            if (!(action is CleanAction cleanAction))
+            _elapsedTime += Agent.ElapsedTime;
+            if (!(action is CleanAction cleanAction) || _elapsedTime < timeToClean)
             {
                 return;
             }
 
-            tick++;
-            if (tick < ticksToClean)
-            {
-                return;
-            }
-
-            tick = 0;
+            _elapsedTime = 0;
             cleanAction.Complete = true;
             Floor floor = FloorManager.Singleton.Floors
                 .OrderBy(f => Vector3.Distance(Agent.transform.position, f.transform.position))

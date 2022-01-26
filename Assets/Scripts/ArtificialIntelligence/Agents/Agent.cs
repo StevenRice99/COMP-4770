@@ -1,5 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+using ArtificialIntelligence.Actions;
+using ArtificialIntelligence.Actuators;
+using ArtificialIntelligence.Minds;
+using ArtificialIntelligence.Percepts;
+using ArtificialIntelligence.Sensors;
 using UnityEngine;
 
 namespace ArtificialIntelligence.Agents
@@ -11,7 +16,7 @@ namespace ArtificialIntelligence.Agents
         
         [SerializeField]
         [Min(0)]
-        private float tickRate;
+        private float timeBetweenDecisions;
         
         [SerializeField]
         protected float moveSpeed;
@@ -30,6 +35,8 @@ namespace ArtificialIntelligence.Agents
 
         public bool LookingAtTarget { get; private set; }
 
+        public float ElapsedTime { get; private set; }
+
         private Sensor[] _sensors;
 
         private Percept[] _percepts;
@@ -37,8 +44,6 @@ namespace ArtificialIntelligence.Agents
         private Actuator[] _actuators;
 
         private Action[] _actions;
-
-        private float _tick;
 
         public void MoveToTarget()
         {
@@ -162,11 +167,9 @@ namespace ArtificialIntelligence.Agents
 
         protected virtual void Update()
         {
-            _tick += Time.deltaTime;
-            if (_tick >= tickRate)
+            ElapsedTime += Time.deltaTime;
+            if (ElapsedTime >= timeBetweenDecisions)
             {
-                _tick = 0;
-            
                 Sense();
                 Action[] decisions = mind.Think(_percepts);
 
@@ -191,6 +194,8 @@ namespace ArtificialIntelligence.Agents
                 _actions = updated.ToArray();
             
                 Act();
+            
+                ElapsedTime = 0;
             }
 
             Look();
