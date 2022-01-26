@@ -275,10 +275,11 @@ MonoBehaviour:
   LikelyToGetDirtyChance: 0.15
   dirtTickRate: 5
   chanceDirty: 0.25
-  cleanMaterialNormal: {fileID: 2100000, guid: aa8e8bd4571316249991441dcbaeac6b, type: 2}
-  cleanMaterialLikelyToGetDirty: {fileID: 2100000, guid: 44a0a939e3007bb4c813e5d5ddb6e00c, type: 2}
-  dirtyMaterial: {fileID: 2100000, guid: e791b9002174a32479f595195851bbd6, type: 2}
-  veryDirtyMaterial: {fileID: 2100000, guid: e3c1f5e869e95f846b50763fb473a35a, type: 2}
+  materialCleanNormal: {fileID: 2100000, guid: aa8e8bd4571316249991441dcbaeac6b, type: 2}
+  materialCleanLikelyToGetDirty: {fileID: 2100000, guid: 44a0a939e3007bb4c813e5d5ddb6e00c, type: 2}
+  materialDirty: {fileID: 2100000, guid: e791b9002174a32479f595195851bbd6, type: 2}
+  materialVeryDirty: {fileID: 2100000, guid: e3c1f5e869e95f846b50763fb473a35a, type: 2}
+  materialExtremelyDirty: {fileID: 2100000, guid: f75ce002c241c40458aedf8da5271291, type: 2}
 --- !u!4 &460686381
 Transform:
   m_ObjectHideFlags: 0

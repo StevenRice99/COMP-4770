@@ -35,16 +35,19 @@ namespace A1
         private float chanceDirty;
 
         [SerializeField]
-        private Material cleanMaterialNormal;
+        private Material materialCleanNormal;
 
         [SerializeField]
-        private Material cleanMaterialLikelyToGetDirty;
+        private Material materialCleanLikelyToGetDirty;
 
         [SerializeField]
-        private Material dirtyMaterial;
+        private Material materialDirty;
 
         [SerializeField]
-        private Material veryDirtyMaterial;
+        private Material materialVeryDirty;
+
+        [SerializeField]
+        private Material materialExtremelyDirty;
 
         private GameObject _cleanerAgent;
 
@@ -108,7 +111,7 @@ namespace A1
             Destroy(go.GetComponent<Collider>());
             Floor floor = go.AddComponent<Floor>();
             bool likelyToGetDirty = Random.value > LikelyToGetDirtyChance;
-            floor.Setup(likelyToGetDirty, likelyToGetDirty ? cleanMaterialNormal : cleanMaterialLikelyToGetDirty, dirtyMaterial, veryDirtyMaterial);
+            floor.Setup(likelyToGetDirty, likelyToGetDirty ? materialCleanNormal : materialCleanLikelyToGetDirty, materialDirty, materialVeryDirty, materialExtremelyDirty);
             Floors.Add(floor);
         }
 
@@ -126,11 +129,11 @@ namespace A1
 
         private void UpdateFloor()
         {
-            foreach (Floor floor in Floors.Where(f => f.State != Floor.DirtLevel.VeryDirty))
+            foreach (Floor floor in Floors.Where(f => f.State != Floor.DirtLevel.ExtremelyDirty))
             {
                 float dirtChance = floor.LikelyToGetDirty ? chanceDirty * 2 : chanceDirty;
                 
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < 3; i++)
                 {
                     if (Random.value <= dirtChance)
                     {

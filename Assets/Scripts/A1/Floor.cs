@@ -8,7 +8,8 @@ namespace A1
         {
             Clean,
             Dirty,
-            VeryDirty
+            VeryDirty,
+            ExtremelyDirty
         }
 
         public bool LikelyToGetDirty { get; private set; }
@@ -18,6 +19,8 @@ namespace A1
         private Material _dirtyMaterial;
 
         private Material _veryDirtyMaterial;
+
+        private Material _extremelyDirtyMaterial;
 
         private MeshRenderer _meshRenderer;
 
@@ -42,7 +45,7 @@ namespace A1
 
         public void Dirty()
         {
-            if (State == DirtLevel.VeryDirty)
+            if (State == DirtLevel.ExtremelyDirty)
             {
                 return;
             }
@@ -51,12 +54,13 @@ namespace A1
             UpdateMaterial();
         }
 
-        public void Setup(bool likelyToGetDirty, Material cleanMaterial, Material dirtyMaterial, Material veryDirtyMaterial)
+        public void Setup(bool likelyToGetDirty, Material cleanMaterial, Material dirtyMaterial, Material veryDirtyMaterial, Material extremelyDirtyMaterial)
         {
             LikelyToGetDirty = likelyToGetDirty;
             _cleanMaterial = cleanMaterial;
             _dirtyMaterial = dirtyMaterial;
             _veryDirtyMaterial = veryDirtyMaterial;
+            _extremelyDirtyMaterial = extremelyDirtyMaterial;
         }
 
         private void UpdateMaterial()
@@ -69,8 +73,11 @@ namespace A1
                 case DirtLevel.Dirty:
                     _meshRenderer.material = _dirtyMaterial;
                     break;
-                default:
+                case DirtLevel.VeryDirty:
                     _meshRenderer.material = _veryDirtyMaterial;
+                    break;
+                default:
+                    _meshRenderer.material = _extremelyDirtyMaterial;
                     break;
             }
         }
