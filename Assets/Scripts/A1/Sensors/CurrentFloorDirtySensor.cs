@@ -19,7 +19,7 @@ namespace A1.Sensors
 
             return new CurrentFloorDirtyPercept
             {
-                IsDirty = floors.OrderBy(f => Vector3.Distance(Agent.transform.position, f.transform.position)).First().State != Floor.DirtLevel.Clean
+                IsDirty = floors.OrderBy(f => Vector3.Distance(agent.transform.position, f.transform.position)).First().State != Floor.DirtLevel.Clean
             };
         }
     }

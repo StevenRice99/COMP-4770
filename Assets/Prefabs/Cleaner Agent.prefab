@@ -204,6 +204,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5829531856079109817}
   - component: {fileID: 3411514612979016314}
+  - component: {fileID: 8284675057619534058}
   - component: {fileID: 8691464202373610256}
   - component: {fileID: 5790985627467025743}
   - component: {fileID: 2801934450942198308}
@@ -242,7 +243,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ec25df111e64baebb4e6a1732628ce6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Agent: {fileID: 0}
+  agent: {fileID: 0}
+  time: 0
+--- !u!114 &8284675057619534058
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5829531856079109815}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f8ed74442554815aa19f30a4490719b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agent: {fileID: 0}
   time: 0
 --- !u!114 &8691464202373610256
 MonoBehaviour:
@@ -256,9 +271,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c307137b9c4d4dc5af0399738b8ef9bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Agent: {fileID: 0}
-  time: 0
-  mind: {fileID: 3411514612979016314}
   moveSpeed: 10
   lookSpeed: 5
   visuals: {fileID: 3481397138808591294}
@@ -274,7 +286,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca87587434e44b098c8249a83632a841, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Agent: {fileID: 0}
+  agent: {fileID: 0}
   time: 0
 --- !u!114 &2801934450942198308
 MonoBehaviour:
@@ -288,7 +300,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3aa23aaed5994621af9b691745a8ae69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Agent: {fileID: 0}
+  agent: {fileID: 0}
   time: 0
 --- !u!114 &937719451698429125
 MonoBehaviour:
@@ -302,5 +314,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4e075c456364f6681877f34e5896ccd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Agent: {fileID: 0}
+  agent: {fileID: 0}
   time: 0.5

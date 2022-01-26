@@ -1,7 +1,6 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace SimpleIntelligence
+namespace SimpleIntelligence.Base
 {
     public abstract class TimedComponent : MonoBehaviour
     {

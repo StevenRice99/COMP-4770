@@ -1,18 +1,20 @@
-﻿using SimpleIntelligence.Percepts;
+﻿using SimpleIntelligence.Base;
+using SimpleIntelligence.Percepts;
 
 namespace SimpleIntelligence.Sensors
 {
-    public abstract class Sensor : AIComponent
+    public abstract class Sensor : IntelligenceComponent
     {
         public Percept Read()
         {
-            if (ElapsedTime < time)
+            if (agent == null || ElapsedTime < time)
             {
                 return null;
             }
 
+            Percept percept = Sense();
             ElapsedTime = 0;
-            return Sense();
+            return percept;
         }
         
         protected abstract Percept Sense();

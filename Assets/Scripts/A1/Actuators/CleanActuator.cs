@@ -17,7 +17,7 @@ namespace A1.Actuators
 
             cleanAction.Complete = true;
             Floor floor = FloorManager.Singleton.Floors
-                .OrderBy(f => Vector3.Distance(Agent.transform.position, f.transform.position))
+                .OrderBy(f => Vector3.Distance(agent.transform.position, f.transform.position))
                 .FirstOrDefault();
 
             if (floor == null)

@@ -1,14 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using SimpleIntelligence.Actions;
+using SimpleIntelligence.Base;
 
 namespace SimpleIntelligence.Actuators
 {
-    public abstract class Actuator :  AIComponent
+    public abstract class Actuator :  IntelligenceComponent
     {
         public void Act(IEnumerable<Action> actions)
         {
-            if (ElapsedTime < time)
+            if (agent == null || ElapsedTime < time)
             {
                 return;
             }

@@ -15,11 +15,11 @@ namespace A1.Minds
         {
             if (CanClean(percepts))
             {
-                Agent.StopMoveToLookAtTarget();
+                agent.StopMoveToLookAtTarget();
                 return new Action[] { new CleanAction() };
             }
 
-            Agent.MoveToLookAtTarget(DetermineNextToClean(percepts));
+            agent.MoveToLookAtTarget(DetermineNextToClean(percepts));
             return null;
         }
 
@@ -78,7 +78,7 @@ namespace A1.Minds
 
         private Vector3 NearestPosition(IReadOnlyCollection<Vector3> positions)
         {
-            return positions.Count == 0 ? Vector3.zero : positions.OrderBy(p => Vector3.Distance(Agent.transform.position, p)).First();
+            return positions.Count == 0 ? Vector3.zero : positions.OrderBy(p => Vector3.Distance(agent.transform.position, p)).First();
         }
     }
 }

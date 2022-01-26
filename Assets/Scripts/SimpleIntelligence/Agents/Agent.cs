@@ -2,8 +2,10 @@ using System.Collections.Generic;
 using System.Linq;
 using SimpleIntelligence.Actions;
 using SimpleIntelligence.Actuators;
+using SimpleIntelligence.Base;
 using SimpleIntelligence.Minds;
 using SimpleIntelligence.Percepts;
+using SimpleIntelligence.PerformanceMeasures;
 using SimpleIntelligence.Sensors;
 using UnityEngine;
 
@@ -12,12 +14,16 @@ namespace SimpleIntelligence.Agents
     public abstract class Agent : TimedComponent
     {
         [SerializeField]
+        [Min(0)]
+        [Tooltip("How fast this agent can move in units per second.")]
         protected float moveSpeed;
         
         [SerializeField]
+        [Tooltip("How fast this agent can look in degrees per second.")]
         protected float lookSpeed;
 
         [SerializeField]
+        [Tooltip("The root visuals element of the agent for rotations to display. Note: This should be rotated 180 degrees on the Y-axis relative to the agent root game object.")]
         private Transform visuals;
         
         public Vector3 MoveTarget { get; private set; }
@@ -32,9 +38,13 @@ namespace SimpleIntelligence.Agents
         
         public bool DidLook { get; private set; }
 
+        public float Performace { get; private set; }
+
         public float AgentElapsedTime => ElapsedTime;
         
         private Mind _mind;
+
+        private PerformanceMeasure _performanceMeasure;
 
         private Sensor[] _sensors;
 
@@ -48,6 +58,12 @@ namespace SimpleIntelligence.Agents
         {
             _mind = mind;
             ConfigureMind();
+        }
+
+        public void AssignPerformanceMeasure(PerformanceMeasure performanceMeasure)
+        {
+            _performanceMeasure = performanceMeasure;
+            ConfigurePerformanceMeasure();
         }
 
         public void MoveToTarget()
@@ -149,13 +165,28 @@ namespace SimpleIntelligence.Agents
             }
 
             ConfigureMind();
+            
+            if (_performanceMeasure == null)
+            {
+                _performanceMeasure = GetComponent<PerformanceMeasure>();
+                if (_performanceMeasure == null)
+                {
+                    _performanceMeasure = GetComponentInChildren<PerformanceMeasure>();
+                    if (_performanceMeasure == null)
+                    {
+                        _performanceMeasure = FindObjectOfType<PerformanceMeasure>();
+                    }
+                }
+            }
+
+            ConfigurePerformanceMeasure();
 
             List<Actuator> actuators = GetComponents<Actuator>().ToList();
             actuators.AddRange(GetComponentsInChildren<Actuator>());
             _actuators = actuators.Distinct().ToArray();
             foreach (Actuator actuator in _actuators)
             {
-                actuator.Agent = this;
+                actuator.agent = this;
             }
             
             List<Sensor> sensors = GetComponents<Sensor>().ToList();
@@ -165,7 +196,7 @@ namespace SimpleIntelligence.Agents
             _percepts = new Percept[_sensors.Length];
             for (int i = 0; i < _sensors.Length; i++)
             {
-                _sensors[i].Agent = this;
+                _sensors[i].agent = this;
                 _percepts[i] = null;
             }
         }
@@ -216,6 +247,11 @@ namespace SimpleIntelligence.Agents
             }
 
             Look();
+
+            if (_performanceMeasure != null)
+            {
+                Performace = _performanceMeasure.GetPerformance();
+            }
         }
 
         private bool Sense()
@@ -278,7 +314,15 @@ namespace SimpleIntelligence.Agents
         {
             if (_mind != null)
             {
-                _mind.Agent = this;
+                _mind.agent = this;
+            }
+        }
+        
+        private void ConfigurePerformanceMeasure()
+        {
+            if (_performanceMeasure != null)
+            {
+                _performanceMeasure.agent = this;
             }
         }
     }

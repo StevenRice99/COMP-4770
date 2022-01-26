@@ -1,7 +1,4 @@
 ﻿namespace SimpleIntelligence.Percepts
 {
-    public class Percept
-    {
-        
-    }
+    public class Percept { }
 }
