@@ -1,9 +1,10 @@
 ﻿using System.Linq;
+using A1.Actions;
 using ArtificialIntelligence.Actions;
 using ArtificialIntelligence.Actuators;
 using UnityEngine;
 
-namespace A1
+namespace A1.Actuators
 {
     public class CleanActuator : Actuator
     {

@@ -1,16 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using A1.Percepts;
 using ArtificialIntelligence.Percepts;
 using ArtificialIntelligence.Sensors;
 using UnityEngine;
 
-namespace A1
+namespace A1.Sensors
 {
-    public class IsDirtySensor : Sensor
+    public class CurrentFloorDirtySensor : Sensor
     {
         protected override Percept Sense()
         {
-            IsDirtyPercept percept = new IsDirtyPercept();
+            CurrentFloorDirtyPercept percept = new CurrentFloorDirtyPercept();
             
             List<Floor> floors = FloorManager.Singleton.Floors;
             if (floors.Count == 0)
@@ -18,7 +19,7 @@ namespace A1
                 return percept;
             }
 
-            percept.IsDirty = floors.OrderBy(f => Vector3.Distance(Agent.transform.position, f.transform.position)).First().IsDirty;
+            percept.IsDirty = floors.OrderBy(f => Vector3.Distance(Agent.transform.position, f.transform.position)).First().State != Floor.DirtLevel.Clean;
             return percept;
         }
     }

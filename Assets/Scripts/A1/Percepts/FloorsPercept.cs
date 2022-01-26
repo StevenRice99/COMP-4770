@@ -1,10 +1,12 @@
 ﻿using ArtificialIntelligence.Percepts;
 using UnityEngine;
 
-namespace A1
+namespace A1.Percepts
 {
-    public class DirtPercept : Percept
+    public class FloorsPercept : Percept
     {
         public Vector3[] Positions;
+
+        public Floor.DirtLevel[] States;
     }
 }

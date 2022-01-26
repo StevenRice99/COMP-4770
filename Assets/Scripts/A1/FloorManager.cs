@@ -36,6 +36,9 @@ namespace A1
         [SerializeField]
         private Material dirtyMaterial;
 
+        [SerializeField]
+        private Material veryDirtyMaterial;
+
         private GameObject _cleanerAgent;
 
         private float _elapsedTime;
@@ -99,6 +102,7 @@ namespace A1
             Floor floor = go.AddComponent<Floor>();
             floor.cleanMaterial = cleanMaterial;
             floor.dirtyMaterial = dirtyMaterial;
+            floor.veryDirtyMaterial = veryDirtyMaterial;
             Floors.Add(floor);
         }
 
@@ -116,14 +120,12 @@ namespace A1
 
         private void UpdateFloor()
         {
-            foreach (Floor floor in Floors.Where(f => !f.IsDirty))
+            foreach (Floor floor in Floors.Where(f => f.State != Floor.DirtLevel.VeryDirty))
             {
-                if (Random.value > chanceDirty)
+                if (Random.value <= chanceDirty)
                 {
-                    continue;
+                    floor.Dirty();
                 }
-
-                floor.Dirty();
             }
         }
     }

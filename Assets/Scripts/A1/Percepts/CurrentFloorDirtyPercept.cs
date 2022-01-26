@@ -1,8 +1,8 @@
 ﻿using ArtificialIntelligence.Percepts;
 
-namespace A1
+namespace A1.Percepts
 {
-    public class IsDirtyPercept : Percept
+    public class CurrentFloorDirtyPercept : Percept
     {
         public bool IsDirty;
     }

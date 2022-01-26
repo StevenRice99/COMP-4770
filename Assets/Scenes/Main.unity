@@ -270,12 +270,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cleanerAgentPrefab: {fileID: 5829531856079109815, guid: cff9a72f1eaaf4243837c2afdd1e5a3e, type: 3}
-  floorSize: {x: 3, y: 3}
+  floorSize: {x: 5, y: 5}
   scale: 3
   timeBetweenUpdates: 1
   chanceDirty: 0.25
   cleanMaterial: {fileID: 2100000, guid: aa8e8bd4571316249991441dcbaeac6b, type: 2}
-  dirtyMaterial: {fileID: 2100000, guid: e3c1f5e869e95f846b50763fb473a35a, type: 2}
+  dirtyMaterial: {fileID: 2100000, guid: e791b9002174a32479f595195851bbd6, type: 2}
+  veryDirtyMaterial: {fileID: 2100000, guid: e3c1f5e869e95f846b50763fb473a35a, type: 2}
 --- !u!4 &460686381
 Transform:
   m_ObjectHideFlags: 0
