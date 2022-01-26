@@ -2,7 +2,7 @@
 
 namespace ArtificialIntelligence.Agents
 {
-    public abstract class CharacterAgent : TransformAgent
+    public class CharacterAgent : TransformAgent
     {
         private CharacterController _characterController;
 
@@ -14,8 +14,14 @@ namespace ArtificialIntelligence.Agents
         
         protected override void Move()
         {
+            if (!MovingToTarget)
+            {
+                _characterController.SimpleMove(Vector3.zero);
+                return;
+            }
+            
             Vector3 position = transform.position;
-            _characterController.Move(Vector3.MoveTowards(position, destination, moveSpeed * Time.deltaTime) - position);
+            _characterController.SimpleMove(Vector3.MoveTowards(position, MoveTarget, moveSpeed * Time.deltaTime) - position);
         }
     }
 }

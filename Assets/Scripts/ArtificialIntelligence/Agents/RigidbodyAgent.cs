@@ -2,7 +2,7 @@
 
 namespace ArtificialIntelligence.Agents
 {
-    public abstract class RigidbodyAgent : Agent
+    public class RigidbodyAgent : Agent
     {
         private Rigidbody _rigidbody;
 
@@ -19,8 +19,14 @@ namespace ArtificialIntelligence.Agents
         
         protected override void Move()
         {
+            if (!MovingToTarget)
+            {
+                _rigidbody.velocity = new Vector3(0, _rigidbody.velocity.y, 0);
+                return;
+            }
+            
             Vector3 position = transform.position;
-            _rigidbody.AddForce(Vector3.MoveTowards(position, destination, moveSpeed * Time.fixedDeltaTime) - position);
+            _rigidbody.AddForce(Vector3.MoveTowards(position, MoveTarget, moveSpeed * Time.fixedDeltaTime) - position);
         }
     }
 }

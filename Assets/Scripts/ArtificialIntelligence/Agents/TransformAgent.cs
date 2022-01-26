@@ -2,7 +2,7 @@
 
 namespace ArtificialIntelligence.Agents
 {
-    public abstract class TransformAgent : Agent
+    public class TransformAgent : Agent
     {
         protected override void Update()
         {
@@ -12,7 +12,12 @@ namespace ArtificialIntelligence.Agents
         
         protected override void Move()
         {
-            Vector3 movement = Vector3.MoveTowards(transform.position, destination, moveSpeed * Time.deltaTime);
+            if (!MovingToTarget)
+            {
+                return;
+            }
+            
+            Vector3 movement = Vector3.MoveTowards(transform.position, MoveTarget, moveSpeed * Time.deltaTime);
             transform.position = movement;
         }
     }

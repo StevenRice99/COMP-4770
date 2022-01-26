@@ -36,7 +36,7 @@ namespace A1
         [SerializeField]
         private Material dirtyMaterial;
 
-        private CleanerAgent _cleanerAgent;
+        private GameObject _cleanerAgent;
 
         private float _elapsedTime;
 
@@ -84,7 +84,7 @@ namespace A1
                 }
             }
 
-            _cleanerAgent = Instantiate(cleanerAgentPrefab, Vector3.zero, quaternion.identity).GetComponent<CleanerAgent>();
+            _cleanerAgent = Instantiate(cleanerAgentPrefab, Vector3.zero, quaternion.identity);
             _cleanerAgent.name = "Cleaner Agent";
         }
 

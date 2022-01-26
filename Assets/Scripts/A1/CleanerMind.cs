@@ -6,30 +6,26 @@ using UnityEngine;
 
 namespace A1
 {
-    public class CleanerAgent : TransformAgent
+    public class CleanerMind : Mind
     {
-        protected override Action[] Think(Percept[] percepts)
+        public override Action[] Think(Percept[] percepts)
         {
             List<Action> actions = new List<Action>();
 
             if (CanClean(percepts))
             {
                 actions.Add(new CleanAction());
-                Vector3 position = transform.position;
-                destination = position;
-                target = position;
+                Agent.StopMoveToLookAtTarget();
             }
             else
             {
-                Vector3 position = DetermineNextToClean(percepts);
-                destination = position;
-                target = position;
+                Agent.MoveToLookAtTarget(DetermineNextToClean(percepts));
             }
             
             return actions.ToArray();
         }
 
-        private bool CanClean(IEnumerable<Percept> percepts)
+        private static bool CanClean(IEnumerable<Percept> percepts)
         {
             return percepts.OfType<IsDirtyPercept>().ToArray().Any(isDirtyPercept => isDirtyPercept.IsDirty);
         }
