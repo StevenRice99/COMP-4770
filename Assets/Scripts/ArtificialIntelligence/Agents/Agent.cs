@@ -9,14 +9,10 @@ using UnityEngine;
 
 namespace ArtificialIntelligence.Agents
 {
-    public abstract class Agent : MonoBehaviour
+    public abstract class Agent : AIComponent
     {
         [SerializeField]
         private Mind mind;
-        
-        [SerializeField]
-        [Min(0)]
-        private float timeBetweenDecisions;
         
         [SerializeField]
         protected float moveSpeed;
@@ -27,15 +23,19 @@ namespace ArtificialIntelligence.Agents
         [SerializeField]
         private Transform visuals;
         
-        public Vector3 MoveTarget { get; protected set; }
+        public Vector3 MoveTarget { get; private set; }
 
         public Vector3 LookTarget { get; private set; }
 
         public bool MovingToTarget { get; private set; }
 
         public bool LookingAtTarget { get; private set; }
+        
+        public bool DidMove { get; protected set; }
+        
+        public bool DidLook { get; private set; }
 
-        public float ElapsedTime { get; private set; }
+        public float AgentElapsedTime => ElapsedTime;
 
         private Sensor[] _sensors;
 
@@ -168,7 +168,7 @@ namespace ArtificialIntelligence.Agents
         protected virtual void Update()
         {
             ElapsedTime += Time.deltaTime;
-            if (ElapsedTime >= timeBetweenDecisions)
+            if (ElapsedTime >= time)
             {
                 Sense();
                 Action[] decisions = mind.Think(_percepts);
@@ -190,11 +190,11 @@ namespace ArtificialIntelligence.Agents
                         }
                     }
                 }
-
+                
                 _actions = updated.ToArray();
             
                 Act();
-            
+
                 ElapsedTime = 0;
             }
 
@@ -243,8 +243,12 @@ namespace ArtificialIntelligence.Agents
             {
                 return;
             }
-            
-            visuals.rotation = Quaternion.Lerp(t.rotation, Quaternion.LookRotation(t.position - goal), lookSpeed * Time.deltaTime);
+
+            Quaternion rotation = visuals.rotation;
+            Quaternion lastRotation = rotation;
+            rotation = Quaternion.Lerp(t.rotation, Quaternion.LookRotation(t.position - goal), lookSpeed * Time.deltaTime);
+            visuals.rotation = rotation;
+            DidLook = rotation != lastRotation;
         }
     }
 }

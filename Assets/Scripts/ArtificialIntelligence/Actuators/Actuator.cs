@@ -7,8 +7,8 @@ namespace ArtificialIntelligence.Actuators
     {
         public void Act(IEnumerable<Action> actions)
         {
-            ElapsedTime += Agent.ElapsedTime;
-            if (ElapsedTime < timeRequired)
+            ElapsedTime += Agent.AgentElapsedTime;
+            if (ElapsedTime < time)
             {
                 return;
             }

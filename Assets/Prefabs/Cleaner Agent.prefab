@@ -272,6 +272,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Agent: {fileID: 0}
+  time: 0
 --- !u!114 &8691464202373610256
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -284,8 +285,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c307137b9c4d4dc5af0399738b8ef9bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Agent: {fileID: 0}
+  time: 0
   mind: {fileID: 3411514612979016314}
-  timeBetweenDecisions: 0
   moveSpeed: 10
   lookSpeed: 30
   visuals: {fileID: 3481397138808591294}
@@ -302,7 +304,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Agent: {fileID: 0}
-  timeBetweenReads: 0
+  time: 0
 --- !u!114 &2801934450942198308
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -316,7 +318,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Agent: {fileID: 0}
-  timeBetweenReads: 0
+  time: 0
 --- !u!114 &937719451698429125
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -330,4 +332,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Agent: {fileID: 0}
-  timeToClean: 2
+  time: 0

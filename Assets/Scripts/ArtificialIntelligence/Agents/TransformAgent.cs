@@ -14,9 +14,11 @@ namespace ArtificialIntelligence.Agents
         {
             if (!MovingToTarget)
             {
+                DidMove = false;
                 return;
             }
-            
+
+            DidMove = true;
             Vector3 movement = Vector3.MoveTowards(transform.position, MoveTarget, moveSpeed * Time.deltaTime);
             transform.position = movement;
         }

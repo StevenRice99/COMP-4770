@@ -19,14 +19,19 @@ namespace ArtificialIntelligence.Agents
         
         protected override void Move()
         {
+            Vector3 lastPosition = transform.position;
+            
             if (!MovingToTarget)
             {
                 _rigidbody.velocity = new Vector3(0, _rigidbody.velocity.y, 0);
-                return;
+            }
+            else
+            {
+                Vector3 position = transform.position;
+                _rigidbody.AddForce(Vector3.MoveTowards(position, MoveTarget, moveSpeed * Time.fixedDeltaTime) - position);
             }
             
-            Vector3 position = transform.position;
-            _rigidbody.AddForce(Vector3.MoveTowards(position, MoveTarget, moveSpeed * Time.fixedDeltaTime) - position);
+            DidMove = transform.position != lastPosition;
         }
     }
 }

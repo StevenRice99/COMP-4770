@@ -10,7 +10,7 @@ namespace ArtificialIntelligence
         
         [SerializeField]
         [Min(0)]
-        protected float timeRequired;
+        protected float time;
 
         protected float ElapsedTime;
     }

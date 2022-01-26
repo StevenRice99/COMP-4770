@@ -1,5 +1,4 @@
 ﻿using ArtificialIntelligence.Percepts;
-using UnityEngine;
 
 namespace ArtificialIntelligence.Sensors
 {
@@ -7,9 +6,9 @@ namespace ArtificialIntelligence.Sensors
     {
         public Percept Read()
         {
-            ElapsedTime += Agent.ElapsedTime;
+            ElapsedTime += Agent.AgentElapsedTime;
 
-            if (ElapsedTime < timeRequired)
+            if (ElapsedTime < time)
             {
                 return null;
             }

@@ -14,14 +14,19 @@ namespace ArtificialIntelligence.Agents
         
         protected override void Move()
         {
+            Vector3 lastPosition = transform.position;
+            
             if (!MovingToTarget)
             {
                 _characterController.SimpleMove(Vector3.zero);
-                return;
             }
-            
-            Vector3 position = transform.position;
-            _characterController.SimpleMove(Vector3.MoveTowards(position, MoveTarget, moveSpeed * Time.deltaTime) - position);
+            else
+            {
+                Vector3 position = transform.position;
+                _characterController.SimpleMove(Vector3.MoveTowards(position, MoveTarget, moveSpeed * Time.deltaTime) - position);
+            }
+
+            DidMove = transform.position != lastPosition;
         }
     }
 }
