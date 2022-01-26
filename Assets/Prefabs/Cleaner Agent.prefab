@@ -260,7 +260,7 @@ MonoBehaviour:
   time: 0
   mind: {fileID: 3411514612979016314}
   moveSpeed: 10
-  lookSpeed: 30
+  lookSpeed: 5
   visuals: {fileID: 3481397138808591294}
 --- !u!114 &5790985627467025743
 MonoBehaviour:
@@ -303,4 +303,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Agent: {fileID: 0}
-  time: 0
+  time: 0.5

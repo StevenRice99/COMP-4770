@@ -8,5 +8,7 @@ namespace A1.Percepts
         public Vector3[] Positions;
 
         public Floor.DirtLevel[] States;
+
+        public bool[] LikelyToGetDirty;
     }
 }

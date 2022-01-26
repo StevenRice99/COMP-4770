@@ -147,7 +147,7 @@ namespace ArtificialIntelligence.Agents
 
             List<Actuator> actuators = GetComponents<Actuator>().ToList();
             actuators.AddRange(GetComponentsInChildren<Actuator>());
-            _actuators = actuators.ToArray();
+            _actuators = actuators.Distinct().ToArray();
             foreach (Actuator actuator in _actuators)
             {
                 actuator.Agent = this;
@@ -155,7 +155,7 @@ namespace ArtificialIntelligence.Agents
             
             List<Sensor> sensors = GetComponents<Sensor>().ToList();
             sensors.AddRange(GetComponentsInChildren<Sensor>());
-            _sensors = sensors.ToArray();
+            _sensors = sensors.Distinct().ToArray();
             
             _percepts = new Percept[_sensors.Length];
             for (int i = 0; i < _sensors.Length; i++)
@@ -173,27 +173,34 @@ namespace ArtificialIntelligence.Agents
                 Sense();
                 Action[] decisions = mind.Think(_percepts);
 
-                List<Action> updated = decisions.Where(a => a != null).ToList();
-
-                if (_actions != null)
+                if (decisions == null)
                 {
-                    foreach (Action action in _actions)
+                    _actions = null;
+                }
+                else
+                {
+                    List<Action> updated = decisions.Where(a => a != null).ToList();
+
+                    if (_actions != null)
                     {
-                        if (action == null)
+                        foreach (Action action in _actions)
                         {
-                            continue;
-                        }
+                            if (action == null)
+                            {
+                                continue;
+                            }
                     
-                        if (!updated.Exists(a => a.GetType() == action.GetType()))
-                        {
-                            updated.Add(action);
+                            if (!updated.Exists(a => a.GetType() == action.GetType()))
+                            {
+                                updated.Add(action);
+                            }
                         }
                     }
-                }
                 
-                _actions = updated.ToArray();
+                    _actions = updated.ToArray();
             
-                Act();
+                    Act();
+                }
 
                 ElapsedTime = 0;
             }

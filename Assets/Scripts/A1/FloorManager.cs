@@ -110,8 +110,8 @@ namespace A1
             go.name = $"Floor {position.x} {position.y}";
             Destroy(go.GetComponent<Collider>());
             Floor floor = go.AddComponent<Floor>();
-            bool likelyToGetDirty = Random.value > LikelyToGetDirtyChance;
-            floor.Setup(likelyToGetDirty, likelyToGetDirty ? materialCleanNormal : materialCleanLikelyToGetDirty, materialDirty, materialVeryDirty, materialExtremelyDirty);
+            bool likelyToGetDirty = Random.value < LikelyToGetDirtyChance;
+            floor.Setup(likelyToGetDirty, likelyToGetDirty ? materialCleanLikelyToGetDirty : materialCleanNormal, materialDirty, materialVeryDirty, materialExtremelyDirty);
             Floors.Add(floor);
         }
 

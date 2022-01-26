@@ -13,19 +13,14 @@ namespace A1.Minds
     {
         public override Action[] Think(Percept[] percepts)
         {
-            List<Action> actions = new List<Action>();
-
             if (CanClean(percepts))
             {
-                actions.Add(new CleanAction());
                 Agent.StopMoveToLookAtTarget();
+                return new Action[] { new CleanAction() };
             }
-            else
-            {
-                Agent.MoveToLookAtTarget(DetermineNextToClean(percepts));
-            }
-            
-            return actions.ToArray();
+
+            Agent.MoveToLookAtTarget(DetermineNextToClean(percepts));
+            return null;
         }
 
         private static bool CanClean(IEnumerable<Percept> percepts)
@@ -44,11 +39,17 @@ namespace A1.Minds
             List<Vector3> dirty = new List<Vector3>();
             List<Vector3> veryDirty = new List<Vector3>();
             List<Vector3> extremelyDirty = new List<Vector3>();
+            List<Vector3> likelyToGetDirty = new List<Vector3>();
 
             foreach (FloorsPercept dirtPercept in dirtPercepts)
             {
                 for (int i = 0; i < dirtPercept.Positions.Length; i++)
                 {
+                    if (dirtPercept.LikelyToGetDirty[i])
+                    {
+                        likelyToGetDirty.Add(dirtPercept.Positions[i]);
+                    }
+                    
                     switch (dirtPercept.States[i])
                     {
                         case Floor.DirtLevel.Dirty:
@@ -64,27 +65,20 @@ namespace A1.Minds
                 }
             }
 
-            if (extremelyDirty.Count > 0)
-            {
-                return NearestPosition(extremelyDirty);
-            }
-
-            if (veryDirty.Count > 0)
-            {
-                return NearestPosition(veryDirty);
-            }
-
-            if (dirty.Count > 0)
-            {
-                return NearestPosition(dirty);
-            }
-
-            return Vector3.zero;
+            return extremelyDirty.Count > 0
+                ? NearestPosition(extremelyDirty)
+                : veryDirty.Count > 0
+                    ? NearestPosition(veryDirty)
+                    : dirty.Count > 0
+                        ? NearestPosition(dirty)
+                        : likelyToGetDirty.Count > 0
+                            ? likelyToGetDirty.Aggregate(Vector3.zero, (current, position) => current + position) / likelyToGetDirty.Count
+                            : Vector3.zero;
         }
 
         private Vector3 NearestPosition(IReadOnlyCollection<Vector3> positions)
         {
-            return positions.Count == 0 ? Vector3.zero : positions.OrderBy(p => Vector3.Distance(transform.position, p)).First();
+            return positions.Count == 0 ? Vector3.zero : positions.OrderBy(p => Vector3.Distance(Agent.transform.position, p)).First();
         }
     }
 }

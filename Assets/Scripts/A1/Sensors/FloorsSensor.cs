@@ -15,13 +15,15 @@ namespace A1.Sensors
             FloorsPercept percept = new FloorsPercept
             {
                 Positions = new Vector3[floors.Count],
-                States = new Floor.DirtLevel[floors.Count]
+                States = new Floor.DirtLevel[floors.Count],
+                LikelyToGetDirty = new bool[floors.Count]
             };
             
             for (int i = 0; i < floors.Count; i++)
             {
                 percept.Positions[i] = floors[i].transform.position;
                 percept.States[i] = floors[i].State;
+                percept.LikelyToGetDirty[i] = floors[i].LikelyToGetDirty;
             }
             
             return percept;
