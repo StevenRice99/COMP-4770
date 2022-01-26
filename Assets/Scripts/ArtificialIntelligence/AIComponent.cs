@@ -7,5 +7,11 @@ namespace ArtificialIntelligence
     {
         [HideInInspector]
         public Agent Agent;
+        
+        [SerializeField]
+        [Min(0)]
+        protected float timeRequired;
+
+        protected float ElapsedTime;
     }
 }

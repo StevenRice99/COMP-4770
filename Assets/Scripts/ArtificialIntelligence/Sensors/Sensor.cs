@@ -5,22 +5,16 @@ namespace ArtificialIntelligence.Sensors
 {
     public abstract class Sensor : AIComponent
     {
-        [SerializeField]
-        [Min(0)]
-        private float timeBetweenReads;
-
-        private float elapsedTime;
-        
         public Percept Read()
         {
-            elapsedTime += Agent.ElapsedTime;
+            ElapsedTime += Agent.ElapsedTime;
 
-            if (elapsedTime < timeBetweenReads)
+            if (ElapsedTime < timeRequired)
             {
                 return null;
             }
 
-            elapsedTime = 0;
+            ElapsedTime = 0;
             return Sense();
         }
         

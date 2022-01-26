@@ -7,12 +7,27 @@ namespace ArtificialIntelligence.Actuators
     {
         public void Act(IEnumerable<Action> actions)
         {
+            ElapsedTime += Agent.ElapsedTime;
+            if (ElapsedTime < timeRequired)
+            {
+                return;
+            }
+
+            bool actionPerformed = false;
             foreach (Action action in actions)
             {
-                Act(action);
+                if (Act(action))
+                {
+                    actionPerformed = true;
+                }
+            }
+
+            if (actionPerformed)
+            {
+                ElapsedTime = 0;
             }
         }
         
-        protected abstract void Act(Action action);
+        protected abstract bool Act(Action action);
     }
 }
