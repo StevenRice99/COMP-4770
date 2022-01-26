@@ -20,18 +20,25 @@ namespace A1
 
         [SerializeField]
         [Min(1)]
-        private int scale = 1;
+        private int floorScale = 1;
+
+        [SerializeField]
+        [Range(0, 1)]
+        private float LikelyToGetDirtyChance;
 
         [SerializeField]
         [Min(0)]
-        private float timeBetweenUpdates = 1;
+        private float dirtTickRate = 1;
 
         [SerializeField]
         [Range(0, 1)]
         private float chanceDirty;
 
         [SerializeField]
-        private Material cleanMaterial;
+        private Material cleanMaterialNormal;
+
+        [SerializeField]
+        private Material cleanMaterialLikelyToGetDirty;
 
         [SerializeField]
         private Material dirtyMaterial;
@@ -78,7 +85,7 @@ namespace A1
             }
             Floors.Clear();
             
-            Vector2 offsets = new Vector2((floorSize.x - 1) / 2f, (floorSize.y - 1) / 2f) * scale;
+            Vector2 offsets = new Vector2((floorSize.x - 1) / 2f, (floorSize.y - 1) / 2f) * floorScale;
             for (int x = 0; x < floorSize.x; x++)
             {
                 for (int y = 0; y < floorSize.y; y++)
@@ -94,22 +101,21 @@ namespace A1
         private void GenerateSection(Vector2 position, Vector2 offsets)
         {
             GameObject go = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            go.transform.position = new Vector3(position.x * scale - offsets.x, 0, position.y * scale - offsets.y);
+            go.transform.position = new Vector3(position.x * floorScale - offsets.x, 0, position.y * floorScale - offsets.y);
             go.transform.rotation = Quaternion.Euler(90, 0, 0);
-            go.transform.localScale = new Vector3(scale, scale, 1);
+            go.transform.localScale = new Vector3(floorScale, floorScale, 1);
             go.name = $"Floor {position.x} {position.y}";
             Destroy(go.GetComponent<Collider>());
             Floor floor = go.AddComponent<Floor>();
-            floor.cleanMaterial = cleanMaterial;
-            floor.dirtyMaterial = dirtyMaterial;
-            floor.veryDirtyMaterial = veryDirtyMaterial;
+            bool likelyToGetDirty = Random.value > LikelyToGetDirtyChance;
+            floor.Setup(likelyToGetDirty, likelyToGetDirty ? cleanMaterialNormal : cleanMaterialLikelyToGetDirty, dirtyMaterial, veryDirtyMaterial);
             Floors.Add(floor);
         }
 
         private void Update()
         {
             _elapsedTime += Time.deltaTime;
-            if (_elapsedTime < timeBetweenUpdates)
+            if (_elapsedTime < dirtTickRate)
             {
                 return;
             }
@@ -122,9 +128,14 @@ namespace A1
         {
             foreach (Floor floor in Floors.Where(f => f.State != Floor.DirtLevel.VeryDirty))
             {
-                if (Random.value <= chanceDirty)
+                float dirtChance = floor.LikelyToGetDirty ? chanceDirty * 2 : chanceDirty;
+                
+                for (int i = 0; i < 2; i++)
                 {
-                    floor.Dirty();
+                    if (Random.value <= dirtChance)
+                    {
+                        floor.Dirty();
+                    }
                 }
             }
         }
