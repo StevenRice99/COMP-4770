@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using SimpleIntelligence.Agents;
 using UnityEngine;
 
@@ -22,13 +23,18 @@ namespace SimpleIntelligence.Base
 
         public int MessageCount => Messages.Count;
         
-        public List<string> Messages { get; } = new List<string>();
+        public List<string> Messages { get; private set; } = new List<string>();
 
         public void AddMessage(string message)
         {
-            if (AgentManager.Singleton.CompactMessages && Messages.Count > 0 && Messages[0] == message)
+            if (AgentManager.Singleton.MessageMode == AgentManager.MessagingMode.Compact && Messages.Count > 0 && Messages[0] == message)
             {
                 return;
+            }
+
+            if (AgentManager.Singleton.MessageMode == AgentManager.MessagingMode.Unique)
+            {
+                Messages = Messages.Where(m => m != message).ToList();
             }
             
             Messages.Insert(0, message);

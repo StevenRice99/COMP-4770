@@ -15,6 +15,10 @@ namespace SimpleIntelligence.Agents
         protected virtual void FixedUpdate()
         {
             Move();
+            if (DidMove && Mind != null)
+            {
+                Mind.AddMessage($"Moved towards {MoveTarget}.");
+            }
         }
         
         protected override void Move()

@@ -311,8 +311,14 @@ namespace SimpleIntelligence.Agents
                     continue;
                 }
 
+                Mind.AddMessage($"Perceived {percept.GetType().ToString().Split('.').Last()} from sensor {Sensors[i].ToString().Split('.').Last().Replace(")", string.Empty)}.");
                 Percepts[i] = percept;
                 sensed = true;
+            }
+
+            if (!sensed)
+            {
+                Mind.AddMessage("Did not perceive anything.");
             }
 
             return sensed;
@@ -328,6 +334,14 @@ namespace SimpleIntelligence.Agents
             foreach (Actuator actuator in Actuators)
             {
                 actuator.Act(Actions);
+            }
+
+            foreach (Action action in Actions)
+            {
+                if (action.Complete)
+                {
+                    Mind.AddMessage($"Completed action {action.GetType().ToString().Split('.').Last()}.");
+                }
             }
 
             Actions = Actions.Where(a => !a.Complete).ToArray();
@@ -354,6 +368,11 @@ namespace SimpleIntelligence.Agents
             rotation = Quaternion.LookRotation(Vector3.RotateTowards(visuals.forward, target - visuals.position, lookSpeed * Time.deltaTime, 0.0f));
             _visuals.rotation = rotation;
             DidLook = rotation != lastRotation;
+
+            if (DidLook && Mind != null)
+            {
+                Mind.AddMessage($"Looked towards {LookTarget}.");
+            }
         }
 
         private void ConfigureMind()

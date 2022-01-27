@@ -7,6 +7,13 @@ namespace SimpleIntelligence.Base
 {
     public class AgentManager : MonoBehaviour
     {
+        public enum MessagingMode : byte
+        {
+            All,
+            Compact,
+            Unique
+        }
+        
         public static AgentManager Singleton;
 
         [SerializeField]
@@ -18,13 +25,9 @@ namespace SimpleIntelligence.Base
         [Tooltip("The maximum number of messages any component can hold.")]
         private int maxMessages = 100;
 
-        [SerializeField]
-        [Tooltip("Setting true will cause duplicate messages to be merged, false will display duplicate messages.")]
-        private bool compactMessages = true;
-
         public int MaxMessages => maxMessages;
 
-        public bool CompactMessages => compactMessages;
+        public MessagingMode MessageMode { get; private set; }
 
         private int _currentAgent;
 
@@ -57,9 +60,21 @@ namespace SimpleIntelligence.Base
             FindCameras();
         }
 
-        protected void MessageMode(bool compact)
+        protected void ChangeMessageMode()
         {
-            compactMessages = compact;
+            if (MessageMode == MessagingMode.Unique)
+            {
+                MessageMode = MessagingMode.All;
+            }
+            else
+            {
+                MessageMode++;
+            }
+
+            if (MessageMode == MessagingMode.Unique)
+            {
+                ClearMessages();
+            }
         }
 
         protected virtual void Update()

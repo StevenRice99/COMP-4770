@@ -8,6 +8,10 @@ namespace SimpleIntelligence.Agents
         {
             base.Update();
             Move();
+            if (DidMove && Mind != null)
+            {
+                Mind.AddMessage($"Moved towards {MoveTarget}.");
+            }
         }
         
         protected override void Move()

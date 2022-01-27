@@ -20,7 +20,7 @@ namespace SimpleIntelligence.Base
         [SerializeField]
         [Min(0)]
         [Tooltip("How wide the menu list is.")]
-        private float menuWidth = 250;
+        private float menuWidth = 300;
         
         [SerializeField]
         [Min(0)]
@@ -85,9 +85,14 @@ namespace SimpleIntelligence.Base
         private float RenderMessageOptions(float x, float y, float w, float h, float p)
         {
             y = NextItem(y, h, p);
-            if (GuiButton(x, y, w, h, CompactMessages ? "Compact Messages" : "All Messages"))
+            if (GuiButton(x, y, w, h, MessageMode switch
+                {
+                    MessagingMode.Compact => "Compact Messages",
+                    MessagingMode.All => "All Messages",
+                    _ => "Unique Messages"
+                }))
             {
-                MessageMode(!CompactMessages);
+                ChangeMessageMode();
             }
 
             y = NextItem(y, h, p);

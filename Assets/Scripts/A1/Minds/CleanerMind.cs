@@ -20,9 +20,7 @@ namespace A1.Minds
                 return new Action[] { new CleanAction() };
             }
 
-            Vector3 position = DetermineNextToClean(percepts);
-            AddMessage($"Moving to {position}.");
-            agent.MoveToLookAtTarget(position);
+            agent.MoveToLookAtTarget(DetermineNextToClean(percepts));
             return null;
         }
 
