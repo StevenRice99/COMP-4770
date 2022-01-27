@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Linq;
 using SimpleIntelligence.Agents;
 using UnityEngine;
@@ -27,6 +28,8 @@ namespace SimpleIntelligence.Base
 
         public int MaxMessages => maxMessages;
 
+        public bool Playing => !_stepping && Time.timeScale > 0;
+
         public MessagingMode MessageMode { get; private set; }
 
         private int _currentAgent;
@@ -34,6 +37,10 @@ namespace SimpleIntelligence.Base
         protected Agent[] Agents = Array.Empty<Agent>();
 
         protected Camera[] Cameras = Array.Empty<Camera>();
+
+        private bool _stepping;
+
+        private bool _doneStepping;
 
         public void FindAgents()
         {
@@ -46,21 +53,7 @@ namespace SimpleIntelligence.Base
             Cameras = FindObjectsOfType<Camera>().OrderBy(c => c.name).ToArray();
         }
 
-        protected static void ClearMessages()
-        {
-            foreach (IntelligenceComponent component in FindObjectsOfType<IntelligenceComponent>())
-            {
-                component.ClearMessages();
-            }
-        }
-
-        protected virtual void Start()
-        {
-            FindAgents();
-            FindCameras();
-        }
-
-        protected void ChangeMessageMode()
+        public void ChangeMessageMode()
         {
             if (MessageMode == MessagingMode.Unique)
             {
@@ -75,6 +68,35 @@ namespace SimpleIntelligence.Base
             {
                 ClearMessages();
             }
+        }
+
+        public static void ClearMessages()
+        {
+            foreach (IntelligenceComponent component in FindObjectsOfType<IntelligenceComponent>())
+            {
+                component.ClearMessages();
+            }
+        }
+
+        public void Resume()
+        {
+            Time.timeScale = 1;
+        }
+
+        public void Pause()
+        {
+            Time.timeScale = 0;
+        }
+
+        public void Step()
+        {
+            StartCoroutine(StepOneFrame());
+        }
+
+        protected virtual void Start()
+        {
+            FindAgents();
+            FindCameras();
         }
 
         protected virtual void Update()
@@ -120,6 +142,15 @@ namespace SimpleIntelligence.Base
             {
                 _currentAgent = 0;
             }
+        }
+        
+        private IEnumerator StepOneFrame()
+        {
+            _stepping = true;
+            Resume();
+            yield return 0;
+            Pause();
+            _stepping = false;
         }
     }
 }

@@ -45,7 +45,7 @@ namespace SimpleIntelligence.Base
         private void Render(float x, float y, float h, float p)
         {
             RenderMain(x, y, menuWidth, h, p);
-            RenderCameras(x, y, cameraListWidth, h, p);
+            RenderControls(x, y, cameraListWidth, h, p);
         }
 
         private static bool GuiButton(float x, float y, float w, float h, string message)
@@ -121,7 +121,7 @@ namespace SimpleIntelligence.Base
                 w = Screen.width - 4 * p;
             }
             
-            if (GuiButton(x, y, w, h, _mainOpen ? "Close" : "Menu"))
+            if (GuiButton(x, y, w, h, _mainOpen ? "Close Menu" : "Menu"))
             {
                 _mainOpen = !_mainOpen;
             }
@@ -321,18 +321,8 @@ namespace SimpleIntelligence.Base
             }
         }
 
-        private void RenderCameras(float x, float y, float w, float h, float p)
+        private void RenderControls(float x, float y, float w, float h, float p)
         {
-            if (Cameras.Length <= 1)
-            {
-                return;
-            }
-
-            if (Agents.Length > 0 && Screen.width < menuWidth + cameraListWidth + 5 * p)
-            {
-                return;
-            }
-
             if (!_camerasOpen)
             {
                 w = 70;
@@ -342,10 +332,42 @@ namespace SimpleIntelligence.Base
             {
                 w = Screen.width - 4 * p;
             }
+
+            if (Agents.Length > 0 && Screen.width < menuWidth + cameraListWidth + 5 * p)
+            {
+                return;
+            }
             
             x = Screen.width - x - w;
+
+            if (GuiButton(x, y, w, h, Playing ? "Pause" : "Resume"))
+            {
+                if (Playing)
+                {
+                    Pause();
+                }
+                else
+                {
+                    Resume();
+                }
+            }
+
+            if (!Playing)
+            {
+                y = NextItem(y, h, p);
+                if (GuiButton(x, y, w, h, "Step"))
+                {
+                    Step();
+                }
+            }
             
-            if (GuiButton(x, y, w, h, _camerasOpen ? "Close" : "Cameras"))
+            if (Cameras.Length <= 1)
+            {
+                return;
+            }
+            
+            y = NextItem(y, h, p);
+            if (GuiButton(x, y, w, h, _camerasOpen ? "Close Cameras" : "Cameras"))
             {
                 _camerasOpen = !_camerasOpen;
             }
