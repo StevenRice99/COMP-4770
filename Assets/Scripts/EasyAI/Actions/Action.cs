@@ -1,4 +1,4 @@
-﻿namespace SimpleIntelligence.Actions
+﻿namespace EasyAI.Actions
 {
     public abstract class Action
     {

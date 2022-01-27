@@ -1,6 +1,6 @@
-﻿using SimpleIntelligence.Components;
+﻿using EasyAI.Components;
 
-namespace SimpleIntelligence.PerformanceMeasures
+namespace EasyAI.PerformanceMeasures
 {
     public abstract class PerformanceMeasure : IntelligenceComponent
     {

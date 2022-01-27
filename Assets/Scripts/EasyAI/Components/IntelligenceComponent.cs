@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using SimpleIntelligence.Agents;
-using SimpleIntelligence.Managers;
+using EasyAI.Agents;
+using EasyAI.Managers;
 using UnityEngine;
 
-namespace SimpleIntelligence.Components
+namespace EasyAI.Components
 {
     public abstract class IntelligenceComponent : MonoBehaviour
     {

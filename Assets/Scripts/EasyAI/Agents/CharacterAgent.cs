@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace SimpleIntelligence.Agents
+namespace EasyAI.Agents
 {
     public class CharacterAgent : TransformAgent
     {

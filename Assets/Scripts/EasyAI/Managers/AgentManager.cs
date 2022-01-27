@@ -1,14 +1,14 @@
 using System;
 using System.Collections;
 using System.Linq;
-using SimpleIntelligence.Actuators;
-using SimpleIntelligence.Agents;
-using SimpleIntelligence.Components;
-using SimpleIntelligence.Minds;
-using SimpleIntelligence.Sensors;
+using EasyAI.Actuators;
+using EasyAI.Agents;
+using EasyAI.Components;
+using EasyAI.Minds;
+using EasyAI.Sensors;
 using UnityEngine;
 
-namespace SimpleIntelligence.Managers
+namespace EasyAI.Managers
 {
     public class AgentManager : MonoBehaviour
     {
@@ -39,6 +39,16 @@ namespace SimpleIntelligence.Managers
         [SerializeField]
         [Tooltip("The maximum number of messages any component can hold.")]
         private int maxMessages = 100;
+        
+        [SerializeField]
+        [Min(0)]
+        [Tooltip("How wide the details list is. Set to zero to disable details list rendering.")]
+        private float detailsWidth = 450;
+        
+        [SerializeField]
+        [Min(0)]
+        [Tooltip("How wide the controls list is. Set to zero to disable controls list rendering.")]
+        private float controlsWidth = 120;
 
         public int MaxMessages => maxMessages;
 
@@ -46,23 +56,13 @@ namespace SimpleIntelligence.Managers
 
         public MessagingMode MessageMode { get; private set; }
 
-        private int _currentAgent;
-
         protected Agent[] Agents = Array.Empty<Agent>();
 
         protected Camera[] Cameras = Array.Empty<Camera>();
 
+        private int _currentAgent;
+
         private bool _stepping;
-        
-        [SerializeField]
-        [Min(0)]
-        [Tooltip("How wide the details list is.")]
-        private float detailsWidth = 450;
-        
-        [SerializeField]
-        [Min(0)]
-        [Tooltip("How wide the controls list is.")]
-        private float controlsWidth = 120;
 
         private GuiState _state;
 

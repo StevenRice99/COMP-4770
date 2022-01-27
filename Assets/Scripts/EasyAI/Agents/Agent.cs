@@ -1,15 +1,15 @@
 using System.Collections.Generic;
 using System.Linq;
-using SimpleIntelligence.Actuators;
-using SimpleIntelligence.Managers;
-using SimpleIntelligence.Minds;
-using SimpleIntelligence.Percepts;
-using SimpleIntelligence.PerformanceMeasures;
-using SimpleIntelligence.Sensors;
+using EasyAI.Actuators;
+using EasyAI.Managers;
+using EasyAI.Minds;
+using EasyAI.Percepts;
+using EasyAI.PerformanceMeasures;
+using EasyAI.Sensors;
 using UnityEngine;
-using Action = SimpleIntelligence.Actions.Action;
+using Action = EasyAI.Actions.Action;
 
-namespace SimpleIntelligence.Agents
+namespace EasyAI.Agents
 {
     public abstract class Agent : MonoBehaviour
     {

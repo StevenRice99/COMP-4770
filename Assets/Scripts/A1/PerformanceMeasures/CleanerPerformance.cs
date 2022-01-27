@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using A1.Managers;
-using SimpleIntelligence.PerformanceMeasures;
+using EasyAI.PerformanceMeasures;
 
 namespace A1.PerformanceMeasures
 {

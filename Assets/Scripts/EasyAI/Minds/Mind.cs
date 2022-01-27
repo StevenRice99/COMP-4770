@@ -1,12 +1,12 @@
-﻿using SimpleIntelligence.Actions;
-using SimpleIntelligence.Actuators;
-using SimpleIntelligence.Components;
-using SimpleIntelligence.Percepts;
-using SimpleIntelligence.PerformanceMeasures;
-using SimpleIntelligence.Sensors;
+﻿using EasyAI.Actions;
+using EasyAI.Actuators;
+using EasyAI.Components;
+using EasyAI.Percepts;
+using EasyAI.PerformanceMeasures;
+using EasyAI.Sensors;
 using UnityEngine;
 
-namespace SimpleIntelligence.Minds
+namespace EasyAI.Minds
 {
     public abstract class Mind : IntelligenceComponent
     {

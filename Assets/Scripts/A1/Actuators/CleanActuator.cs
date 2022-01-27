@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using A1.Actions;
 using A1.Managers;
-using SimpleIntelligence.Actions;
-using SimpleIntelligence.Actuators;
+using EasyAI.Actions;
+using EasyAI.Actuators;
 using UnityEngine;
 
 namespace A1.Actuators

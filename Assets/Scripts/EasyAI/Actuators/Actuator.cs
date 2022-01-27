@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using SimpleIntelligence.Actions;
-using SimpleIntelligence.Components;
+using EasyAI.Actions;
+using EasyAI.Components;
 
-namespace SimpleIntelligence.Actuators
+namespace EasyAI.Actuators
 {
     public abstract class Actuator : IntelligenceComponent
     {

@@ -1,4 +1,4 @@
-﻿using SimpleIntelligence.Actions;
+﻿using EasyAI.Actions;
 
 namespace A1.Actions
 {

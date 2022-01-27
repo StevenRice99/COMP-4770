@@ -1,8 +1,8 @@
 ﻿using System.Linq;
-using SimpleIntelligence.Components;
-using SimpleIntelligence.Percepts;
+using EasyAI.Components;
+using EasyAI.Percepts;
 
-namespace SimpleIntelligence.Sensors
+namespace EasyAI.Sensors
 {
     public abstract class Sensor : IntelligenceComponent
     {
