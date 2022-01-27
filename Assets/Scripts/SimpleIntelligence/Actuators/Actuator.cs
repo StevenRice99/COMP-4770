@@ -7,13 +7,10 @@ namespace SimpleIntelligence.Actuators
 {
     public abstract class Actuator : IntelligenceComponent
     {
+        protected float TimeSinceLastActed => agent == null ? 0 : agent.AgentDeltaTime;
+        
         public void Act(IEnumerable<Action> actions)
         {
-            if (agent == null || ElapsedTime < time)
-            {
-                return;
-            }
-
             bool actionComplete = false;
             foreach (Action action in actions.Where(a => !a.Complete))
             {
@@ -26,11 +23,7 @@ namespace SimpleIntelligence.Actuators
                 actionComplete = true;
             }
 
-            if (actionComplete)
-            {
-                ElapsedTime = 0;
-            }
-            else
+            if (!actionComplete)
             {
                 AddMessage("Performed no actions.");
             }

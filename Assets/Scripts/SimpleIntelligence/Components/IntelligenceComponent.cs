@@ -6,19 +6,10 @@ using UnityEngine;
 
 namespace SimpleIntelligence.Components
 {
-    public abstract class IntelligenceComponent : TimedComponent
+    public abstract class IntelligenceComponent : MonoBehaviour
     {
         [HideInInspector]
         public Agent agent;
-        
-        [SerializeField]
-        [Min(0)]
-        [Tooltip(
-            "How much time is required before this component can perform its actions again, " +
-            "whether that is reading percepts as a sensor, performing actions as an actuator, " +
-            "or calculating performance as a performance measure."
-        )]
-        protected float time;
         
         public bool HasMessages => Messages.Count > 0;
 

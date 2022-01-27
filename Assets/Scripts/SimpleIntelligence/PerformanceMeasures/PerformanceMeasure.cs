@@ -4,14 +4,15 @@ namespace SimpleIntelligence.PerformanceMeasures
 {
     public abstract class PerformanceMeasure : IntelligenceComponent
     {
+        protected float TimeSinceLastCalculation => agent == null ? 0 : agent.AgentDeltaTime;
+        
         private float performance;
         
         public float GetPerformance()
         {
-            if (agent != null && ElapsedTime >= time)
+            if (agent != null)
             {
                 performance = CalculatePerformance();
-                ElapsedTime = 0;
             }
 
             return performance;

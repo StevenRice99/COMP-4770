@@ -23,7 +23,7 @@ namespace A1.Actuators
                 return false;
             }
 
-            timeSpentCleaning += Time.deltaTime;
+            timeSpentCleaning += agent.AgentDeltaTime;
             if (timeSpentCleaning < timeToClean)
             {
                 AddMessage("Cleaning current floor tile.");

@@ -12,7 +12,7 @@ using Action = SimpleIntelligence.Actions.Action;
 
 namespace SimpleIntelligence.Agents
 {
-    public abstract class Agent : TimedComponent
+    public abstract class Agent : MonoBehaviour
     {
         [SerializeField]
         [Min(0)]
@@ -47,7 +47,7 @@ namespace SimpleIntelligence.Agents
 
         public Action[] Actions { get; private set; }
 
-        public float AgentElapsedTime => ElapsedTime;
+        public float AgentDeltaTime { get; private set; }
 
         public Vector3 Position => transform.position;
 
@@ -234,7 +234,6 @@ namespace SimpleIntelligence.Agents
                 if (Sense())
                 {
                     Action[] decisions = Mind.Think(Percepts);
-                    ElapsedTime = 0;
                 
                     if (decisions == null)
                     {
@@ -271,11 +270,13 @@ namespace SimpleIntelligence.Agents
             {
                 Performance = _performanceMeasure.GetPerformance();
             }
+            
+            AgentDeltaTime = 0;
         }
 
-        protected override void Update()
+        protected virtual void Update()
         {
-            base.Update();
+            AgentDeltaTime += Time.deltaTime;
             Look();
         }
 

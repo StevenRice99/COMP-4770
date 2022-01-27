@@ -6,15 +6,11 @@ namespace SimpleIntelligence.Sensors
 {
     public abstract class Sensor : IntelligenceComponent
     {
+        protected float TimeSinceLastRead => agent == null ? 0 : agent.AgentDeltaTime;
+        
         public Percept Read()
         {
-            if (agent == null || ElapsedTime < time)
-            {
-                return null;
-            }
-
             Percept percept = Sense();
-            ElapsedTime = 0;
             AddMessage(percept == null ? "Did not perceive anything." : $"Perceived {percept.GetType().ToString().Split('.').Last()}.");
             return percept;
         }
