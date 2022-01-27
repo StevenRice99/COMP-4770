@@ -283,7 +283,11 @@ namespace SimpleIntelligence.Agents
 
         protected virtual void OnEnable()
         {
-            AgentManager.Singleton.FindAgents();
+            try
+            {
+                AgentManager.Singleton.FindAgents();
+            }
+            catch { }
         }
 
         protected virtual void OnDisable()

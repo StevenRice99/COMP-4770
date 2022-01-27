@@ -9,10 +9,6 @@ namespace SimpleIntelligence.Base
 {
     public class GuiAgentManager : AgentManager
     {
-        [SerializeField]
-        [Min(0)]
-        private float width = 300;
-        
         private enum GuiState : byte
         {
             Main,
@@ -20,6 +16,16 @@ namespace SimpleIntelligence.Base
             Components,
             Component
         }
+        
+        [SerializeField]
+        [Min(0)]
+        [Tooltip("How wide the menu list is.")]
+        private float menuWidth = 250;
+        
+        [SerializeField]
+        [Min(0)]
+        [Tooltip("How wide the camera list is.")]
+        private float cameraListWidth = 120;
 
         private GuiState _state;
 
@@ -33,28 +39,64 @@ namespace SimpleIntelligence.Base
 
         private void OnGUI()
         {
-            Render(10, 10, width, 20, 5);
+            Render(10, 10, 20, 5);
         }
 
-        private void Render(float x, float y, float w, float h, float p)
+        private void Render(float x, float y, float h, float p)
         {
-            RenderMain(x, y, w, h, p);
-            RenderCameras(x, y, w, h, p);
+            RenderMain(x, y, menuWidth, h, p);
+            RenderCameras(x, y, cameraListWidth, h, p);
         }
 
         private static bool GuiButton(float x, float y, float w, float h, string message)
         {
-            return GUI.Button(new Rect(x, y, w, h), message);
+            return !(y + h > Screen.height) && GUI.Button(new Rect(x, y, w, h), message);
         }
 
-        private static void GuiLabel(float x, float y, float w, float h, string message)
+        private static void GuiLabel(float x, float y, float w, float h, float p, string message)
         {
-            GUI.Label(new Rect(x, y, w, h), message);
+            if (y + h > Screen.height)
+            {
+                return;
+            }
+            
+            GUI.Label(new Rect(x + p, y, w - p, h), message);
         }
 
-        private float NextItem(float y, float h, float p)
+        private static void GuiBox(float x, float y, float w, float h, float p, int number)
+        {
+            while (y + (h + p) * number - p > Screen.height)
+            {
+                number--;
+                if (number <= 0)
+                {
+                    return;
+                }
+            }
+            
+            GUI.Box(new Rect(x,y,w,(h + p) * number - p), string.Empty);
+        }
+
+        private static float NextItem(float y, float h, float p)
         {
             return y + h + p;
+        }
+
+        private float RenderMessageOptions(float x, float y, float w, float h, float p)
+        {
+            y = NextItem(y, h, p);
+            if (GuiButton(x, y, w, h, CompactMessages ? "Compact Messages" : "All Messages"))
+            {
+                MessageMode(!CompactMessages);
+            }
+
+            y = NextItem(y, h, p);
+            if (GuiButton(x, y, w, h, "Clear Messages"))
+            {
+                ClearMessages();
+            }
+
+            return y;
         }
 
         private void RenderMain(float x, float y, float w, float h, float p)
@@ -63,8 +105,18 @@ namespace SimpleIntelligence.Base
             {
                 return;
             }
+
+            if (!_mainOpen)
+            {
+                w = 50;
+            }
+
+            if (w + 4 * p > Screen.width)
+            {
+                w = Screen.width - 4 * p;
+            }
             
-            if (GuiButton(x, y, w, h, _mainOpen ? "Close Menu" : "Open Menu"))
+            if (GuiButton(x, y, w, h, _mainOpen ? "Close" : "Menu"))
             {
                 _mainOpen = !_mainOpen;
             }
@@ -87,7 +139,6 @@ namespace SimpleIntelligence.Base
 
             if (_state == GuiState.Agent)
             {
-
                 if (Agents.Length > 1)
                 {
                     y = NextItem(y, h, p);
@@ -95,8 +146,6 @@ namespace SimpleIntelligence.Base
                     {
                         _state = GuiState.Main;
                     }
-                    
-                    return;
                 }
                 
                 RenderAgent(x, y, w, h, p);
@@ -134,7 +183,8 @@ namespace SimpleIntelligence.Base
             }
 
             y = NextItem(y, h, p);
-            GuiLabel(x, y, w, h, $"{Agents.Length} Agents:");
+            GuiBox(x, y, w, h, p, 1);
+            GuiLabel(x, y, w, h, p, $"{Agents.Length} Agents:");
 
             foreach (Agent agent in Agents)
             {
@@ -152,51 +202,62 @@ namespace SimpleIntelligence.Base
         private void RenderAgent(float x, float y, float w, float h, float p)
         {
             y = NextItem(y, h, p);
-            GuiLabel(x, y, w, h, _selectedAgent.name);
+            GuiBox(x, y, w, h, p, Agents.Length > 1 ? 3 : 2);
+            if (Agents.Length > 1)
+            {
+                GuiLabel(x, y, w, h, p, _selectedAgent.name);
+                y = NextItem(y, h, p);
+            }
             
-            y = NextItem(y, h, p);
-            GuiLabel(x, y, w, h, $"Performance: {_selectedAgent.Performance}");
+            GuiLabel(x, y, w, h, p, $"Performance: {_selectedAgent.Performance}");
 
             Mind mind = _selectedAgent.Mind;
             y = NextItem(y, h, p);
-            GuiLabel(x, y, w, h, mind != null ? $"Mind: {mind.GetType().ToString().Split('.').Last()}" : "No mind.");
-            
-            y = NextItem(y, h, p);
-            if (GuiButton(x, y, w, h, "View Components"))
-            {
-                _state = GuiState.Components;
-            }
-            
-            y = NextItem(y, h, p);
-            GuiLabel(x, y, w, h, $"Messages:");
+            GuiLabel(x, y, w, h, p, mind != null ? $"Mind: {mind.GetType().ToString().Split('.').Last()}" : "Mind: None");
 
-            if (!_selectedAgent.HasMessages && (mind == null || !mind.HasMessages))
+            if (_selectedAgent.Sensors.Length > 0 && _selectedAgent.Actuators.Length > 0)
             {
                 y = NextItem(y, h, p);
-                GuiLabel(x, y, w, h, "No messages.");
-                return;
-            }
-
-            foreach (string message in _selectedAgent.GetMessages())
-            {
-                y = NextItem(y, h, p);
-                GuiLabel(x, y, w, h, message);
+                if (GuiButton(x, y, w, h, "View Sensors and Actuators"))
+                {
+                    _state = GuiState.Components;
+                }
             }
 
             if (mind == null)
             {
                 return;
             }
+
+            y = RenderMessageOptions(x, y, w, h, p);
             
-            foreach (string message in mind.GetMessages())
+            y = NextItem(y, h, p);
+            GuiBox(x, y, w, h, p, !mind.HasMessages ? 1 : mind.MessageCount);
+
+            if (!mind.HasMessages)
             {
+                GuiLabel(x, y, w, h, p, "No messages.");
+                return;
+            }
+            
+            foreach (string message in mind.Messages)
+            {
+                GuiLabel(x, y, w, h, p, message);
                 y = NextItem(y, h, p);
-                GuiLabel(x, y, w, h, message);
             }
         }
 
         private void RenderComponents(float x, float y, float w, float h, float p)
         {
+            y = NextItem(y, h, p);
+            GuiBox(x, y, w, h, p, 1);
+            GuiLabel(x, y, w, h, p, _selectedAgent.Sensors.Length switch
+            {
+                0 => "No Sensors",
+                1 => "1 Sensor",
+                _ => $"{_selectedAgent.Sensors.Length} Sensors"
+            });
+
             foreach (Sensor sensor in _selectedAgent.Sensors)
             {
                 y = NextItem(y, h, p);
@@ -208,6 +269,15 @@ namespace SimpleIntelligence.Base
                 _selectedComponent = sensor;
                 _state = GuiState.Component;
             }
+            
+            y = NextItem(y, h, p);
+            GuiBox(x, y, w, h, p, 1);
+            GuiLabel(x, y, w, h, p, _selectedAgent.Actuators.Length switch
+            {
+                0 => "No Actuators",
+                1 => "1 Actuator",
+                _ => $"{_selectedAgent.Actuators.Length} Actuators"
+            });
             
             foreach (Actuator actuator in _selectedAgent.Actuators)
             {
@@ -225,22 +295,24 @@ namespace SimpleIntelligence.Base
         private void RenderComponent(float x, float y, float w, float h, float p)
         {
             y = NextItem(y, h, p);
-            GuiLabel(x, y, w, h, $"{_selectedAgent.name} | {_selectedComponent.GetType().ToString().Split('.').Last()}");
+            GuiBox(x, y, w, h, p, 1);
+            GuiLabel(x, y, w, h, p, $"{_selectedAgent.name} | {_selectedComponent.GetType().ToString().Split('.').Last()}");
+            
+            y = RenderMessageOptions(x, y, w, h, p);
             
             y = NextItem(y, h, p);
-            GuiLabel(x, y, w, h, $"Messages:");
+            GuiBox(x, y, w, h, p, !_selectedComponent.HasMessages ? 1 : _selectedComponent.MessageCount);
             
             if (!_selectedComponent.HasMessages)
             {
-                y = NextItem(y, h, p);
-                GuiLabel(x, y, w, h, "No messages.");
+                GuiLabel(x, y, w, h, p, "No messages.");
                 return;
             }
 
-            foreach (string message in _selectedComponent.GetMessages())
+            foreach (string message in _selectedComponent.Messages)
             {
+                GuiLabel(x, y, w, h, p, message);
                 y = NextItem(y, h, p);
-                GuiLabel(x, y, w, h, message);
             }
         }
 
@@ -250,10 +322,25 @@ namespace SimpleIntelligence.Base
             {
                 return;
             }
+
+            if (Agents.Length > 0 && Screen.width < menuWidth + cameraListWidth + 5 * p)
+            {
+                return;
+            }
+
+            if (!_camerasOpen)
+            {
+                w = 70;
+            }
+            
+            if (Agents.Length == 0 && w + 4 * p > Screen.width)
+            {
+                w = Screen.width - 4 * p;
+            }
             
             x = Screen.width - x - w;
             
-            if (GuiButton(x, y, w, h, _camerasOpen ? "Close Cameras" : "Open Cameras"))
+            if (GuiButton(x, y, w, h, _camerasOpen ? "Close" : "Cameras"))
             {
                 _camerasOpen = !_camerasOpen;
             }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using SimpleIntelligence.Agents;
 using UnityEngine;
 
@@ -14,50 +15,51 @@ namespace SimpleIntelligence.Base
         private int maxAgentsPerUpdate;
 
         [SerializeField]
-        [Min(1)]
-        [Tooltip("How many messages each component can store.")]
-        private int maxMessages = 10;
+        [Tooltip("The maximum number of messages any component can hold.")]
+        private int maxMessages = 100;
+
+        [SerializeField]
+        [Tooltip("Setting true will cause duplicate messages to be merged, false will display duplicate messages.")]
+        private bool compactMessages = true;
 
         public int MaxMessages => maxMessages;
+
+        public bool CompactMessages => compactMessages;
 
         private int _currentAgent;
 
         protected Agent[] Agents = Array.Empty<Agent>();
 
         protected Camera[] Cameras = Array.Empty<Camera>();
-    
-        private void Awake()
-        {
-            if (Singleton == this)
-            {
-                return;
-            }
-
-            if (Singleton != null)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            Singleton = this;
-            DontDestroyOnLoad(gameObject);
-        }
 
         public void FindAgents()
         {
-            Agents = FindObjectsOfType<Agent>();
+            Agents = FindObjectsOfType<Agent>().OrderBy(a => a.name).ToArray();
             _currentAgent = 0;
         }
 
         public void FindCameras()
         {
-            Cameras = FindObjectsOfType<Camera>();
+            Cameras = FindObjectsOfType<Camera>().OrderBy(c => c.name).ToArray();
+        }
+
+        protected static void ClearMessages()
+        {
+            foreach (IntelligenceComponent component in FindObjectsOfType<IntelligenceComponent>())
+            {
+                component.ClearMessages();
+            }
         }
 
         protected virtual void Start()
         {
             FindAgents();
             FindCameras();
+        }
+
+        protected void MessageMode(bool compact)
+        {
+            compactMessages = compact;
         }
 
         protected virtual void Update()
@@ -77,6 +79,23 @@ namespace SimpleIntelligence.Base
                 Agents[_currentAgent].Perform();
                 NextAgent();
             }
+        }
+    
+        private void Awake()
+        {
+            if (Singleton == this)
+            {
+                return;
+            }
+
+            if (Singleton != null)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Singleton = this;
+            DontDestroyOnLoad(gameObject);
         }
 
         private void NextAgent()

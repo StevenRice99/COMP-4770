@@ -5,7 +5,7 @@ using SimpleIntelligence.Base;
 
 namespace SimpleIntelligence.Actuators
 {
-    public abstract class Actuator :  IntelligenceComponent
+    public abstract class Actuator : IntelligenceComponent
     {
         public void Act(IEnumerable<Action> actions)
         {
@@ -26,6 +26,10 @@ namespace SimpleIntelligence.Actuators
             if (actionPerformed)
             {
                 ElapsedTime = 0;
+            }
+            else
+            {
+                AddMessage("Did nothing.");
             }
         }
         
