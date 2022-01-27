@@ -16,11 +16,11 @@ namespace A1.Minds
             if (CanClean(percepts))
             {
                 AddMessage("Cleaning current floor tile.");
-                agent.StopMoveToLookAtTarget();
+                StopMoveToLookAtTarget();
                 return new Action[] { new CleanAction() };
             }
 
-            agent.MoveToLookAtTarget(DetermineNextToClean(percepts));
+            MoveToLookAtTarget(DetermineNextToClean(percepts));
             return null;
         }
 
