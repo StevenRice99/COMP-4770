@@ -20,7 +20,7 @@ namespace SimpleIntelligence.Base
         [SerializeField]
         [Min(0)]
         [Tooltip("How wide the menu list is.")]
-        private float menuWidth = 300;
+        private float menuWidth = 450;
         
         [SerializeField]
         [Min(0)]

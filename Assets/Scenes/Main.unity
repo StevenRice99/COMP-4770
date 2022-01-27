@@ -370,8 +370,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxAgentsPerUpdate: 0
   maxMessages: 100
-  compactMessages: 1
-  menuWidth: 500
+  menuWidth: 450
   cameraListWidth: 120
   cleanerAgentPrefab: {fileID: 5829531856079109815, guid: cff9a72f1eaaf4243837c2afdd1e5a3e, type: 3}
   floorSize: {x: 5, y: 5}
