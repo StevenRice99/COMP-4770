@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using A1.Managers;
 using SimpleIntelligence.PerformanceMeasures;
 
 namespace A1.PerformanceMeasures

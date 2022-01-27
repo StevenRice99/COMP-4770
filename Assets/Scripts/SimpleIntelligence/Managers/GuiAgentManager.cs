@@ -1,11 +1,12 @@
 ﻿using System.Linq;
 using SimpleIntelligence.Actuators;
 using SimpleIntelligence.Agents;
+using SimpleIntelligence.Components;
 using SimpleIntelligence.Minds;
 using SimpleIntelligence.Sensors;
 using UnityEngine;
 
-namespace SimpleIntelligence.Base
+namespace SimpleIntelligence.Managers
 {
     public class GuiAgentManager : AgentManager
     {

@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using SimpleIntelligence.Actuators;
-using SimpleIntelligence.Base;
+using SimpleIntelligence.Components;
+using SimpleIntelligence.Managers;
 using SimpleIntelligence.Minds;
 using SimpleIntelligence.Percepts;
 using SimpleIntelligence.PerformanceMeasures;

@@ -1,4 +1,4 @@
-﻿using SimpleIntelligence.Base;
+﻿using SimpleIntelligence.Components;
 
 namespace SimpleIntelligence.PerformanceMeasures
 {

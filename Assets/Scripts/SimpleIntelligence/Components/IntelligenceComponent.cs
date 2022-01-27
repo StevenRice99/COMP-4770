@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using SimpleIntelligence.Agents;
+using SimpleIntelligence.Managers;
 using UnityEngine;
 
-namespace SimpleIntelligence.Base
+namespace SimpleIntelligence.Components
 {
     public abstract class IntelligenceComponent : TimedComponent
     {

@@ -2,9 +2,10 @@ using System;
 using System.Collections;
 using System.Linq;
 using SimpleIntelligence.Agents;
+using SimpleIntelligence.Components;
 using UnityEngine;
 
-namespace SimpleIntelligence.Base
+namespace SimpleIntelligence.Managers
 {
     public class AgentManager : MonoBehaviour
     {

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using A1.Managers;
 using A1.Percepts;
 using SimpleIntelligence.Percepts;
 using SimpleIntelligence.Sensors;

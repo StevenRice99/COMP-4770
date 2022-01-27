@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using SimpleIntelligence.Base;
+using SimpleIntelligence.Managers;
 using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace A1
+namespace A1.Managers
 {
     public class FloorManager : GuiAgentManager
     {

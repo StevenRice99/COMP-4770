@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using SimpleIntelligence.Actions;
-using SimpleIntelligence.Base;
+using SimpleIntelligence.Components;
 
 namespace SimpleIntelligence.Actuators
 {
