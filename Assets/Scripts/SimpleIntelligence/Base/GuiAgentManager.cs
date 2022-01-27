@@ -9,6 +9,8 @@ namespace SimpleIntelligence.Base
 {
     public class GuiAgentManager : AgentManager
     {
+        private const float ClosedSize = 70;
+        
         private enum GuiState : byte
         {
             Main,
@@ -19,41 +21,35 @@ namespace SimpleIntelligence.Base
         
         [SerializeField]
         [Min(0)]
-        [Tooltip("How wide the menu list is.")]
-        private float menuWidth = 450;
+        [Tooltip("How wide the details list is.")]
+        private float detailsWidth = 450;
         
         [SerializeField]
         [Min(0)]
-        [Tooltip("How wide the camera list is.")]
-        private float cameraListWidth = 120;
+        [Tooltip("How wide the controls list is.")]
+        private float controlsWidth = 120;
 
         private GuiState _state;
 
-        private bool _mainOpen = true;
+        private bool _menuOpen;
 
-        private bool _camerasOpen = true;
+        private bool _controls;
 
         private Agent _selectedAgent;
 
         private IntelligenceComponent _selectedComponent;
 
-        private void OnGUI()
+        protected virtual float CustomRendering(float x, float y, float w, float h, float p)
         {
-            Render(10, 10, 20, 5);
+            return 0;
         }
 
-        private void Render(float x, float y, float h, float p)
-        {
-            RenderMain(x, y, menuWidth, h, p);
-            RenderControls(x, y, cameraListWidth, h, p);
-        }
-
-        private static bool GuiButton(float x, float y, float w, float h, string message)
+        protected static bool GuiButton(float x, float y, float w, float h, string message)
         {
             return !(y + h > Screen.height) && GUI.Button(new Rect(x, y, w, h), message);
         }
 
-        private static void GuiLabel(float x, float y, float w, float h, float p, string message)
+        protected static void GuiLabel(float x, float y, float w, float h, float p, string message)
         {
             if (y + h > Screen.height)
             {
@@ -63,7 +59,7 @@ namespace SimpleIntelligence.Base
             GUI.Label(new Rect(x + p, y, w - p, h), message);
         }
 
-        private static void GuiBox(float x, float y, float w, float h, float p, int number)
+        protected static void GuiBox(float x, float y, float w, float h, float p, int number)
         {
             while (y + (h + p) * number - p > Screen.height)
             {
@@ -77,9 +73,20 @@ namespace SimpleIntelligence.Base
             GUI.Box(new Rect(x,y,w,(h + p) * number - p), string.Empty);
         }
 
-        private static float NextItem(float y, float h, float p)
+        protected static float NextItem(float y, float h, float p)
         {
             return y + h + p;
+        }
+
+        private void OnGUI()
+        {
+            Render(10, 10, 20, 5);
+        }
+
+        private void Render(float x, float y, float h, float p)
+        {
+            RenderDetails(x, y, detailsWidth, h, p);
+            RenderControls(x, y, controlsWidth, h, p);
         }
 
         private float RenderMessageOptions(float x, float y, float w, float h, float p)
@@ -104,16 +111,16 @@ namespace SimpleIntelligence.Base
             return y;
         }
 
-        private void RenderMain(float x, float y, float w, float h, float p)
+        private void RenderDetails(float x, float y, float w, float h, float p)
         {
             if (Agents.Length < 1)
             {
                 return;
             }
 
-            if (!_mainOpen)
+            if (!_menuOpen)
             {
-                w = 50;
+                w = ClosedSize;
             }
 
             if (w + 4 * p > Screen.width)
@@ -121,12 +128,12 @@ namespace SimpleIntelligence.Base
                 w = Screen.width - 4 * p;
             }
             
-            if (GuiButton(x, y, w, h, _mainOpen ? "Close Menu" : "Menu"))
+            if (GuiButton(x, y, w, h, _menuOpen ? "Close" : "Details"))
             {
-                _mainOpen = !_mainOpen;
+                _menuOpen = !_menuOpen;
             }
             
-            if (!_mainOpen)
+            if (!_menuOpen)
             {
                 return;
             }
@@ -178,7 +185,7 @@ namespace SimpleIntelligence.Base
             {
 
                 y = NextItem(y, h, p);
-                if (GuiButton(x, y, w, h, $"Back to {_selectedAgent.name} Components"))
+                if (GuiButton(x, y, w, h, $"Back to {_selectedAgent.name} Sensors and Actuators"))
                 {
                     _state = GuiState.Components;
                 }
@@ -223,7 +230,7 @@ namespace SimpleIntelligence.Base
             if (_selectedAgent.Sensors.Length > 0 && _selectedAgent.Actuators.Length > 0)
             {
                 y = NextItem(y, h, p);
-                if (GuiButton(x, y, w, h, "View Sensors and Actuators"))
+                if (GuiButton(x, y, w, h, "Sensors and Actuators"))
                 {
                     _state = GuiState.Components;
                 }
@@ -323,9 +330,9 @@ namespace SimpleIntelligence.Base
 
         private void RenderControls(float x, float y, float w, float h, float p)
         {
-            if (!_camerasOpen)
+            if (!_controls)
             {
-                w = 70;
+                w = ClosedSize;
             }
             
             if (Agents.Length == 0 && w + 4 * p > Screen.width)
@@ -333,12 +340,25 @@ namespace SimpleIntelligence.Base
                 w = Screen.width - 4 * p;
             }
 
-            if (Agents.Length > 0 && Screen.width < menuWidth + cameraListWidth + 5 * p)
+            if (Agents.Length > 0 && Screen.width < (_menuOpen ? detailsWidth : ClosedSize) + controlsWidth + 5 * p)
             {
                 return;
             }
             
             x = Screen.width - x - w;
+
+            if (GuiButton(x, y, w, h, _controls ? "Close" : "Controls"))
+            {
+                _controls = !_controls;
+            }
+            
+            if (!_controls)
+            {
+                return;
+            }
+
+            y = NextItem(y, h, p);
+            y = CustomRendering(x, y, w, h, p);
 
             if (GuiButton(x, y, w, h, Playing ? "Pause" : "Resume"))
             {
@@ -360,22 +380,6 @@ namespace SimpleIntelligence.Base
                     Step();
                 }
             }
-            
-            if (Cameras.Length <= 1)
-            {
-                return;
-            }
-            
-            y = NextItem(y, h, p);
-            if (GuiButton(x, y, w, h, _camerasOpen ? "Close Cameras" : "Cameras"))
-            {
-                _camerasOpen = !_camerasOpen;
-            }
-            
-            if (!_camerasOpen)
-            {
-                return;
-            }
 
             foreach (Camera cam in Cameras)
             {
@@ -393,6 +397,17 @@ namespace SimpleIntelligence.Base
                         cam2.enabled = false;
                     }
                 }
+            }
+            
+            
+            y = NextItem(y, h, p);
+            if (GuiButton(x, y, w, h, "Quit"))
+            {
+#if UNITY_EDITOR
+                UnityEditor.EditorApplication.ExitPlaymode();
+#else
+                Application.Quit();
+#endif
             }
         }
     }

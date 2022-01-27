@@ -40,8 +40,6 @@ namespace SimpleIntelligence.Base
 
         private bool _stepping;
 
-        private bool _doneStepping;
-
         public void FindAgents()
         {
             Agents = FindObjectsOfType<Agent>().OrderBy(a => a.name).ToArray();

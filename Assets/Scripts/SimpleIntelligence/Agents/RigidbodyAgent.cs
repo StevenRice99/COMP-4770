@@ -10,6 +10,7 @@ namespace SimpleIntelligence.Agents
         {
             base.Update();
             _rigidbody = GetComponent<Rigidbody>();
+            _rigidbody.freezeRotation = true;
         }
         
         protected virtual void FixedUpdate()

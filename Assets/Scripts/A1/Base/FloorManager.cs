@@ -71,6 +71,16 @@ namespace A1
             GenerateFloor();
         }
 
+        protected override float CustomRendering(float x, float y, float w, float h, float p)
+        {
+            if (GuiButton(x, y, w, h, "Reset"))
+            {
+                GenerateFloor();
+            }
+            
+            return NextItem(y, h, p);
+        }
+
         private void GenerateFloor()
         {
             if (_cleanerAgent != null)
@@ -95,6 +105,8 @@ namespace A1
 
             _cleanerAgent = Instantiate(cleanerAgentPrefab, Vector3.zero, quaternion.identity);
             _cleanerAgent.name = "Cleaner Agent";
+
+            _elapsedTime = 0;
         }
 
         private void GenerateSection(Vector2 position, Vector2 offsets)
