@@ -7,7 +7,7 @@ using Random = UnityEngine.Random;
 
 namespace A1
 {
-    public class FloorManager : AgentManager
+    public class FloorManager : GuiAgentManager
     {
         public static FloorManager FloorManagerSingleton => Singleton as FloorManager;
         

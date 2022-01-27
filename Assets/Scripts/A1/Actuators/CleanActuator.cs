@@ -21,9 +21,11 @@ namespace A1.Actuators
 
             if (floor == null)
             {
+                AddMessage("Unable to clean current floor tile.");
                 return false;
             }
             
+            AddMessage("Cleaned current floor tile.");
             floor.Clean();
             cleanAction.Complete = true;
             return true;

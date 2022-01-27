@@ -26,6 +26,8 @@ namespace A1.Sensors
                 percept.LikelyToGetDirty[i] = floors[i].LikelyToGetDirty;
             }
             
+            AddMessage($"Detected {floors.Count} floor tiles.");
+            
             return percept;
         }
     }

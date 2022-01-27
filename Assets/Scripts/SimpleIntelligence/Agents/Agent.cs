@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using SimpleIntelligence.Actuators;
@@ -22,10 +21,6 @@ namespace SimpleIntelligence.Agents
         [SerializeField]
         [Tooltip("How fast this agent can look in degrees per second.")]
         protected float lookSpeed;
-
-        [SerializeField]
-        [Tooltip("The root visuals element of the agent for rotations to display. Note: This should be rotated 180 degrees on the Y-axis relative to the agent root game object.")]
-        private Transform visuals;
         
         public Vector3 MoveTarget { get; private set; }
 
@@ -39,25 +34,35 @@ namespace SimpleIntelligence.Agents
         
         public bool DidLook { get; private set; }
 
-        public float Performace { get; private set; }
+        public float Performance { get; private set; }
+        
+        public Mind Mind { get; private set; }
+
+        public Sensor[] Sensors { get; private set; }
+
+        public Percept[] Percepts { get; private set; }
+
+        public Actuator[] Actuators { get; private set; }
+
+        public Action[] Actions { get; private set; }
 
         public float AgentElapsedTime => ElapsedTime;
-        
-        private Mind _mind;
+
+        public Vector3 Position => transform.position;
+
+        public Quaternion Rotation => _visuals.rotation;
+
+        public Vector3 LocalPosition => transform.localPosition;
+
+        public Quaternion LocalRotation => _visuals.localRotation;
 
         private PerformanceMeasure _performanceMeasure;
 
-        private Sensor[] _sensors;
-
-        private Percept[] _percepts;
-
-        private Actuator[] _actuators;
-
-        private Action[] _actions;
+        private Transform _visuals;
 
         public void AssignMind(Mind mind)
         {
-            _mind = mind;
+            Mind = mind;
             ConfigureMind();
         }
 
@@ -152,15 +157,15 @@ namespace SimpleIntelligence.Agents
 
         protected virtual void Start()
         {
-            if (_mind == null)
+            if (Mind == null)
             {
-                _mind = GetComponent<Mind>();
-                if (_mind == null)
+                Mind = GetComponent<Mind>();
+                if (Mind == null)
                 {
-                    _mind = GetComponentInChildren<Mind>();
-                    if (_mind == null)
+                    Mind = GetComponentInChildren<Mind>();
+                    if (Mind == null)
                     {
-                        _mind = FindObjectOfType<Mind>();
+                        Mind = FindObjectOfType<Mind>();
                     }
                 }
             }
@@ -184,46 +189,63 @@ namespace SimpleIntelligence.Agents
 
             List<Actuator> actuators = GetComponents<Actuator>().ToList();
             actuators.AddRange(GetComponentsInChildren<Actuator>());
-            _actuators = actuators.Distinct().ToArray();
-            foreach (Actuator actuator in _actuators)
+            Actuators = actuators.Distinct().ToArray();
+            foreach (Actuator actuator in Actuators)
             {
                 actuator.agent = this;
             }
             
             List<Sensor> sensors = GetComponents<Sensor>().ToList();
             sensors.AddRange(GetComponentsInChildren<Sensor>());
-            _sensors = sensors.Distinct().ToArray();
+            Sensors = sensors.Distinct().ToArray();
             
-            _percepts = new Percept[_sensors.Length];
-            for (int i = 0; i < _sensors.Length; i++)
+            Percepts = new Percept[Sensors.Length];
+            for (int i = 0; i < Sensors.Length; i++)
             {
-                _sensors[i].agent = this;
-                _percepts[i] = null;
+                Sensors[i].agent = this;
+                Percepts[i] = null;
             }
             
             AgentManager.Singleton.FindAgents();
+
+            Transform[] children = GetComponentsInChildren<Transform>();
+            if (children.Length == 0)
+            {
+                GameObject go = new GameObject("Visuals");
+                _visuals = go.transform;
+                go.transform.parent = transform;
+                go.transform.localPosition = Vector3.zero;
+                go.transform.localRotation = Quaternion.identity;
+                return;
+            }
+
+            _visuals = children.FirstOrDefault(t => t.name == "Visuals");
+            if (_visuals == null)
+            {
+                _visuals = children[0];
+            }
         }
 
         public void Perform()
         {
-            if (_mind != null)
+            if (Mind != null)
             {
                 if (Sense())
                 {
-                    Action[] decisions = _mind.Think(_percepts);
+                    Action[] decisions = Mind.Think(Percepts);
                     ElapsedTime = 0;
                 
                     if (decisions == null)
                     {
-                        _actions = null;
+                        Actions = null;
                     }
                     else
                     {
                         List<Action> updated = decisions.Where(a => a != null).ToList();
 
-                        if (_actions != null)
+                        if (Actions != null)
                         {
-                            foreach (Action action in _actions)
+                            foreach (Action action in Actions)
                             {
                                 if (action == null)
                                 {
@@ -237,11 +259,11 @@ namespace SimpleIntelligence.Agents
                             }
                         }
             
-                        _actions = updated.ToArray();
+                        Actions = updated.ToArray();
                     }
                 }
 
-                if (_actions != null)
+                if (Actions != null)
                 {
                     Act();
                 }
@@ -249,7 +271,7 @@ namespace SimpleIntelligence.Agents
 
             if (_performanceMeasure != null)
             {
-                Performace = _performanceMeasure.GetPerformance();
+                Performance = _performanceMeasure.GetPerformance();
             }
         }
 
@@ -277,15 +299,15 @@ namespace SimpleIntelligence.Agents
         private bool Sense()
         {
             bool sensed = false;
-            for (int i = 0; i < _percepts.Length; i++)
+            for (int i = 0; i < Percepts.Length; i++)
             {
-                Percept percept = _sensors[i].Read();
+                Percept percept = Sensors[i].Read();
                 if (percept == null)
                 {
                     continue;
                 }
 
-                _percepts[i] = percept;
+                Percepts[i] = percept;
                 sensed = true;
             }
 
@@ -294,17 +316,17 @@ namespace SimpleIntelligence.Agents
 
         private void Act()
         {
-            if (_actions == null || _actions.Length == 0)
+            if (Actions == null || Actions.Length == 0)
             {
                 return;
             }
             
-            foreach (Actuator actuator in _actuators)
+            foreach (Actuator actuator in Actuators)
             {
-                actuator.Act(_actions);
+                actuator.Act(Actions);
             }
 
-            _actions = _actions.Where(a => !a.Complete).ToArray();
+            Actions = Actions.Where(a => !a.Complete).ToArray();
         }
         
         protected abstract void Move();
@@ -316,25 +338,25 @@ namespace SimpleIntelligence.Agents
                 return;
             }
             
-            Transform t = visuals;
-            Vector3 goal = new Vector3(this.LookTarget.x, t.position.y, this.LookTarget.z);
-            if (t.position == goal)
+            Transform visuals = _visuals;
+            Vector3 target = new Vector3(LookTarget.x, visuals.position.y, LookTarget.z);
+            if (visuals.position == target)
             {
                 return;
             }
 
-            Quaternion rotation = visuals.rotation;
+            Quaternion rotation = _visuals.rotation;
             Quaternion lastRotation = rotation;
-            rotation = Quaternion.Lerp(t.rotation, Quaternion.LookRotation(t.position - goal), lookSpeed * Time.deltaTime);
-            visuals.rotation = rotation;
+            rotation = Quaternion.LookRotation(Vector3.RotateTowards(visuals.forward, target - visuals.position, lookSpeed * Time.deltaTime, 0.0f));
+            _visuals.rotation = rotation;
             DidLook = rotation != lastRotation;
         }
 
         private void ConfigureMind()
         {
-            if (_mind != null)
+            if (Mind != null)
             {
-                _mind.agent = this;
+                Mind.agent = this;
             }
         }
         

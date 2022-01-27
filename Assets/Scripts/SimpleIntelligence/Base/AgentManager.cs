@@ -1,3 +1,4 @@
+using System;
 using SimpleIntelligence.Agents;
 using UnityEngine;
 
@@ -12,9 +13,18 @@ namespace SimpleIntelligence.Base
         [Tooltip("The maximum number of agents which can be updated in a single frame. Set to zero to be unlimited.")]
         private int maxAgentsPerUpdate;
 
+        [SerializeField]
+        [Min(1)]
+        [Tooltip("How many messages each component can store.")]
+        private int maxMessages = 10;
+
+        public int MaxMessages => maxMessages;
+
         private int _currentAgent;
 
-        private Agent[] _agents;
+        protected Agent[] Agents = Array.Empty<Agent>();
+
+        protected Camera[] Cameras = Array.Empty<Camera>();
     
         private void Awake()
         {
@@ -35,20 +45,26 @@ namespace SimpleIntelligence.Base
 
         public void FindAgents()
         {
-            _agents = FindObjectsOfType<Agent>();
+            Agents = FindObjectsOfType<Agent>();
             _currentAgent = 0;
+        }
+
+        public void FindCameras()
+        {
+            Cameras = FindObjectsOfType<Camera>();
         }
 
         protected virtual void Start()
         {
             FindAgents();
+            FindCameras();
         }
 
         protected virtual void Update()
         {
             if (maxAgentsPerUpdate <= 0)
             {
-                foreach (Agent agent in _agents)
+                foreach (Agent agent in Agents)
                 {
                     agent.Perform();
                 }
@@ -56,9 +72,9 @@ namespace SimpleIntelligence.Base
                 return;
             }
         
-            for (int i = 0; i < maxAgentsPerUpdate && i < _agents.Length; i++)
+            for (int i = 0; i < maxAgentsPerUpdate && i < Agents.Length; i++)
             {
-                _agents[_currentAgent].Perform();
+                Agents[_currentAgent].Perform();
                 NextAgent();
             }
         }
@@ -66,7 +82,7 @@ namespace SimpleIntelligence.Base
         private void NextAgent()
         {
             _currentAgent++;
-            if (_currentAgent >= _agents.Length)
+            if (_currentAgent >= Agents.Length)
             {
                 _currentAgent = 0;
             }
