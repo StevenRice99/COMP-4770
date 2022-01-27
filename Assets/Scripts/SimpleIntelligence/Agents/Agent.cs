@@ -264,10 +264,7 @@ namespace SimpleIntelligence.Agents
                     }
                 }
 
-                if (Actions != null)
-                {
-                    Act();
-                }
+                Act();
             }
 
             if (_performanceMeasure != null)
@@ -329,6 +326,7 @@ namespace SimpleIntelligence.Agents
         {
             if (Actions == null || Actions.Length == 0)
             {
+                Mind.AddMessage("Did not perform any actions.");
                 return;
             }
             

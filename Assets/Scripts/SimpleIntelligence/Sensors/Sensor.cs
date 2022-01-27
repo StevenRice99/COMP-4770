@@ -1,4 +1,5 @@
-﻿using SimpleIntelligence.Components;
+﻿using System.Linq;
+using SimpleIntelligence.Components;
 using SimpleIntelligence.Percepts;
 
 namespace SimpleIntelligence.Sensors
@@ -14,6 +15,7 @@ namespace SimpleIntelligence.Sensors
 
             Percept percept = Sense();
             ElapsedTime = 0;
+            AddMessage(percept == null ? "Did not perceive anything." : $"Perceived {percept.GetType().ToString().Split('.').Last()}.");
             return percept;
         }
         

@@ -9,10 +9,24 @@ namespace A1.Actuators
 {
     public class CleanActuator : Actuator
     {
+        [SerializeField]
+        [Min(0)]
+        [Tooltip("The time it takes to clean a tile")]
+        private float timeToClean;
+
+        private float timeSpentCleaning;
+        
         protected override bool Act(Action action)
         {
             if (!(action is CleanAction cleanAction))
             {
+                return false;
+            }
+
+            timeSpentCleaning += Time.deltaTime;
+            if (timeSpentCleaning < timeToClean)
+            {
+                AddMessage("Cleaning current floor tile.");
                 return false;
             }
 
@@ -26,7 +40,8 @@ namespace A1.Actuators
                 return false;
             }
             
-            AddMessage("Cleaned current floor tile.");
+            AddMessage("Finished cleaning current floor tile.");
+            timeSpentCleaning = 0;
             floor.Clean();
             cleanAction.Complete = true;
             return true;

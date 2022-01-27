@@ -14,7 +14,7 @@ namespace SimpleIntelligence.Components
         [SerializeField]
         [Min(0)]
         [Tooltip(
-            "How much time is required for this component to perform its actions again, " +
+            "How much time is required before this component can perform its actions again, " +
             "whether that is reading percepts as a sensor, performing actions as an actuator, " +
             "or calculating performance as a performance measure."
         )]

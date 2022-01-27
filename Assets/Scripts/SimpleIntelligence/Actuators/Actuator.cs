@@ -14,22 +14,25 @@ namespace SimpleIntelligence.Actuators
                 return;
             }
 
-            bool actionPerformed = false;
+            bool actionComplete = false;
             foreach (Action action in actions.Where(a => !a.Complete))
             {
-                if (Act(action))
+                if (!Act(action))
                 {
-                    actionPerformed = true;
+                    continue;
                 }
+
+                AddMessage($"Finished action {action.GetType().ToString().Split('.').Last()}.");
+                actionComplete = true;
             }
 
-            if (actionPerformed)
+            if (actionComplete)
             {
                 ElapsedTime = 0;
             }
             else
             {
-                AddMessage("Did nothing.");
+                AddMessage("Performed no actions.");
             }
         }
         

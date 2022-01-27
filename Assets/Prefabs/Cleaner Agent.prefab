@@ -314,4 +314,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   agent: {fileID: 0}
-  time: 0.5
+  time: 0
+  timeToClean: 0.25
