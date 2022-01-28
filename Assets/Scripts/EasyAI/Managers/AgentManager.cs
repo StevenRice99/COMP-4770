@@ -6,6 +6,7 @@ using EasyAI.Actuators;
 using EasyAI.Agents;
 using EasyAI.Components;
 using EasyAI.Minds;
+using EasyAI.Percepts;
 using EasyAI.Sensors;
 using UnityEngine;
 
@@ -19,6 +20,13 @@ namespace EasyAI.Managers
             Compact,
             Unique
         }
+
+        public enum GizmosState : byte
+        {
+            Off,
+            All,
+            Selected
+        }
         
         private enum GuiState : byte
         {
@@ -26,13 +34,6 @@ namespace EasyAI.Managers
             Agent,
             Components,
             Component
-        }
-
-        private enum GizmosState : byte
-        {
-            Off,
-            All,
-            Selected
         }
         
         private const float ClosedSize = 70;
@@ -203,6 +204,11 @@ namespace EasyAI.Managers
             }
         }
 
+        public void ChangeMessageMode(MessagingMode mode)
+        {
+            MessageMode = mode;
+        }
+
         public void ChangeGizmosState()
         {
             if (_gizmos == GizmosState.Selected)
@@ -212,6 +218,11 @@ namespace EasyAI.Managers
             }
 
             _gizmos++;
+        }
+
+        public void ChangeGizmosState(GizmosState state)
+        {
+            _gizmos = state;
         }
 
         public void Step()
@@ -228,10 +239,26 @@ namespace EasyAI.Managers
             }
         }
 
+        public void SwitchCamera(Camera cam)
+        {
+            cam.enabled = true;
+            foreach (Camera cam2 in Cameras)
+            {
+                if (cam != cam2)
+                {
+                    cam2.enabled = false;
+                }
+            }
+        }
+
         protected virtual void Start()
         {
             FindAgents();
             FindCameras();
+            if (Cameras.Length > 0)
+            {
+                SwitchCamera(Cameras[0]);
+            }
         }
 
         protected virtual void Update()
@@ -481,6 +508,12 @@ namespace EasyAI.Managers
 
         private void RenderAgent(float x, float y, float w, float h, float p)
         {
+            if (_selectedAgent == null)
+            {
+                _state = GuiState.Main;
+                return;
+            }
+            
             y = NextItem(y, h, p);
             int length = 3;
             if (Agents.Length > 1)
@@ -510,7 +543,7 @@ namespace EasyAI.Managers
             if (_selectedAgent.Sensors.Length > 0 && _selectedAgent.Actuators.Length > 0)
             {
                 y = NextItem(y, h, p);
-                if (GuiButton(x, y, w, h, "Sensors and Actuators"))
+                if (GuiButton(x, y, w, h, "Sensors, Actuators, Percepts, and Actions"))
                 {
                     _state = GuiState.Components;
                 }
@@ -541,6 +574,12 @@ namespace EasyAI.Managers
 
         private void RenderComponents(float x, float y, float w, float h, float p)
         {
+            if (_selectedAgent == null)
+            {
+                _state = GuiState.Main;
+                return;
+            }
+            
             y = NextItem(y, h, p);
             GuiBox(x, y, w, h, p, 1);
             GuiLabel(x, y, w, h, p, _selectedAgent.Sensors.Length switch
@@ -582,10 +621,48 @@ namespace EasyAI.Managers
                 _selectedComponent = actuator;
                 _state = GuiState.Component;
             }
+            
+            Percept[] percepts = _selectedAgent.Percepts.Where(p => p != null).ToArray();
+            if (percepts.Length > 0)
+            {
+                y = NextItem(y, h, p);
+                GuiBox(x, y, w, h, p, 1 + percepts.Length);
+            
+                GuiLabel(x, y, w, h, p, percepts.Length == 1 ? "1 Percept" :$"{percepts.Length} Percepts");
+
+                foreach (Percept percept in percepts)
+                {
+                    string msg = percept.DetailsDisplay();
+                    y = NextItem(y, h, p);
+                    GuiLabel(x, y, w, h, p, percept.GetType().ToString().Split('.').Last() + (string.IsNullOrWhiteSpace(msg) ? string.Empty : $": {msg}"));
+                }
+            }
+
+            EasyAI.Actions.Action[] actions = _selectedAgent.Actions?.Where(a => a != null).ToArray();
+            if (actions != null && actions.Length > 0)
+            {
+                y = NextItem(y, h, p);
+                GuiBox(x, y, w, h, p, 1 + actions.Length);
+            
+                GuiLabel(x, y, w, h, p, actions.Length == 1 ? "1 Action" :$"{actions.Length} Actions");
+
+                foreach (EasyAI.Actions.Action action in actions)
+                {
+                    string msg = action.DetailsDisplay();
+                    y = NextItem(y, h, p);
+                    GuiLabel(x, y, w, h, p, action.GetType().ToString().Split('.').Last() + (string.IsNullOrWhiteSpace(msg) ? string.Empty : $": {msg}"));
+                }
+            }
         }
 
         private void RenderComponent(float x, float y, float w, float h, float p)
         {
+            if (_selectedComponent == null)
+            {
+                _state = GuiState.Components;
+                return;
+            }
+            
             y = NextItem(y, h, p);
             GuiBox(x, y, w, h, p, 1);
             GuiLabel(x, y, w, h, p, $"{_selectedAgent.name} | {_selectedComponent.GetType().ToString().Split('.').Last()}");
@@ -677,18 +754,9 @@ namespace EasyAI.Managers
             foreach (Camera cam in Cameras)
             {
                 y = NextItem(y, h, p);
-                if (!GUI.Button(new Rect(x, y, w, h), cam.name))
+                if (GUI.Button(new Rect(x, y, w, h), cam.name))
                 {
-                    continue;
-                }
-
-                cam.enabled = true;
-                foreach (Camera cam2 in Cameras)
-                {
-                    if (cam != cam2)
-                    {
-                        cam2.enabled = false;
-                    }
+                    SwitchCamera(cam);
                 }
             }
 

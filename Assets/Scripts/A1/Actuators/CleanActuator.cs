@@ -23,7 +23,7 @@ namespace A1.Actuators
                 return false;
             }
 
-            timeSpentCleaning += agent.AgentDeltaTime;
+            timeSpentCleaning += DeltaTime;
             if (timeSpentCleaning < timeToClean)
             {
                 AddMessage("Cleaning current floor tile.");
@@ -31,7 +31,7 @@ namespace A1.Actuators
             }
 
             Floor floor = FloorManager.FloorManagerSingleton.Floors
-                .OrderBy(f => Vector3.Distance(agent.transform.position, f.transform.position))
+                .OrderBy(f => Vector3.Distance(Position, f.transform.position))
                 .FirstOrDefault();
 
             if (floor == null)

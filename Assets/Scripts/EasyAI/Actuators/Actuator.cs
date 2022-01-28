@@ -7,8 +7,6 @@ namespace EasyAI.Actuators
 {
     public abstract class Actuator : IntelligenceComponent
     {
-        protected float TimeSinceLastActed => agent == null ? 0 : agent.AgentDeltaTime;
-        
         public void Act(IEnumerable<Action> actions)
         {
             bool actionComplete = false;

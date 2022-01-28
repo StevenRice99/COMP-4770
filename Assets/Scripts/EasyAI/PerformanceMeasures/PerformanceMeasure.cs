@@ -4,13 +4,11 @@ namespace EasyAI.PerformanceMeasures
 {
     public abstract class PerformanceMeasure : IntelligenceComponent
     {
-        protected float TimeSinceLastCalculation => agent == null ? 0 : agent.AgentDeltaTime;
-        
         private float performance;
         
         public float GetPerformance()
         {
-            if (agent != null)
+            if (Agent != null)
             {
                 performance = CalculatePerformance();
             }

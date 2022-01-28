@@ -229,7 +229,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &448259070
 GameObject:
@@ -304,7 +304,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!114 &448259074
 MonoBehaviour:
@@ -372,7 +372,6 @@ MonoBehaviour:
   maxMessages: 100
   detailsWidth: 450
   controlsWidth: 120
-  linesMaterial: {fileID: 2100000, guid: f8b406dc3a54ab64ca65a1c3ba1418ca, type: 2}
   cleanerAgentPrefab: {fileID: 5829531856079109815, guid: cff9a72f1eaaf4243837c2afdd1e5a3e, type: 3}
   floorSize: {x: 5, y: 5}
   floorScale: 3

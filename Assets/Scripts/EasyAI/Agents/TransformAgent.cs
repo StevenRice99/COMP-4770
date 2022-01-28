@@ -22,9 +22,11 @@ namespace EasyAI.Agents
                 return;
             }
 
-            DidMove = true;
-            Vector3 movement = Vector3.MoveTowards(transform.position, MoveTarget, moveSpeed * Time.deltaTime);
-            transform.position = movement;
+            Vector3 position = transform.position;
+            Vector3 lastPosition = position;
+            position = Vector3.MoveTowards(position, MoveTarget, moveSpeed * Time.deltaTime);
+            DidMove = position != lastPosition;
+            transform.position = position;
         }
     }
 }

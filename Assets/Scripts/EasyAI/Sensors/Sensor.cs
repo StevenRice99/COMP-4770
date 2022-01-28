@@ -6,8 +6,6 @@ namespace EasyAI.Sensors
 {
     public abstract class Sensor : IntelligenceComponent
     {
-        protected float TimeSinceLastRead => agent == null ? 0 : agent.AgentDeltaTime;
-        
         public Percept Read()
         {
             Percept percept = Sense();

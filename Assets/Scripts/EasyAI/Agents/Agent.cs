@@ -46,7 +46,7 @@ namespace EasyAI.Agents
 
         public Action[] Actions { get; private set; }
 
-        public float AgentDeltaTime { get; private set; }
+        public float DeltaTime { get; private set; }
 
         public Vector3 Position => transform.position;
 
@@ -155,77 +155,6 @@ namespace EasyAI.Agents
             StopLookAtTarget();
         }
 
-        protected virtual void Start()
-        {
-            if (Mind == null)
-            {
-                Mind = GetComponent<Mind>();
-                if (Mind == null)
-                {
-                    Mind = GetComponentInChildren<Mind>();
-                    if (Mind == null)
-                    {
-                        Mind = FindObjectOfType<Mind>();
-                    }
-                }
-            }
-
-            ConfigureMind();
-            
-            if (_performanceMeasure == null)
-            {
-                _performanceMeasure = GetComponent<PerformanceMeasure>();
-                if (_performanceMeasure == null)
-                {
-                    _performanceMeasure = GetComponentInChildren<PerformanceMeasure>();
-                    if (_performanceMeasure == null)
-                    {
-                        _performanceMeasure = FindObjectOfType<PerformanceMeasure>();
-                    }
-                }
-            }
-
-            ConfigurePerformanceMeasure();
-
-            List<Actuator> actuators = GetComponents<Actuator>().ToList();
-            actuators.AddRange(GetComponentsInChildren<Actuator>());
-            Actuators = actuators.Distinct().ToArray();
-            foreach (Actuator actuator in Actuators)
-            {
-                actuator.agent = this;
-            }
-            
-            List<Sensor> sensors = GetComponents<Sensor>().ToList();
-            sensors.AddRange(GetComponentsInChildren<Sensor>());
-            Sensors = sensors.Distinct().ToArray();
-            
-            Percepts = new Percept[Sensors.Length];
-            for (int i = 0; i < Sensors.Length; i++)
-            {
-                Sensors[i].agent = this;
-                Percepts[i] = null;
-            }
-            
-            AgentManager.Singleton.FindAgents();
-
-            Transform[] children = GetComponentsInChildren<Transform>();
-            if (children.Length == 0)
-            {
-                GameObject go = new GameObject("Visuals");
-                _visuals = go.transform;
-                go.transform.parent = transform;
-                go.transform.localPosition = Vector3.zero;
-                go.transform.localRotation = Quaternion.identity;
-                return;
-            }
-
-            _visuals = children.FirstOrDefault(t => t.name == "Visuals");
-            if (_visuals == null)
-            {
-                _visuals = children[0];
-            }
-        }
-
         public void Perform()
         {
             if (Mind != null)
@@ -270,14 +199,95 @@ namespace EasyAI.Agents
                 Performance = _performanceMeasure.GetPerformance();
             }
             
-            AgentDeltaTime = 0;
+            DeltaTime = 0;
+        }
+
+        public void AddMessage(string message)
+        {
+            if (Mind == null)
+            {
+                return;
+            }
+            
+            Mind.AddMessage(message);
+        }
+
+        protected virtual void Start()
+        {
+            if (Mind == null)
+            {
+                Mind = GetComponent<Mind>();
+                if (Mind == null)
+                {
+                    Mind = GetComponentInChildren<Mind>();
+                    if (Mind == null)
+                    {
+                        Mind = FindObjectsOfType<Mind>().FirstOrDefault(m => m.Agent == null);
+                    }
+                }
+            }
+
+            ConfigureMind();
+            
+            if (_performanceMeasure == null)
+            {
+                _performanceMeasure = GetComponent<PerformanceMeasure>();
+                if (_performanceMeasure == null)
+                {
+                    _performanceMeasure = GetComponentInChildren<PerformanceMeasure>();
+                    if (_performanceMeasure == null)
+                    {
+                        _performanceMeasure = FindObjectOfType<PerformanceMeasure>();
+                    }
+                }
+            }
+
+            ConfigurePerformanceMeasure();
+
+            List<Actuator> actuators = GetComponents<Actuator>().ToList();
+            actuators.AddRange(GetComponentsInChildren<Actuator>());
+            Actuators = actuators.Distinct().ToArray();
+            foreach (Actuator actuator in Actuators)
+            {
+                actuator.Agent = this;
+            }
+            
+            List<Sensor> sensors = GetComponents<Sensor>().ToList();
+            sensors.AddRange(GetComponentsInChildren<Sensor>());
+            Sensors = sensors.Distinct().ToArray();
+            
+            Percepts = new Percept[Sensors.Length];
+            for (int i = 0; i < Sensors.Length; i++)
+            {
+                Sensors[i].Agent = this;
+                Percepts[i] = null;
+            }
+            
+            AgentManager.Singleton.FindAgents();
+
+            Transform[] children = GetComponentsInChildren<Transform>();
+            if (children.Length == 0)
+            {
+                GameObject go = new GameObject("Visuals");
+                _visuals = go.transform;
+                go.transform.parent = transform;
+                go.transform.localPosition = Vector3.zero;
+                go.transform.localRotation = Quaternion.identity;
+                return;
+            }
+
+            _visuals = children.FirstOrDefault(t => t.name == "Visuals");
+            if (_visuals == null)
+            {
+                _visuals = children[0];
+            }
         }
         
         protected abstract void Move();
 
         protected virtual void Update()
         {
-            AgentDeltaTime += Time.deltaTime;
+            DeltaTime += Time.deltaTime;
             Look();
         }
 
@@ -311,14 +321,14 @@ namespace EasyAI.Agents
                     continue;
                 }
 
-                Mind.AddMessage($"Perceived {percept.GetType().ToString().Split('.').Last()} from sensor {Sensors[i].ToString().Split('.').Last().Replace(")", string.Empty)}.");
+                AddMessage($"Perceived {percept.GetType().ToString().Split('.').Last()} from sensor {Sensors[i].ToString().Split('.').Last().Replace(")", string.Empty)}.");
                 Percepts[i] = percept;
                 sensed = true;
             }
 
             if (!sensed)
             {
-                Mind.AddMessage("Did not perceive anything.");
+                AddMessage("Did not perceive anything.");
             }
 
             return sensed;
@@ -328,7 +338,7 @@ namespace EasyAI.Agents
         {
             if (Actions == null || Actions.Length == 0)
             {
-                Mind.AddMessage("Did not perform any actions.");
+                AddMessage("Did not perform any actions.");
                 return;
             }
             
@@ -341,7 +351,7 @@ namespace EasyAI.Agents
             {
                 if (action.Complete)
                 {
-                    Mind.AddMessage($"Completed action {action.GetType().ToString().Split('.').Last()}.");
+                    AddMessage($"Completed action {action.GetType().ToString().Split('.').Last()}.");
                 }
             }
 
@@ -370,7 +380,7 @@ namespace EasyAI.Agents
 
             if (DidLook && Mind != null)
             {
-                Mind.AddMessage($"Looked towards {LookTarget}.");
+                AddMessage($"Looked towards {LookTarget}.");
             }
         }
 
@@ -378,7 +388,7 @@ namespace EasyAI.Agents
         {
             if (Mind != null)
             {
-                Mind.agent = this;
+                Mind.Agent = this;
             }
         }
         
@@ -386,7 +396,7 @@ namespace EasyAI.Agents
         {
             if (_performanceMeasure != null)
             {
-                _performanceMeasure.agent = this;
+                _performanceMeasure.Agent = this;
             }
         }
     }

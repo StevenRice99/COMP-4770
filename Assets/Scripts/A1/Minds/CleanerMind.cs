@@ -82,7 +82,7 @@ namespace A1.Minds
 
         private Vector3 NearestPosition(IReadOnlyCollection<Vector3> positions)
         {
-            return positions.Count == 0 ? Vector3.zero : positions.OrderBy(p => Vector3.Distance(agent.Position, p)).First();
+            return positions.Count == 0 ? Vector3.zero : positions.OrderBy(p => Vector3.Distance(Agent.Position, p)).First();
         }
 
         private static Vector3 CalculateMidPoint(IReadOnlyCollection<Vector3> all, IReadOnlyCollection<Vector3> likelyToGetDirty)

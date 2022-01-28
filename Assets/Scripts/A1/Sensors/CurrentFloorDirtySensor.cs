@@ -19,7 +19,7 @@ namespace A1.Sensors
                 return null;
             }
 
-            bool isDirty = floors.OrderBy(f => Vector3.Distance(agent.transform.position, f.transform.position)).First().State != Floor.DirtLevel.Clean;
+            bool isDirty = floors.OrderBy(f => Vector3.Distance(Position, f.transform.position)).First().State != Floor.DirtLevel.Clean;
             AddMessage(isDirty ? "Current floor tile is dirty." : "Current floor tile is not dirty.");
             return new CurrentFloorDirtyPercept
             {

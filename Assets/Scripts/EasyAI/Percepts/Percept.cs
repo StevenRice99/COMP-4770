@@ -1,4 +1,6 @@
-﻿namespace EasyAI.Percepts
+﻿using EasyAI.Components;
+
+namespace EasyAI.Percepts
 {
-    public class Percept { }
+    public class Percept : DataPiece { }
 }
