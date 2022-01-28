@@ -42,31 +42,6 @@ namespace EasyAI.Managers
 
         private static Material _lineMaterial;
 
-        private static void LineMaterial()
-        {
-            if (_lineMaterial)
-            {
-                return;
-            }
-
-            // Unity has a built-in shader that is useful for drawing simple colored things.
-            Shader shader = Shader.Find("Hidden/Internal-Colored");
-            _lineMaterial = new Material(shader)
-            {
-                hideFlags = HideFlags.HideAndDontSave
-            };
-            
-            // Turn on alpha blending.
-            _lineMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            _lineMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            
-            // Turn backface culling off.
-            _lineMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
-            
-            // Turn off depth writes.
-            _lineMaterial.SetInt("_ZWrite", 0);
-        }
-
         [SerializeField]
         [Min(0)]
         [Tooltip("The maximum number of agents which can be updated in a single frame. Set to zero to be unlimited.")]
@@ -94,11 +69,11 @@ namespace EasyAI.Managers
         
         public List<string> GlobalMessages { get; private set; } = new List<string>();
 
-        protected Agent[] Agents = Array.Empty<Agent>();
+        protected List<Agent> Agents = new List<Agent>();
 
         protected Camera[] Cameras = Array.Empty<Camera>();
 
-        private int _currentAgent;
+        private int _currentAgentIndex;
 
         private bool _stepping;
 
@@ -176,10 +151,37 @@ namespace EasyAI.Managers
             }
         }
 
-        public void FindAgents()
+        public void AddAgent(Agent agent)
         {
-            Agents = FindObjectsOfType<Agent>().OrderBy(a => a.name).ToArray();
-            _currentAgent = 0;
+            if (Agents.Contains(agent))
+            {
+                return;
+            }
+            
+            Agents.Add(agent);
+            FindCameras();
+        }
+
+        public void RemoveAgent(Agent agent)
+        {
+            if (!Agents.Contains(agent))
+            {
+                return;
+            }
+
+            int index = Agents.IndexOf(agent);
+            Agents.Remove(agent);
+            if (_currentAgentIndex > index)
+            {
+                _currentAgentIndex--;
+            }
+
+            if (_currentAgentIndex < 0 || _currentAgentIndex >= Agents.Count)
+            {
+                _currentAgentIndex = 0;
+            }
+
+            FindCameras();
         }
 
         public void FindCameras()
@@ -253,7 +255,6 @@ namespace EasyAI.Managers
 
         protected virtual void Start()
         {
-            FindAgents();
             FindCameras();
             if (Cameras.Length > 0)
             {
@@ -273,9 +274,9 @@ namespace EasyAI.Managers
                 return;
             }
         
-            for (int i = 0; i < maxAgentsPerUpdate && i < Agents.Length; i++)
+            for (int i = 0; i < maxAgentsPerUpdate && i < Agents.Count; i++)
             {
-                Agents[_currentAgent].Perform();
+                Agents[_currentAgentIndex].Perform();
                 NextAgent();
             }
         }
@@ -283,6 +284,31 @@ namespace EasyAI.Managers
         protected virtual float CustomRendering(float x, float y, float w, float h, float p)
         {
             return 0;
+        }
+
+        private static void LineMaterial()
+        {
+            if (_lineMaterial)
+            {
+                return;
+            }
+
+            // Unity has a built-in shader that is useful for drawing simple colored things.
+            Shader shader = Shader.Find("Hidden/Internal-Colored");
+            _lineMaterial = new Material(shader)
+            {
+                hideFlags = HideFlags.HideAndDontSave
+            };
+            
+            // Turn on alpha blending.
+            _lineMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            _lineMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            
+            // Turn backface culling off.
+            _lineMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
+            
+            // Turn off depth writes.
+            _lineMaterial.SetInt("_ZWrite", 0);
         }
 
         private static void AgentGizmos(Agent agent)
@@ -331,7 +357,7 @@ namespace EasyAI.Managers
             }
             else
             {
-                if (Agents.Length == 1)
+                if (Agents.Count == 1)
                 {
                     _selectedAgent = Agents[0];
                 }
@@ -366,7 +392,7 @@ namespace EasyAI.Managers
         private float RenderMessageOptions(float x, float y, float w, float h, float p)
         {
             y = NextItem(y, h, p);
-            if (GuiButton(x, y, w, h, MessageMode switch
+            if (GuiButton(x, y, w / 2 - p, h, MessageMode switch
                 {
                     MessagingMode.Compact => "Message Mode: Compact",
                     MessagingMode.All => "Message Mode: All",
@@ -376,8 +402,7 @@ namespace EasyAI.Managers
                 ChangeMessageMode();
             }
 
-            y = NextItem(y, h, p);
-            if (GuiButton(x, y, w, h, "Clear Messages"))
+            if (GuiButton(x + w / 2 + p, y, w / 2 - p, h, "Clear Messages"))
             {
                 ClearMessages();
             }
@@ -387,7 +412,7 @@ namespace EasyAI.Managers
 
         private void RenderDetails(float x, float y, float w, float h, float p)
         {
-            if (Agents.Length < 1)
+            if (Agents.Count < 1)
             {
                 return;
             }
@@ -417,7 +442,7 @@ namespace EasyAI.Managers
                 _state = GuiState.Main;
             }
 
-            if (_state == GuiState.Main && Agents.Length == 1)
+            if (_state == GuiState.Main && Agents.Count == 1)
             {
                 _selectedAgent = Agents[0];
                 _state = GuiState.Agent;
@@ -425,7 +450,7 @@ namespace EasyAI.Managers
 
             if (_state == GuiState.Agent)
             {
-                if (Agents.Length > 1)
+                if (Agents.Count > 1)
                 {
                     y = NextItem(y, h, p);
                     if (GuiButton(x, y, w, h, "Back to Overview"))
@@ -472,7 +497,7 @@ namespace EasyAI.Managers
 
             y = NextItem(y, h, p);
             GuiBox(x, y, w, h, p, 1);
-            GuiLabel(x, y, w, h, p, $"{Agents.Length} Agents:");
+            GuiLabel(x, y, w, h, p, $"{Agents.Count} Agents:");
 
             foreach (Agent agent in Agents)
             {
@@ -516,13 +541,13 @@ namespace EasyAI.Managers
             
             y = NextItem(y, h, p);
             int length = 4;
-            if (Agents.Length > 1)
+            if (Agents.Count > 1)
             {
                 length++;
             }
             
             GuiBox(x, y, w, h, p, length);
-            if (Agents.Length > 1)
+            if (Agents.Count > 1)
             {
                 GuiLabel(x, y, w, h, p, _selectedAgent.name);
                 y = NextItem(y, h, p);
@@ -696,12 +721,12 @@ namespace EasyAI.Managers
                 w = ClosedSize;
             }
             
-            if (Agents.Length == 0 && w + 4 * p > Screen.width)
+            if (Agents.Count == 0 && w + 4 * p > Screen.width)
             {
                 w = Screen.width - 4 * p;
             }
 
-            if (Agents.Length > 0 && Screen.width < (_menuOpen ? detailsWidth : ClosedSize) + controlsWidth + 5 * p)
+            if (Agents.Count > 0 && Screen.width < (_menuOpen ? detailsWidth : ClosedSize) + controlsWidth + 5 * p)
             {
                 return;
             }
@@ -792,10 +817,10 @@ namespace EasyAI.Managers
 
         private void NextAgent()
         {
-            _currentAgent++;
-            if (_currentAgent >= Agents.Length)
+            _currentAgentIndex++;
+            if (_currentAgentIndex >= Agents.Count)
             {
-                _currentAgent = 0;
+                _currentAgentIndex = 0;
             }
         }
         

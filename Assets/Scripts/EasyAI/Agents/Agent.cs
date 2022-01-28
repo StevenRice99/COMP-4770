@@ -219,6 +219,8 @@ namespace EasyAI.Agents
 
         protected virtual void Start()
         {
+            AgentManager.Singleton.AddAgent(this);
+            
             if (Mind == null)
             {
                 Mind = GetComponent<Mind>();
@@ -267,8 +269,6 @@ namespace EasyAI.Agents
                 Sensors[i].Agent = this;
                 Percepts[i] = null;
             }
-            
-            AgentManager.Singleton.FindAgents();
 
             Transform[] children = GetComponentsInChildren<Transform>();
             if (children.Length == 0)
@@ -300,19 +300,27 @@ namespace EasyAI.Agents
         {
             try
             {
-                AgentManager.Singleton.FindAgents();
+                AgentManager.Singleton.AddAgent(this);
             }
             catch { }
         }
 
         protected virtual void OnDisable()
         {
-            AgentManager.Singleton.FindAgents();
+            try
+            {
+                AgentManager.Singleton.RemoveAgent(this);
+            }
+            catch { }
         }
 
         protected virtual void OnDestroy()
         {
-            AgentManager.Singleton.FindAgents();
+            try
+            {
+                AgentManager.Singleton.RemoveAgent(this);
+            }
+            catch { }
         }
 
         private bool Sense()

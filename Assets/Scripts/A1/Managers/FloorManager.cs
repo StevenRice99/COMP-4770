@@ -178,18 +178,32 @@ namespace A1.Managers
 
         private void UpdateFloor()
         {
-            foreach (Floor floor in Floors.Where(f => f.State != Floor.DirtLevel.ExtremelyDirty))
+            if (Floors.Count(f => f.State != Floor.DirtLevel.ExtremelyDirty) == 0)
             {
-                float dirtChance = floor.LikelyToGetDirty ? chanceDirty * 2 : chanceDirty;
-                
-                for (int i = 0; i < 3; i++)
+                return;
+            }
+
+            float currentDirtyChance = Mathf.Max(chanceDirty, float.Epsilon);
+            bool addedDirty = false;
+            do
+            {
+                foreach (Floor floor in Floors.Where(f => f.State != Floor.DirtLevel.ExtremelyDirty))
                 {
-                    if (Random.value <= dirtChance)
+                    float dirtChance = floor.LikelyToGetDirty ? currentDirtyChance * 2 : currentDirtyChance;
+
+                    for (int i = 0; i < 3; i++)
                     {
-                        floor.Dirty();
+                        if (Random.value <= dirtChance)
+                        {
+                            floor.Dirty();
+                            addedDirty = true;
+                        }
                     }
                 }
+
+                currentDirtyChance *= 2;
             }
+            while (!addedDirty);
         }
     }
 }
