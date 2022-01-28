@@ -12,8 +12,17 @@ using UnityEngine;
 
 namespace EasyAI.Managers
 {
+    /// <summary>
+    /// Singleton to handle agents and GUI rendering. Must be exactly one of this or an extension of this present in every scene.
+    /// </summary>
     public class AgentManager : MonoBehaviour
     {
+        /// <summary>
+        /// Determine what mode messages are stored in.
+        /// All - All messages are captured.
+        /// Compact - All messages are captured, but, duplicate messages that appear immediately after each other will be merged into only a single instance of the message.
+        /// Unique - No messages will be duplicated with the prior instance of the message being removed from its list when an identical message is added again.
+        /// </summary>
         public enum MessagingMode : byte
         {
             All,
@@ -21,6 +30,12 @@ namespace EasyAI.Managers
             Unique
         }
 
+        /// <summary>
+        /// Determine what gizmos lines are drawn.
+        /// Off - No lines are drawn.
+        /// All - Every line from every agent, sensor, and actuator is drawn.
+        /// Selected - If an agent is selected, only it and its sensors and actuators are drawn. If an individual sensor or actuator is selected, only it is drawn.
+        /// </summary>
         public enum GizmosState : byte
         {
             Off,
@@ -28,6 +43,13 @@ namespace EasyAI.Managers
             Selected
         }
         
+        /// <summary>
+        /// What GUI State to display.
+        /// Main - Displays a list of all agents and global messages. Never in this state if there is only one agent in the scene.
+        /// Agent - Displays the selected agent. Displayed in place of "Main" if there is only one agent in the scene.
+        /// Components - Displays lists of the sensors, actuators, percepts, and actions of the selected agent.
+        /// Component - Displays details of a selected sensor or actuator.
+        /// </summary>
         private enum GuiState : byte
         {
             Main,
@@ -36,10 +58,19 @@ namespace EasyAI.Managers
             Component
         }
         
+        /// <summary>
+        /// The width of the GUI buttons to open their respective menus when they are closed.
+        /// </summary>
         private const float ClosedSize = 70;
 
+        /// <summary>
+        /// The singleton agent manager.
+        /// </summary>
         public static AgentManager Singleton;
 
+        /// <summary>
+        /// The auto-generated material for displaying lines.
+        /// </summary>
         private static Material _lineMaterial;
 
         [SerializeField]
@@ -61,49 +92,114 @@ namespace EasyAI.Managers
         [Tooltip("How wide the controls list is. Set to zero to disable controls list rendering.")]
         private float controlsWidth = 120;
 
+        /// <summary>
+        /// Getter for the maximum number of messages any component can hold.
+        /// </summary>
         public int MaxMessages => maxMessages;
 
+        /// <summary>
+        /// If the scene is currently playing or not.
+        /// </summary>
         public bool Playing => !_stepping && Time.timeScale > 0;
 
+        /// <summary>
+        /// The current message mode.
+        /// </summary>
         public MessagingMode MessageMode { get; private set; }
         
+        /// <summary>
+        /// The global messages.
+        /// </summary>
         public List<string> GlobalMessages { get; private set; } = new List<string>();
 
+        /// <summary>
+        /// All agents in the scene.
+        /// </summary>
         protected List<Agent> Agents = new List<Agent>();
 
+        /// <summary>
+        /// All cameras in the scene.
+        /// </summary>
         protected Camera[] Cameras = Array.Empty<Camera>();
 
+        /// <summary>
+        /// The agent which is currently thinking.
+        /// </summary>
         private int _currentAgentIndex;
 
+        /// <summary>
+        /// True if the scene is taking a single time step.
+        /// </summary>
         private bool _stepping;
 
+        /// <summary>
+        /// The current state of the GUI.
+        /// </summary>
         private GuiState _state;
 
+        /// <summary>
+        /// The current gizmos rendering mode.
+        /// </summary>
         private GizmosState _gizmos;
 
-        private bool _menuOpen;
+        /// <summary>
+        /// If the details menu is currently open.
+        /// </summary>
+        private bool _detailsOpen;
 
-        private bool _controls;
+        /// <summary>
+        /// If the controls menu is currently open.
+        /// </summary>
+        private bool _controlsOpen;
 
+        /// <summary>
+        /// The currently selected agent.
+        /// </summary>
         private Agent _selectedAgent;
 
+        /// <summary>
+        /// The currently selected component.
+        /// </summary>
         private IntelligenceComponent _selectedComponent;
 
+        /// <summary>
+        /// Resume playing.
+        /// </summary>
         public static void Resume()
         {
             Time.timeScale = 1;
         }
 
+        /// <summary>
+        /// Pause playing.
+        /// </summary>
         public static void Pause()
         {
             Time.timeScale = 0;
         }
 
+        /// <summary>
+        /// Render a GUI button.
+        /// </summary>
+        /// <param name="x">X rendering position. In most cases this should remain unchanged.</param>
+        /// <param name="y">Y rendering position. In most cases this should remain unchanged.</param>
+        /// <param name="w">Width of components. In most cases this should remain unchanged.</param>
+        /// <param name="h">Height of components. In most cases this should remain unchanged.</param>
+        /// <param name="message">The message to display in the button.</param>
+        /// <returns>True if the button was clicked, false if it was not or there was no space for it.</returns>
         public static bool GuiButton(float x, float y, float w, float h, string message)
         {
             return !(y + h > Screen.height) && GUI.Button(new Rect(x, y, w, h), message);
         }
-
+        
+        /// <summary>
+        /// Render a GUI label.
+        /// </summary>
+        /// <param name="x">X rendering position. In most cases this should remain unchanged.</param>
+        /// <param name="y">Y rendering position. In most cases this should remain unchanged.</param>
+        /// <param name="w">Width of components. In most cases this should remain unchanged.</param>
+        /// <param name="h">Height of components. In most cases this should remain unchanged.</param>
+        /// <param name="message">The message to display.</param>
         public static void GuiLabel(float x, float y, float w, float h, float p, string message)
         {
             if (y + h > Screen.height)
@@ -114,6 +210,14 @@ namespace EasyAI.Managers
             GUI.Label(new Rect(x + p, y, w - p, h), message);
         }
 
+        /// <summary>
+        /// Render a GUI box.
+        /// </summary>
+        /// <param name="x">X rendering position. In most cases this should remain unchanged.</param>
+        /// <param name="y">Y rendering position. In most cases this should remain unchanged.</param>
+        /// <param name="w">Width of components. In most cases this should remain unchanged.</param>
+        /// <param name="h">Height of components. In most cases this should remain unchanged.</param>
+        /// <param name="number">How many labels the box should be able to hold.</param>
         public static void GuiBox(float x, float y, float w, float h, float p, int number)
         {
             while (y + (h + p) * number - p > Screen.height)
@@ -128,11 +232,22 @@ namespace EasyAI.Managers
             GUI.Box(new Rect(x,y,w,(h + p) * number - p), string.Empty);
         }
 
+        /// <summary>
+        /// Determine the updated Y value for the next GUI to be placed with.
+        /// </summary>
+        /// <param name="x">X rendering position. In most cases this should remain unchanged.</param>
+        /// <param name="y">Y rendering position. In most cases this should remain unchanged.</param>
+        /// <param name="p">Padding of components. In most cases this should remain unchanged.</param>
+        /// <returns></returns>
         public static float NextItem(float y, float h, float p)
         {
             return y + h + p;
         }
 
+        /// <summary>
+        /// Add a message to the global message list.
+        /// </summary>
+        /// <param name="message">The message to add.</param>
         public void AddGlobalMessage(string message)
         {
             switch (MessageMode)
@@ -151,6 +266,10 @@ namespace EasyAI.Managers
             }
         }
 
+        /// <summary>
+        /// Register an agent with the agent manager.
+        /// </summary>
+        /// <param name="agent">The agent to add.</param>
         public void AddAgent(Agent agent)
         {
             if (Agents.Contains(agent))
@@ -162,6 +281,10 @@ namespace EasyAI.Managers
             FindCameras();
         }
 
+        /// <summary>
+        /// Remove an agent from the agent manager.
+        /// </summary>
+        /// <param name="agent">The agent to remove.</param>
         public void RemoveAgent(Agent agent)
         {
             if (!Agents.Contains(agent))
@@ -184,11 +307,17 @@ namespace EasyAI.Managers
             FindCameras();
         }
 
+        /// <summary>
+        /// Find all cameras in the scene so buttons can be setup for them.
+        /// </summary>
         public void FindCameras()
         {
             Cameras = FindObjectsOfType<Camera>().OrderBy(c => c.name).ToArray();
         }
 
+        /// <summary>
+        /// Change to the next messaging mode.
+        /// </summary>
         public void ChangeMessageMode()
         {
             if (MessageMode == MessagingMode.Unique)
@@ -206,11 +335,18 @@ namespace EasyAI.Managers
             }
         }
 
+        /// <summary>
+        /// Change the messaging mode.
+        /// </summary>
+        /// <param name="mode">The mode to change to.</param>
         public void ChangeMessageMode(MessagingMode mode)
         {
             MessageMode = mode;
         }
 
+        /// <summary>
+        /// Change to the next gizmos state.
+        /// </summary>
         public void ChangeGizmosState()
         {
             if (_gizmos == GizmosState.Selected)
@@ -222,16 +358,26 @@ namespace EasyAI.Managers
             _gizmos++;
         }
 
+        /// <summary>
+        /// Change the gizmos state.
+        /// </summary>
+        /// <param name="state">The state to change to.</param>
         public void ChangeGizmosState(GizmosState state)
         {
             _gizmos = state;
         }
 
+        /// <summary>
+        /// Step for a single frame.
+        /// </summary>
         public void Step()
         {
             StartCoroutine(StepOneFrame());
         }
 
+        /// <summary>
+        /// Clear all messages.
+        /// </summary>
         public void ClearMessages()
         {
             GlobalMessages.Clear();
@@ -241,6 +387,10 @@ namespace EasyAI.Managers
             }
         }
 
+        /// <summary>
+        /// Switch to a camera.
+        /// </summary>
+        /// <param name="cam">The camera to switch to.</param>
         public void SwitchCamera(Camera cam)
         {
             cam.enabled = true;
@@ -251,6 +401,22 @@ namespace EasyAI.Managers
                     cam2.enabled = false;
                 }
             }
+        }
+    
+        protected virtual void Awake()
+        {
+            if (Singleton == this)
+            {
+                return;
+            }
+
+            if (Singleton != null)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Singleton = this;
         }
 
         protected virtual void Start()
@@ -281,11 +447,23 @@ namespace EasyAI.Managers
             }
         }
         
+        /// <summary>
+        /// Override for custom detail rendering on the automatic GUI.
+        /// </summary>
+        /// <param name="x">X rendering position. In most cases this should remain unchanged.</param>
+        /// <param name="y">Y rendering position. Update this with every component added and return it.</param>
+        /// <param name="w">Width of components. In most cases this should remain unchanged.</param>
+        /// <param name="h">Height of components. In most cases this should remain unchanged.</param>
+        /// <param name="p">Padding of components. In most cases this should remain unchanged.</param>
+        /// <returns>The updated Y position after all custom rendering has been done.</returns>
         protected virtual float CustomRendering(float x, float y, float w, float h, float p)
         {
             return 0;
         }
 
+        /// <summary>
+        /// Setup the material for line rendering.
+        /// </summary>
         private static void LineMaterial()
         {
             if (_lineMaterial)
@@ -311,6 +489,10 @@ namespace EasyAI.Managers
             _lineMaterial.SetInt("_ZWrite", 0);
         }
 
+        /// <summary>
+        /// Display gizmos for an agent.
+        /// </summary>
+        /// <param name="agent">The agent to display gizmos for.</param>
         private static void AgentGizmos(Agent agent)
         {
             if (agent.Mind != null)
@@ -376,6 +558,13 @@ namespace EasyAI.Managers
             GL.PopMatrix();
         }
 
+        /// <summary>
+        /// Render the automatic GUI.
+        /// </summary>
+        /// <param name="x">X rendering position. In most cases this should remain unchanged.</param>
+        /// <param name="y">Y rendering position. Update this with every component added and return it.</param>
+        /// <param name="h">Height of components. In most cases this should remain unchanged.</param>
+        /// <param name="p">Padding of components. In most cases this should remain unchanged.</param>
         private void Render(float x, float y, float h, float p)
         {
             if (detailsWidth > 0)
@@ -389,6 +578,15 @@ namespace EasyAI.Managers
             }
         }
 
+        /// <summary>
+        /// Render the GUI section for displaying message options.
+        /// </summary>
+        /// <param name="x">X rendering position. In most cases this should remain unchanged.</param>
+        /// <param name="y">Y rendering position. Update this with every component added and return it.</param>
+        /// <param name="w">Width of components. In most cases this should remain unchanged.</param>
+        /// <param name="h">Height of components. In most cases this should remain unchanged.</param>
+        /// <param name="p">Padding of components. In most cases this should remain unchanged.</param>
+        /// <returns>The updated Y position after all custom rendering has been done.</returns>
         private float RenderMessageOptions(float x, float y, float w, float h, float p)
         {
             y = NextItem(y, h, p);
@@ -410,6 +608,14 @@ namespace EasyAI.Managers
             return y;
         }
 
+        /// <summary>
+        /// Render the automatic details GUI.
+        /// </summary>
+        /// <param name="x">X rendering position. In most cases this should remain unchanged.</param>
+        /// <param name="y">Y rendering position. Update this with every component added and return it.</param>
+        /// <param name="w">Width of components. In most cases this should remain unchanged.</param>
+        /// <param name="h">Height of components. In most cases this should remain unchanged.</param>
+        /// <param name="p">Padding of components. In most cases this should remain unchanged.</param>
         private void RenderDetails(float x, float y, float w, float h, float p)
         {
             if (Agents.Count < 1)
@@ -417,7 +623,7 @@ namespace EasyAI.Managers
                 return;
             }
 
-            if (!_menuOpen)
+            if (!_detailsOpen)
             {
                 w = ClosedSize;
             }
@@ -427,12 +633,12 @@ namespace EasyAI.Managers
                 w = Screen.width - 4 * p;
             }
             
-            if (GuiButton(x, y, w, h, _menuOpen ? "Close" : "Details"))
+            if (GuiButton(x, y, w, h, _detailsOpen ? "Close" : "Details"))
             {
-                _menuOpen = !_menuOpen;
+                _detailsOpen = !_detailsOpen;
             }
             
-            if (!_menuOpen)
+            if (!_detailsOpen)
             {
                 return;
             }
@@ -531,6 +737,14 @@ namespace EasyAI.Managers
             }
         }
 
+        /// <summary>
+        /// Render the automatic agent GUI.
+        /// </summary>
+        /// <param name="x">X rendering position. In most cases this should remain unchanged.</param>
+        /// <param name="y">Y rendering position. Update this with every component added and return it.</param>
+        /// <param name="w">Width of components. In most cases this should remain unchanged.</param>
+        /// <param name="h">Height of components. In most cases this should remain unchanged.</param>
+        /// <param name="p">Padding of components. In most cases this should remain unchanged.</param>
         private void RenderAgent(float x, float y, float w, float h, float p)
         {
             if (_selectedAgent == null)
@@ -599,6 +813,14 @@ namespace EasyAI.Managers
             }
         }
 
+        /// <summary>
+        /// Render the automatic components GUI.
+        /// </summary>
+        /// <param name="x">X rendering position. In most cases this should remain unchanged.</param>
+        /// <param name="y">Y rendering position. Update this with every component added and return it.</param>
+        /// <param name="w">Width of components. In most cases this should remain unchanged.</param>
+        /// <param name="h">Height of components. In most cases this should remain unchanged.</param>
+        /// <param name="p">Padding of components. In most cases this should remain unchanged.</param>
         private void RenderComponents(float x, float y, float w, float h, float p)
         {
             if (_selectedAgent == null)
@@ -681,7 +903,14 @@ namespace EasyAI.Managers
                 }
             }
         }
-
+        /// <summary>
+        /// Render the automatic component GUI.
+        /// </summary>
+        /// <param name="x">X rendering position. In most cases this should remain unchanged.</param>
+        /// <param name="y">Y rendering position. Update this with every component added and return it.</param>
+        /// <param name="w">Width of components. In most cases this should remain unchanged.</param>
+        /// <param name="h">Height of components. In most cases this should remain unchanged.</param>
+        /// <param name="p">Padding of components. In most cases this should remain unchanged.</param>
         private void RenderComponent(float x, float y, float w, float h, float p)
         {
             if (_selectedComponent == null)
@@ -714,9 +943,17 @@ namespace EasyAI.Managers
             }
         }
 
+        /// <summary>
+        /// Render the automatic controls GUI.
+        /// </summary>
+        /// <param name="x">X rendering position. In most cases this should remain unchanged.</param>
+        /// <param name="y">Y rendering position. Update this with every component added and return it.</param>
+        /// <param name="w">Width of components. In most cases this should remain unchanged.</param>
+        /// <param name="h">Height of components. In most cases this should remain unchanged.</param>
+        /// <param name="p">Padding of components. In most cases this should remain unchanged.</param>
         private void RenderControls(float x, float y, float w, float h, float p)
         {
-            if (!_controls)
+            if (!_controlsOpen)
             {
                 w = ClosedSize;
             }
@@ -726,19 +963,19 @@ namespace EasyAI.Managers
                 w = Screen.width - 4 * p;
             }
 
-            if (Agents.Count > 0 && Screen.width < (_menuOpen ? detailsWidth : ClosedSize) + controlsWidth + 5 * p)
+            if (Agents.Count > 0 && Screen.width < (_detailsOpen ? detailsWidth : ClosedSize) + controlsWidth + 5 * p)
             {
                 return;
             }
             
             x = Screen.width - x - w;
 
-            if (GuiButton(x, y, w, h, _controls ? "Close" : "Controls"))
+            if (GuiButton(x, y, w, h, _controlsOpen ? "Close" : "Controls"))
             {
-                _controls = !_controls;
+                _controlsOpen = !_controlsOpen;
             }
             
-            if (!_controls)
+            if (!_controlsOpen)
             {
                 return;
             }
@@ -797,24 +1034,10 @@ namespace EasyAI.Managers
 #endif
             }
         }
-    
-        private void Awake()
-        {
-            if (Singleton == this)
-            {
-                return;
-            }
 
-            if (Singleton != null)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            Singleton = this;
-            DontDestroyOnLoad(gameObject);
-        }
-
+        /// <summary>
+        /// Go to the next agent.
+        /// </summary>
         private void NextAgent()
         {
             _currentAgentIndex++;
@@ -824,6 +1047,10 @@ namespace EasyAI.Managers
             }
         }
         
+        /// <summary>
+        /// Coroutine lasts for exactly one frame to step though each time step.
+        /// </summary>
+        /// <returns>Nothing.</returns>
         private IEnumerator StepOneFrame()
         {
             _stepping = true;

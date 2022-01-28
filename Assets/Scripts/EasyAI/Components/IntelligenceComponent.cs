@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using EasyAI.Actuators;
 using EasyAI.Agents;
@@ -169,6 +168,10 @@ namespace EasyAI.Components
             Messages.Clear();
         }
 
+        /// <summary>
+        /// Override to easily display the type of the component for easy usage in messages.
+        /// </summary>
+        /// <returns>Name of this type.</returns>
         public override string ToString()
         {
             return GetType().Name;

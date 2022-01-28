@@ -2,19 +2,37 @@
 
 namespace EasyAI.Agents
 {
+    /// <summary>
+    /// Agent which moves through a rigidbody.
+    /// </summary>
     public class RigidbodyAgent : Agent
     {
+        /// <summary>
+        /// This agent's rigidbody.
+        /// </summary>
         private Rigidbody _rigidbody;
 
         protected override void Start()
         {
             base.Update();
+            
+            // Get the rigidbody.
             _rigidbody = GetComponent<Rigidbody>();
-            _rigidbody.freezeRotation = true;
+            if (_rigidbody == null)
+            {
+                _rigidbody = gameObject.AddComponent<Rigidbody>();
+            }
+
+            // Since rotation is all done with the root visuals transform, freeze rigidbody rotation.
+            if (_rigidbody != null)
+            {
+                _rigidbody.freezeRotation = true;
+            }
         }
         
         protected virtual void FixedUpdate()
         {
+            // Move in FixedUpdate as the rigidbody uses physics.
             Move();
             if (DidMove && Mind != null)
             {
@@ -26,11 +44,7 @@ namespace EasyAI.Agents
         {
             Vector3 lastPosition = transform.position;
             
-            if (!MovingToTarget)
-            {
-                _rigidbody.velocity = new Vector3(0, _rigidbody.velocity.y, 0);
-            }
-            else
+            if (MovingToTarget)
             {
                 Vector3 position = transform.position;
                 _rigidbody.AddForce(Vector3.MoveTowards(position, MoveTarget, moveSpeed * Time.fixedDeltaTime) - position);
