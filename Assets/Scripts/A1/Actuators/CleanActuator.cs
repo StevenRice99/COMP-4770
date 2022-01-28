@@ -11,7 +11,7 @@ namespace A1.Actuators
     {
         [SerializeField]
         [Min(0)]
-        [Tooltip("The time it takes to clean a tile")]
+        [Tooltip("The time in seconds it takes to clean a floor tile.")]
         private float timeToClean;
 
         private float timeSpentCleaning;

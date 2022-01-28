@@ -31,8 +31,8 @@ namespace EasyAI.Managers
         private enum GizmosState : byte
         {
             Off,
-            Selected,
-            All
+            All,
+            Selected
         }
         
         private const float ClosedSize = 70;
@@ -48,17 +48,21 @@ namespace EasyAI.Managers
                 return;
             }
 
-            // Unity has a built-in shader that is useful for drawing
-            // simple colored things.
+            // Unity has a built-in shader that is useful for drawing simple colored things.
             Shader shader = Shader.Find("Hidden/Internal-Colored");
-            _lineMaterial = new Material(shader);
-            _lineMaterial.hideFlags = HideFlags.HideAndDontSave;
-            // Turn on alpha blending
+            _lineMaterial = new Material(shader)
+            {
+                hideFlags = HideFlags.HideAndDontSave
+            };
+            
+            // Turn on alpha blending.
             _lineMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
             _lineMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            // Turn backface culling off
+            
+            // Turn backface culling off.
             _lineMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
-            // Turn off depth writes
+            
+            // Turn off depth writes.
             _lineMaterial.SetInt("_ZWrite", 0);
         }
 
@@ -201,7 +205,7 @@ namespace EasyAI.Managers
 
         public void ChangeGizmosState()
         {
-            if (_gizmos == GizmosState.All)
+            if (_gizmos == GizmosState.Selected)
             {
                 _gizmos = GizmosState.Off;
                 return;
@@ -300,6 +304,11 @@ namespace EasyAI.Managers
             }
             else
             {
+                if (Agents.Length == 1)
+                {
+                    _selectedAgent = Agents[0];
+                }
+                
                 if (_selectedComponent != null)
                 {
                     _selectedComponent.DisplayGizmos();
