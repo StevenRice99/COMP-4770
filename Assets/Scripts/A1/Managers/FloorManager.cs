@@ -78,6 +78,46 @@ namespace A1.Managers
                 GenerateFloor();
             }
             
+            if (floorSize.x < 5)
+            {
+                y = NextItem(y, h, p);
+                if (GuiButton(x, y, w, h, "Increase Size X"))
+                {
+                    floorSize.x++;
+                    GenerateFloor();
+                }
+            }
+
+            if (floorSize.x > 1)
+            {
+                y = NextItem(y, h, p);
+                if (GuiButton(x, y, w, h, "Decrease Size X"))
+                {
+                    floorSize.x--;
+                    GenerateFloor();
+                }
+            }
+            
+            if (floorSize.y < 5)
+            {
+                y = NextItem(y, h, p);
+                if (GuiButton(x, y, w, h, "Increase Size Y"))
+                {
+                    floorSize.y++;
+                    GenerateFloor();
+                }
+            }
+
+            if (floorSize.y > 1)
+            {
+                y = NextItem(y, h, p);
+                if (GuiButton(x, y, w, h, "Decrease Size Y"))
+                {
+                    floorSize.y--;
+                    GenerateFloor();
+                }
+            }
+            
             return NextItem(y, h, p);
         }
 
