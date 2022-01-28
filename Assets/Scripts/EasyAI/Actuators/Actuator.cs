@@ -17,7 +17,7 @@ namespace EasyAI.Actuators
                     continue;
                 }
 
-                AddMessage($"Finished action {action.GetType().ToString().Split('.').Last()}.");
+                AddMessage($"Finished action {action}.");
                 actionComplete = true;
             }
 

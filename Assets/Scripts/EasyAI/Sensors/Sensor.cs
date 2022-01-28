@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using EasyAI.Components;
+﻿using EasyAI.Components;
 using EasyAI.Percepts;
 
 namespace EasyAI.Sensors
@@ -9,7 +8,7 @@ namespace EasyAI.Sensors
         public Percept Read()
         {
             Percept percept = Sense();
-            AddMessage(percept == null ? "Did not perceive anything." : $"Perceived {percept.GetType().ToString().Split('.').Last()}.");
+            AddMessage(percept == null ? "Did not perceive anything." : $"Perceived {percept}.");
             return percept;
         }
         

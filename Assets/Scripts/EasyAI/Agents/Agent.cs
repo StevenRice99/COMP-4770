@@ -212,6 +212,11 @@ namespace EasyAI.Agents
             Mind.AddMessage(message);
         }
 
+        public override string ToString()
+        {
+            return GetType().Name;
+        }
+
         protected virtual void Start()
         {
             if (Mind == null)
@@ -321,7 +326,7 @@ namespace EasyAI.Agents
                     continue;
                 }
 
-                AddMessage($"Perceived {percept.GetType().ToString().Split('.').Last()} from sensor {Sensors[i].ToString().Split('.').Last().Replace(")", string.Empty)}.");
+                AddMessage($"Perceived {percept} from sensor {Sensors[i]}.");
                 Percepts[i] = percept;
                 sensed = true;
             }
@@ -351,7 +356,7 @@ namespace EasyAI.Agents
             {
                 if (action.Complete)
                 {
-                    AddMessage($"Completed action {action.GetType().ToString().Split('.').Last()}.");
+                    AddMessage($"Completed action {action}.");
                 }
             }
 

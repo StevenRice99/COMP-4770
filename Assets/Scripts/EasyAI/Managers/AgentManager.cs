@@ -477,7 +477,7 @@ namespace EasyAI.Managers
             foreach (Agent agent in Agents)
             {
                 y = NextItem(y, h, p);
-                if (!GuiButton(x, y, w, h, agent.name + (agent.Mind == null ? " - No Mind." : $" - {agent.Mind.GetType().ToString().Split('.').Last()}")))
+                if (!GuiButton(x, y, w, h, $"{agent.name} - {agent}" + (agent.Mind == null ? " - No Mind." : $" - {agent.Mind}")))
                 {
                     continue;
                 }
@@ -515,7 +515,7 @@ namespace EasyAI.Managers
             }
             
             y = NextItem(y, h, p);
-            int length = 3;
+            int length = 4;
             if (Agents.Length > 1)
             {
                 length++;
@@ -528,8 +528,10 @@ namespace EasyAI.Managers
                 y = NextItem(y, h, p);
             }
 
+            GuiLabel(x, y, w, h, p, $"Type: {_selectedAgent}");
+            y = NextItem(y, h, p);
             Mind mind = _selectedAgent.Mind;
-            GuiLabel(x, y, w, h, p, (mind != null ? $"Mind: {mind.GetType().ToString().Split('.').Last()}" : "Mind: None") + $" | Performance: {_selectedAgent.Performance}");
+            GuiLabel(x, y, w, h, p, (mind != null ? $"Mind: {mind}" : "Mind: None") + $" | Performance: {_selectedAgent.Performance}");
             y = NextItem(y, h, p);
             GuiLabel(x, y, w, h, p, $"Position: {_selectedAgent.Position} | " + (_selectedAgent.MovingToTarget ? $"Moving to {_selectedAgent.MoveTarget}." : "Not moving."));
             y = NextItem(y, h, p);
@@ -592,7 +594,7 @@ namespace EasyAI.Managers
             foreach (Sensor sensor in _selectedAgent.Sensors)
             {
                 y = NextItem(y, h, p);
-                if (!GuiButton(x, y, w, h, sensor.GetType().ToString().Split('.').Last()))
+                if (!GuiButton(x, y, w, h, sensor.ToString()))
                 {
                     continue;
                 }
@@ -613,7 +615,7 @@ namespace EasyAI.Managers
             foreach (Actuator actuator in _selectedAgent.Actuators)
             {
                 y = NextItem(y, h, p);
-                if (!GuiButton(x, y, w, h, actuator.GetType().ToString().Split('.').Last()))
+                if (!GuiButton(x, y, w, h, actuator.ToString()))
                 {
                     continue;
                 }
@@ -634,7 +636,7 @@ namespace EasyAI.Managers
                 {
                     string msg = percept.DetailsDisplay();
                     y = NextItem(y, h, p);
-                    GuiLabel(x, y, w, h, p, percept.GetType().ToString().Split('.').Last() + (string.IsNullOrWhiteSpace(msg) ? string.Empty : $": {msg}"));
+                    GuiLabel(x, y, w, h, p, percept + (string.IsNullOrWhiteSpace(msg) ? string.Empty : $": {msg}"));
                 }
             }
 
@@ -650,7 +652,7 @@ namespace EasyAI.Managers
                 {
                     string msg = action.DetailsDisplay();
                     y = NextItem(y, h, p);
-                    GuiLabel(x, y, w, h, p, action.GetType().ToString().Split('.').Last() + (string.IsNullOrWhiteSpace(msg) ? string.Empty : $": {msg}"));
+                    GuiLabel(x, y, w, h, p, action + (string.IsNullOrWhiteSpace(msg) ? string.Empty : $": {msg}"));
                 }
             }
         }
@@ -665,7 +667,7 @@ namespace EasyAI.Managers
             
             y = NextItem(y, h, p);
             GuiBox(x, y, w, h, p, 1);
-            GuiLabel(x, y, w, h, p, $"{_selectedAgent.name} | {_selectedComponent.GetType().ToString().Split('.').Last()}");
+            GuiLabel(x, y, w, h, p, $"{_selectedAgent.name} | {_selectedComponent}");
             
             y = _selectedComponent.DisplayDetails(x, y, w, h, p);
             

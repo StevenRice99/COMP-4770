@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using EasyAI.Actions;
 using EasyAI.Actuators;
 using EasyAI.Agents;
 using EasyAI.Managers;
 using EasyAI.Percepts;
 using EasyAI.Sensors;
 using UnityEngine;
+using Action = EasyAI.Actions.Action;
 
 namespace EasyAI.Components
 {
@@ -166,6 +167,11 @@ namespace EasyAI.Components
         public void ClearMessages()
         {
             Messages.Clear();
+        }
+
+        public override string ToString()
+        {
+            return GetType().Name;
         }
     }
 }
