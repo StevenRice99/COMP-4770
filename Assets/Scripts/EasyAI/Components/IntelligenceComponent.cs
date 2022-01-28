@@ -21,6 +21,8 @@ namespace EasyAI.Components
         {
             return y;
         }
+        
+        public virtual void DisplayGizmos() { }
 
         public void AddMessage(string message)
         {

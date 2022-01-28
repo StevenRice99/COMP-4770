@@ -13,14 +13,6 @@ namespace EasyAI.Managers
 {
     public class AgentManager : MonoBehaviour
     {
-        private enum GuiState : byte
-        {
-            Main,
-            Agent,
-            Components,
-            Component
-        }
-        
         public enum MessagingMode : byte
         {
             All,
@@ -28,9 +20,47 @@ namespace EasyAI.Managers
             Unique
         }
         
+        private enum GuiState : byte
+        {
+            Main,
+            Agent,
+            Components,
+            Component
+        }
+
+        private enum GizmosState : byte
+        {
+            Off,
+            Selected,
+            All
+        }
+        
         private const float ClosedSize = 70;
 
         public static AgentManager Singleton;
+
+        private static Material _lineMaterial;
+
+        private static void LineMaterial()
+        {
+            if (_lineMaterial)
+            {
+                return;
+            }
+
+            // Unity has a built-in shader that is useful for drawing
+            // simple colored things.
+            Shader shader = Shader.Find("Hidden/Internal-Colored");
+            _lineMaterial = new Material(shader);
+            _lineMaterial.hideFlags = HideFlags.HideAndDontSave;
+            // Turn on alpha blending
+            _lineMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            _lineMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            // Turn backface culling off
+            _lineMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
+            // Turn off depth writes
+            _lineMaterial.SetInt("_ZWrite", 0);
+        }
 
         [SerializeField]
         [Min(0)]
@@ -68,6 +98,8 @@ namespace EasyAI.Managers
         private bool _stepping;
 
         private GuiState _state;
+
+        private GizmosState _gizmos;
 
         private bool _menuOpen;
 
@@ -167,6 +199,17 @@ namespace EasyAI.Managers
             }
         }
 
+        public void ChangeGizmosState()
+        {
+            if (_gizmos == GizmosState.All)
+            {
+                _gizmos = GizmosState.Off;
+                return;
+            }
+
+            _gizmos++;
+        }
+
         public void Step()
         {
             StartCoroutine(StepOneFrame());
@@ -211,9 +254,64 @@ namespace EasyAI.Managers
             return 0;
         }
 
+        private static void AgentGizmos(Agent agent)
+        {
+            if (agent.Mind != null)
+            {
+                agent.Mind.DisplayGizmos();
+            }
+
+            foreach (Actuator actuator in agent.Actuators)
+            {
+                actuator.DisplayGizmos();
+            }
+
+            foreach (Sensor sensor in agent.Sensors)
+            {
+                sensor.DisplayGizmos();
+            }
+        }
+
         private void OnGUI()
         {
             Render(10, 10, 20, 5);
+        }
+        
+        private void OnRenderObject()
+        {
+            if (_gizmos == GizmosState.Off)
+            {
+                return;
+            }
+            
+            LineMaterial();
+            _lineMaterial.SetPass(0);
+
+            GL.PushMatrix();
+            GL.MultMatrix(transform.localToWorldMatrix);
+            GL.Begin(GL.LINES);
+
+            if (_gizmos == GizmosState.All)
+            {
+                foreach (Agent agent in Agents)
+                {
+                    AgentGizmos(agent);
+                }
+            }
+            else
+            {
+                if (_selectedComponent != null)
+                {
+                    _selectedComponent.DisplayGizmos();
+                }
+                else if (_selectedAgent != null)
+                {
+                    AgentGizmos(_selectedAgent);
+                }
+            }
+            
+            GL.End();
+            GL.PopMatrix();
         }
 
         private void Render(float x, float y, float h, float p)
@@ -296,6 +394,7 @@ namespace EasyAI.Managers
                     y = NextItem(y, h, p);
                     if (GuiButton(x, y, w, h, "Back to Overview"))
                     {
+                        _selectedAgent = null;
                         _state = GuiState.Main;
                     }
                 }
@@ -327,6 +426,7 @@ namespace EasyAI.Managers
                 y = NextItem(y, h, p);
                 if (GuiButton(x, y, w, h, $"Back to {_selectedAgent.name} Sensors and Actuators"))
                 {
+                    _selectedComponent = null;
                     _state = GuiState.Components;
                 }
                 
@@ -553,6 +653,17 @@ namespace EasyAI.Managers
                     Step();
                 }
             }
+            
+            y = NextItem(y, h, p);
+            if (GuiButton(x, y, w, h, _gizmos switch
+                {
+                    GizmosState.Off => "Gizmos: Off",
+                    GizmosState.Selected => "Gizmos: Selected",
+                    _ => "Gizmos: All"
+                }))
+            {
+                ChangeGizmosState();
+            }
 
             foreach (Camera cam in Cameras)
             {
@@ -571,8 +682,7 @@ namespace EasyAI.Managers
                     }
                 }
             }
-            
-            
+
             y = NextItem(y, h, p);
             if (GuiButton(x, y, w, h, "Quit"))
             {

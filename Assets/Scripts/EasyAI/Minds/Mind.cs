@@ -41,8 +41,25 @@ namespace EasyAI.Minds
         public Vector3 LocalPosition => agent.LocalPosition;
 
         public Quaternion LocalRotation => agent.LocalRotation;
-        
+
         public abstract Action[] Think(Percept[] percepts);
+
+        public override void DisplayGizmos()
+        {
+            if (MovingToTarget)
+            {
+                GL.Color(Color.green);
+                GL.Vertex(Position);
+                GL.Vertex(MoveTarget);
+            }
+
+            if (LookingAtTarget && (!MovingToTarget || MoveTarget != LookTarget))
+            {
+                GL.Color(Color.blue);
+                GL.Vertex(Position);
+                GL.Vertex(LookTarget);
+            }
+        }
         
         public void AssignPerformanceMeasure(PerformanceMeasure performanceMeasure)
         {

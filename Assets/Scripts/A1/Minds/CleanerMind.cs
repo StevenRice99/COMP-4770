@@ -37,6 +37,7 @@ namespace A1.Minds
                 return Vector3.zero;
             }
 
+            List<Vector3> all = new List<Vector3>();
             List<Vector3> dirty = new List<Vector3>();
             List<Vector3> veryDirty = new List<Vector3>();
             List<Vector3> extremelyDirty = new List<Vector3>();
@@ -46,6 +47,8 @@ namespace A1.Minds
             {
                 for (int i = 0; i < dirtPercept.Positions.Length; i++)
                 {
+                    all.Add(dirtPercept.Positions[i]);
+                    
                     if (dirtPercept.LikelyToGetDirty[i])
                     {
                         likelyToGetDirty.Add(dirtPercept.Positions[i]);
@@ -73,13 +76,18 @@ namespace A1.Minds
                     : dirty.Count > 0
                         ? NearestPosition(dirty)
                         : likelyToGetDirty.Count > 0
-                            ? likelyToGetDirty.Aggregate(Vector3.zero, (current, position) => current + position) / likelyToGetDirty.Count
+                            ? CalculateMidPoint(all, likelyToGetDirty)
                             : Vector3.zero;
         }
 
         private Vector3 NearestPosition(IReadOnlyCollection<Vector3> positions)
         {
             return positions.Count == 0 ? Vector3.zero : positions.OrderBy(p => Vector3.Distance(agent.Position, p)).First();
+        }
+
+        private static Vector3 CalculateMidPoint(IReadOnlyCollection<Vector3> all, IReadOnlyCollection<Vector3> likelyToGetDirty)
+        {
+            return (all.Aggregate(Vector3.zero, (current, p) => current + p) + likelyToGetDirty.Aggregate(Vector3.zero, (current, p) => current + p)) / all.Count;
         }
     }
 }
