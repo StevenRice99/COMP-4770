@@ -17,18 +17,24 @@ namespace EasyAI.Components
         
         public List<string> Messages { get; private set; } = new List<string>();
 
+        public virtual float DisplayDetails(float x, float y, float w, float h, float p)
+        {
+            return y;
+        }
+
         public void AddMessage(string message)
         {
-            if (AgentManager.Singleton.MessageMode == AgentManager.MessagingMode.Compact && Messages.Count > 0 && Messages[0] == message)
+            AgentManager.Singleton.AddGlobalMessage($"{name} - {message}");
+            
+            switch (AgentManager.Singleton.MessageMode)
             {
-                return;
+                case AgentManager.MessagingMode.Compact when Messages.Count > 0 && Messages[0] == message:
+                    return;
+                case AgentManager.MessagingMode.Unique:
+                    Messages = Messages.Where(m => m != message).ToList();
+                    break;
             }
 
-            if (AgentManager.Singleton.MessageMode == AgentManager.MessagingMode.Unique)
-            {
-                Messages = Messages.Where(m => m != message).ToList();
-            }
-            
             Messages.Insert(0, message);
             if (Messages.Count > AgentManager.Singleton.MaxMessages)
             {

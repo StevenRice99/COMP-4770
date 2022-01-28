@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using EasyAI.Actuators;
 using EasyAI.Agents;
@@ -55,6 +56,8 @@ namespace EasyAI.Managers
         public bool Playing => !_stepping && Time.timeScale > 0;
 
         public MessagingMode MessageMode { get; private set; }
+        
+        public List<string> GlobalMessages { get; private set; } = new List<string>();
 
         protected Agent[] Agents = Array.Empty<Agent>();
 
@@ -73,6 +76,68 @@ namespace EasyAI.Managers
         private Agent _selectedAgent;
 
         private IntelligenceComponent _selectedComponent;
+
+        public static void Resume()
+        {
+            Time.timeScale = 1;
+        }
+
+        public static void Pause()
+        {
+            Time.timeScale = 0;
+        }
+
+        public static bool GuiButton(float x, float y, float w, float h, string message)
+        {
+            return !(y + h > Screen.height) && GUI.Button(new Rect(x, y, w, h), message);
+        }
+
+        public static void GuiLabel(float x, float y, float w, float h, float p, string message)
+        {
+            if (y + h > Screen.height)
+            {
+                return;
+            }
+            
+            GUI.Label(new Rect(x + p, y, w - p, h), message);
+        }
+
+        public static void GuiBox(float x, float y, float w, float h, float p, int number)
+        {
+            while (y + (h + p) * number - p > Screen.height)
+            {
+                number--;
+                if (number <= 0)
+                {
+                    return;
+                }
+            }
+            
+            GUI.Box(new Rect(x,y,w,(h + p) * number - p), string.Empty);
+        }
+
+        public static float NextItem(float y, float h, float p)
+        {
+            return y + h + p;
+        }
+
+        public void AddGlobalMessage(string message)
+        {
+            switch (MessageMode)
+            {
+                case MessagingMode.Compact when GlobalMessages.Count > 0 && GlobalMessages[0] == message:
+                    return;
+                case MessagingMode.Unique:
+                    GlobalMessages = GlobalMessages.Where(m => m != message).ToList();
+                    break;
+            }
+
+            GlobalMessages.Insert(0, message);
+            if (GlobalMessages.Count > Singleton.MaxMessages)
+            {
+                GlobalMessages.RemoveAt(GlobalMessages.Count - 1);
+            }
+        }
 
         public void FindAgents()
         {
@@ -102,27 +167,18 @@ namespace EasyAI.Managers
             }
         }
 
-        public static void ClearMessages()
+        public void Step()
         {
+            StartCoroutine(StepOneFrame());
+        }
+
+        public void ClearMessages()
+        {
+            GlobalMessages.Clear();
             foreach (IntelligenceComponent component in FindObjectsOfType<IntelligenceComponent>())
             {
                 component.ClearMessages();
             }
-        }
-
-        public void Resume()
-        {
-            Time.timeScale = 1;
-        }
-
-        public void Pause()
-        {
-            Time.timeScale = 0;
-        }
-
-        public void Step()
-        {
-            StartCoroutine(StepOneFrame());
         }
 
         protected virtual void Start()
@@ -150,43 +206,9 @@ namespace EasyAI.Managers
             }
         }
         
-                protected virtual float CustomRendering(float x, float y, float w, float h, float p)
+        protected virtual float CustomRendering(float x, float y, float w, float h, float p)
         {
             return 0;
-        }
-
-        protected static bool GuiButton(float x, float y, float w, float h, string message)
-        {
-            return !(y + h > Screen.height) && GUI.Button(new Rect(x, y, w, h), message);
-        }
-
-        protected static void GuiLabel(float x, float y, float w, float h, float p, string message)
-        {
-            if (y + h > Screen.height)
-            {
-                return;
-            }
-            
-            GUI.Label(new Rect(x + p, y, w - p, h), message);
-        }
-
-        protected static void GuiBox(float x, float y, float w, float h, float p, int number)
-        {
-            while (y + (h + p) * number - p > Screen.height)
-            {
-                number--;
-                if (number <= 0)
-                {
-                    return;
-                }
-            }
-            
-            GUI.Box(new Rect(x,y,w,(h + p) * number - p), string.Empty);
-        }
-
-        protected static float NextItem(float y, float h, float p)
-        {
-            return y + h + p;
         }
 
         private void OnGUI()
@@ -212,9 +234,9 @@ namespace EasyAI.Managers
             y = NextItem(y, h, p);
             if (GuiButton(x, y, w, h, MessageMode switch
                 {
-                    MessagingMode.Compact => "Compact Messages",
-                    MessagingMode.All => "All Messages",
-                    _ => "Unique Messages"
+                    MessagingMode.Compact => "Message Mode: Compact",
+                    MessagingMode.All => "Message Mode: All",
+                    _ => "Message Mode: Unique"
                 }))
             {
                 ChangeMessageMode();
@@ -319,7 +341,7 @@ namespace EasyAI.Managers
             foreach (Agent agent in Agents)
             {
                 y = NextItem(y, h, p);
-                if (!GuiButton(x, y, w, h, agent.name))
+                if (!GuiButton(x, y, w, h, agent.name + (agent.Mind == null ? " - No Mind." : $" - {agent.Mind.GetType().ToString().Split('.').Last()}")))
                 {
                     continue;
                 }
@@ -327,23 +349,54 @@ namespace EasyAI.Managers
                 _selectedAgent = agent;
                 _state = GuiState.Agent;
             }
+            
+            if (GlobalMessages.Count == 0)
+            {
+                y = NextItem(y, h, p);
+                GuiBox(x, y, w, h, p, 1);
+                GuiLabel(x, y, w, h, p, $"No messages.");
+                return;
+            }
+            
+            y = RenderMessageOptions(x, y, w, h, p);
+            
+            y = NextItem(y, h, p);
+            GuiBox(x, y, w, h, p, GlobalMessages.Count);
+            
+            foreach (string message in GlobalMessages)
+            {
+                GuiLabel(x, y, w, h, p, message);
+                y = NextItem(y, h, p);
+            }
         }
 
         private void RenderAgent(float x, float y, float w, float h, float p)
         {
             y = NextItem(y, h, p);
-            GuiBox(x, y, w, h, p, Agents.Length > 1 ? 3 : 2);
+            int length = 3;
+            if (Agents.Length > 1)
+            {
+                length++;
+            }
+            
+            GuiBox(x, y, w, h, p, length);
             if (Agents.Length > 1)
             {
                 GuiLabel(x, y, w, h, p, _selectedAgent.name);
                 y = NextItem(y, h, p);
             }
-            
-            GuiLabel(x, y, w, h, p, $"Performance: {_selectedAgent.Performance}");
 
             Mind mind = _selectedAgent.Mind;
+            GuiLabel(x, y, w, h, p, (mind != null ? $"Mind: {mind.GetType().ToString().Split('.').Last()}" : "Mind: None") + $" | Performance: {_selectedAgent.Performance}");
             y = NextItem(y, h, p);
-            GuiLabel(x, y, w, h, p, mind != null ? $"Mind: {mind.GetType().ToString().Split('.').Last()}" : "Mind: None");
+            GuiLabel(x, y, w, h, p, $"Position: {_selectedAgent.Position} | " + (_selectedAgent.MovingToTarget ? $"Moving to {_selectedAgent.MoveTarget}." : "Not moving."));
+            y = NextItem(y, h, p);
+            GuiLabel(x, y, w, h, p, $"Rotation: {_selectedAgent.Rotation.eulerAngles.y} | " + (_selectedAgent.LookingToTarget ? $"Looking to {_selectedAgent.LookTarget}." : "Not looking."));
+
+            if (mind != null)
+            {
+                y = _selectedAgent.Mind.DisplayDetails(x, y, w, h, p);
+            }
 
             if (_selectedAgent.Sensors.Length > 0 && _selectedAgent.Actuators.Length > 0)
             {
@@ -427,6 +480,8 @@ namespace EasyAI.Managers
             y = NextItem(y, h, p);
             GuiBox(x, y, w, h, p, 1);
             GuiLabel(x, y, w, h, p, $"{_selectedAgent.name} | {_selectedComponent.GetType().ToString().Split('.').Last()}");
+            
+            y = _selectedComponent.DisplayDetails(x, y, w, h, p);
             
             y = RenderMessageOptions(x, y, w, h, p);
             

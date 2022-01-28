@@ -16,7 +16,7 @@ namespace EasyAI.Minds
 
         public bool MovingToTarget => agent.MovingToTarget;
 
-        public bool LookingAtTarget => agent.LookingAtTarget;
+        public bool LookingAtTarget => agent.LookingToTarget;
 
         public bool DidMove => agent.DidMove;
 
@@ -41,6 +41,8 @@ namespace EasyAI.Minds
         public Vector3 LocalPosition => agent.LocalPosition;
 
         public Quaternion LocalRotation => agent.LocalRotation;
+        
+        public abstract Action[] Think(Percept[] percepts);
         
         public void AssignPerformanceMeasure(PerformanceMeasure performanceMeasure)
         {
@@ -106,7 +108,5 @@ namespace EasyAI.Minds
         {
             agent.StopMoveToLookAtTarget();
         }
-        
-        public abstract Action[] Think(Percept[] percepts);
     }
 }

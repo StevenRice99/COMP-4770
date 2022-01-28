@@ -28,7 +28,7 @@ namespace EasyAI.Agents
 
         public bool MovingToTarget { get; private set; }
 
-        public bool LookingAtTarget { get; private set; }
+        public bool LookingToTarget { get; private set; }
         
         public bool DidMove { get; protected set; }
         
@@ -101,7 +101,7 @@ namespace EasyAI.Agents
 
         public void LookAtTarget()
         {
-            LookingAtTarget = LookTarget != transform.position;
+            LookingToTarget = LookTarget != transform.position;
         }
 
         public void LookAtTarget(Vector3 target)
@@ -123,7 +123,7 @@ namespace EasyAI.Agents
 
         public void StopLookAtTarget()
         {
-            LookingAtTarget = false;
+            LookingToTarget = false;
         }
 
         public void MoveToLookAtTarget()
@@ -272,6 +272,8 @@ namespace EasyAI.Agents
             
             AgentDeltaTime = 0;
         }
+        
+        protected abstract void Move();
 
         protected virtual void Update()
         {
@@ -345,12 +347,10 @@ namespace EasyAI.Agents
 
             Actions = Actions.Where(a => !a.Complete).ToArray();
         }
-        
-        protected abstract void Move();
 
         private void Look()
         {
-            if (!LookingAtTarget)
+            if (!LookingToTarget)
             {
                 return;
             }
