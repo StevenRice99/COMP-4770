@@ -24,6 +24,11 @@ namespace EasyAI.Agents
         [SerializeField]
         [Tooltip("How fast this agent can look in degrees per second.")]
         protected float lookSpeed;
+
+        /// <summary>
+        /// The time passed since the last time the agent's mind made decisions. Use this instead of Time.DeltaTime.
+        /// </summary>
+        public float DeltaTime { get; set; }
         
         /// <summary>
         /// The target the agent is currently trying to move towards.
@@ -84,11 +89,6 @@ namespace EasyAI.Agents
         /// The actions of this agent.
         /// </summary>
         public Action[] Actions { get; private set; }
-
-        /// <summary>
-        /// The time passed since the last time the agent's mind made decisions. Use this instead of Time.DeltaTime.
-        /// </summary>
-        public float DeltaTime { get; private set; }
 
         /// <summary>
         /// The position of this agent.
@@ -429,12 +429,42 @@ namespace EasyAI.Agents
         /// <summary>
         /// Implement movement behaviour.
         /// </summary>
-        protected abstract void Move();
+        public abstract void Move();
 
-        protected virtual void Update()
+        /// <summary>
+        /// Look towards the agent's look target.
+        /// </summary>
+        public void Look()
         {
-            DeltaTime += Time.deltaTime;
-            Look();
+            // If the agent should not be looking simply return.
+            if (!LookingToTarget)
+            {
+                DidLook = false;
+                return;
+            }
+            
+            // We only want to rotate along the Y axis so update the target rotation to be at the same Y level.
+            Transform visuals = _visuals;
+            Vector3 target = new Vector3(LookTarget.x, visuals.position.y, LookTarget.z);
+            
+            // If the position to look at is the current position, simply return.
+            if (visuals.position == target)
+            {
+                DidLook = false;
+                return;
+            }
+
+            // Look towards the target.
+            Quaternion rotation = _visuals.rotation;
+            Quaternion lastRotation = rotation;
+            rotation = Quaternion.LookRotation(Vector3.RotateTowards(visuals.forward, target - visuals.position, lookSpeed * Time.deltaTime, 0.0f));
+            _visuals.rotation = rotation;
+            DidLook = rotation != lastRotation;
+
+            if (DidLook && Mind != null)
+            {
+                AddMessage($"Looked towards {LookTarget}.");
+            }
         }
 
         protected virtual void OnEnable()
@@ -525,42 +555,6 @@ namespace EasyAI.Agents
 
             // Remove actions which were completed.
             Actions = Actions.Where(a => !a.Complete).ToArray();
-        }
-
-        /// <summary>
-        /// Look towards the agent's look target.
-        /// </summary>
-        private void Look()
-        {
-            // If the agent should not be looking simply return.
-            if (!LookingToTarget)
-            {
-                DidLook = false;
-                return;
-            }
-            
-            // We only want to rotate along the Y axis so update the target rotation to be at the same Y level.
-            Transform visuals = _visuals;
-            Vector3 target = new Vector3(LookTarget.x, visuals.position.y, LookTarget.z);
-            
-            // If the position to look at is the current position, simply return.
-            if (visuals.position == target)
-            {
-                DidLook = false;
-                return;
-            }
-
-            // Look towards the target.
-            Quaternion rotation = _visuals.rotation;
-            Quaternion lastRotation = rotation;
-            rotation = Quaternion.LookRotation(Vector3.RotateTowards(visuals.forward, target - visuals.position, lookSpeed * Time.deltaTime, 0.0f));
-            _visuals.rotation = rotation;
-            DidLook = rotation != lastRotation;
-
-            if (DidLook && Mind != null)
-            {
-                AddMessage($"Looked towards {LookTarget}.");
-            }
         }
 
         /// <summary>

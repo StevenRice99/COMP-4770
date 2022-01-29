@@ -113,6 +113,11 @@ namespace EasyAI.Managers
         public List<string> GlobalMessages { get; private set; } = new List<string>();
 
         /// <summary>
+        /// The currently selected agent.
+        /// </summary>
+        public Agent SelectedAgent { get; private set; }
+
+        /// <summary>
         /// All agents in the scene.
         /// </summary>
         protected List<Agent> Agents = new List<Agent>();
@@ -121,6 +126,16 @@ namespace EasyAI.Managers
         /// All cameras in the scene.
         /// </summary>
         protected Camera[] Cameras = Array.Empty<Camera>();
+
+        /// <summary>
+        /// All agents which move during an update tick.
+        /// </summary>
+        private List<Agent> UpdateAgents = new List<Agent>();
+
+        /// <summary>
+        /// All agents which move during a fixed update tick.
+        /// </summary>
+        private List<Agent> FixedUpdateAgents = new List<Agent>();
 
         /// <summary>
         /// The agent which is currently thinking.
@@ -151,11 +166,6 @@ namespace EasyAI.Managers
         /// If the controls menu is currently open.
         /// </summary>
         private bool _controlsOpen;
-
-        /// <summary>
-        /// The currently selected agent.
-        /// </summary>
-        private Agent _selectedAgent;
 
         /// <summary>
         /// The currently selected component.
@@ -272,12 +282,25 @@ namespace EasyAI.Managers
         /// <param name="agent">The agent to add.</param>
         public void AddAgent(Agent agent)
         {
+            // Ensure the agent is only added once.
             if (Agents.Contains(agent))
             {
                 return;
             }
             
+            // Add to their movement handling list.
             Agents.Add(agent);
+            switch (agent)
+            {
+                case TransformAgent updateAgent:
+                    UpdateAgents.Add(updateAgent);
+                    break;
+                case RigidbodyAgent fixedUpdateAgent:
+                    FixedUpdateAgents.Add(fixedUpdateAgent);
+                    break;
+            }
+            
+            // If the agent had any cameras attached to it we need to add them.
             FindCameras();
         }
 
@@ -287,23 +310,48 @@ namespace EasyAI.Managers
         /// <param name="agent">The agent to remove.</param>
         public void RemoveAgent(Agent agent)
         {
+            // This should always be true as agents are added at their creation but check just in case.
             if (!Agents.Contains(agent))
             {
                 return;
             }
 
+            // Remove the agent and update the current index accordingly so no agents are skipped in Update.
             int index = Agents.IndexOf(agent);
             Agents.Remove(agent);
             if (_currentAgentIndex > index)
             {
                 _currentAgentIndex--;
             }
-
             if (_currentAgentIndex < 0 || _currentAgentIndex >= Agents.Count)
             {
                 _currentAgentIndex = 0;
             }
 
+            // Remove from their movement handling list.
+            switch (agent)
+            {
+                case TransformAgent updateAgent:
+                {
+                    if (UpdateAgents.Contains(updateAgent))
+                    {
+                        UpdateAgents.Remove(updateAgent);
+                    }
+
+                    break;
+                }
+                case RigidbodyAgent fixedUpdateAgent:
+                {
+                    if (FixedUpdateAgents.Contains(fixedUpdateAgent))
+                    {
+                        FixedUpdateAgents.Remove(fixedUpdateAgent);
+                    }
+
+                    break;
+                }
+            }
+
+            // If the agent had any cameras attached to it we need to remove them.
             FindCameras();
         }
 
@@ -430,23 +478,40 @@ namespace EasyAI.Managers
 
         protected virtual void Update()
         {
+            // Perform for all agents if there is no limit or only the next allowable number of agents if there is.
             if (maxAgentsPerUpdate <= 0)
             {
                 foreach (Agent agent in Agents)
                 {
                     agent.Perform();
                 }
-            
-                return;
             }
-        
-            for (int i = 0; i < maxAgentsPerUpdate && i < Agents.Count; i++)
+            else
             {
-                Agents[_currentAgentIndex].Perform();
-                NextAgent();
+                for (int i = 0; i < maxAgentsPerUpdate && i < Agents.Count; i++)
+                {
+                    Agents[_currentAgentIndex].Perform();
+                    NextAgent();
+                }
             }
+
+            // Update the delta time for all agents and look towards their targets.
+            foreach (Agent agent in Agents)
+            {
+                agent.DeltaTime += Time.deltaTime;
+                agent.Look();
+            }
+            
+            // Move agents that do not require physics.
+            MoveAgents(UpdateAgents);
         }
-        
+
+        protected void FixedUpdate()
+        {
+            // Move agents that require physics.
+            MoveAgents(FixedUpdateAgents);
+        }
+
         /// <summary>
         /// Override for custom detail rendering on the automatic GUI.
         /// </summary>
@@ -459,6 +524,18 @@ namespace EasyAI.Managers
         protected virtual float CustomRendering(float x, float y, float w, float h, float p)
         {
             return 0;
+        }
+
+        /// <summary>
+        /// Handle moving of agents.
+        /// </summary>
+        /// <param name="agents">The agents to move.</param>
+        private static void MoveAgents(List<Agent> agents)
+        {
+            foreach (Agent agent in agents)
+            {
+                agent.Move();
+            }
         }
 
         /// <summary>
@@ -518,6 +595,7 @@ namespace EasyAI.Managers
         
         private void OnRenderObject()
         {
+            // Nothing to do if gizmos are turned off.
             if (_gizmos == GizmosState.Off)
             {
                 return;
@@ -530,6 +608,7 @@ namespace EasyAI.Managers
             GL.MultMatrix(transform.localToWorldMatrix);
             GL.Begin(GL.LINES);
 
+            // Render either all or the selected agent/component.
             if (_gizmos == GizmosState.All)
             {
                 foreach (Agent agent in Agents)
@@ -541,16 +620,16 @@ namespace EasyAI.Managers
             {
                 if (Agents.Count == 1)
                 {
-                    _selectedAgent = Agents[0];
+                    SelectedAgent = Agents[0];
                 }
                 
                 if (_selectedComponent != null)
                 {
                     _selectedComponent.DisplayGizmos();
                 }
-                else if (_selectedAgent != null)
+                else if (SelectedAgent != null)
                 {
-                    AgentGizmos(_selectedAgent);
+                    AgentGizmos(SelectedAgent);
                 }
             }
             
@@ -589,6 +668,7 @@ namespace EasyAI.Managers
         /// <returns>The updated Y position after all custom rendering has been done.</returns>
         private float RenderMessageOptions(float x, float y, float w, float h, float p)
         {
+            // Button to change messaging mode.
             y = NextItem(y, h, p);
             if (GuiButton(x, y, w / 2 - p, h, MessageMode switch
                 {
@@ -600,6 +680,7 @@ namespace EasyAI.Managers
                 ChangeMessageMode();
             }
 
+            // Button to clear messages.
             if (GuiButton(x + w / 2 + p, y, w / 2 - p, h, "Clear Messages"))
             {
                 ClearMessages();
@@ -633,6 +714,7 @@ namespace EasyAI.Managers
                 w = Screen.width - 4 * p;
             }
             
+            // Button open/close details.
             if (GuiButton(x, y, w, h, _detailsOpen ? "Close" : "Details"))
             {
                 _detailsOpen = !_detailsOpen;
@@ -643,25 +725,28 @@ namespace EasyAI.Managers
                 return;
             }
 
-            if (_selectedAgent == null && _state == GuiState.Agent || _selectedComponent == null && _state == GuiState.Component)
+            if (SelectedAgent == null && _state == GuiState.Agent || _selectedComponent == null && _state == GuiState.Component)
             {
                 _state = GuiState.Main;
             }
 
             if (_state == GuiState.Main && Agents.Count == 1)
             {
-                _selectedAgent = Agents[0];
+                SelectedAgent = Agents[0];
                 _state = GuiState.Agent;
             }
 
+            // Handle agent view rendering.
             if (_state == GuiState.Agent)
             {
+                // Can only go to the main view if there is more than one agent.
                 if (Agents.Count > 1)
                 {
+                    // Button to go back to the main view.
                     y = NextItem(y, h, p);
                     if (GuiButton(x, y, w, h, "Back to Overview"))
                     {
-                        _selectedAgent = null;
+                        SelectedAgent = null;
                         _state = GuiState.Main;
                     }
                 }
@@ -671,11 +756,12 @@ namespace EasyAI.Managers
                 return;
             }
 
+            // Handle components view rendering.
             if (_state == GuiState.Components)
             {
-
+                // Button to go back to the agents view.
                 y = NextItem(y, h, p);
-                if (GuiButton(x, y, w, h, $"Back to {_selectedAgent.name}"))
+                if (GuiButton(x, y, w, h, $"Back to {SelectedAgent.name}"))
                 {
                     _state = GuiState.Agent;
                 }
@@ -687,11 +773,12 @@ namespace EasyAI.Managers
                 return;
             }
 
+            // Handle the component view.
             if (_state == GuiState.Component)
             {
-
+                // Button to go back to the components view.
                 y = NextItem(y, h, p);
-                if (GuiButton(x, y, w, h, $"Back to {_selectedAgent.name} Sensors and Actuators"))
+                if (GuiButton(x, y, w, h, $"Back to {SelectedAgent.name} Sensors and Actuators"))
                 {
                     _selectedComponent = null;
                     _state = GuiState.Components;
@@ -701,22 +788,25 @@ namespace EasyAI.Managers
                 return;
             }
 
+            // Display all agents.
             y = NextItem(y, h, p);
             GuiBox(x, y, w, h, p, 1);
             GuiLabel(x, y, w, h, p, $"{Agents.Count} Agents:");
 
             foreach (Agent agent in Agents)
             {
+                // Button to select an agent.
                 y = NextItem(y, h, p);
                 if (!GuiButton(x, y, w, h, $"{agent.name} - {agent}" + (agent.Mind == null ? " - No Mind." : $" - {agent.Mind}")))
                 {
                     continue;
                 }
 
-                _selectedAgent = agent;
+                SelectedAgent = agent;
                 _state = GuiState.Agent;
             }
             
+            // Display global messages.
             if (GlobalMessages.Count == 0)
             {
                 y = NextItem(y, h, p);
@@ -747,7 +837,7 @@ namespace EasyAI.Managers
         /// <param name="p">Padding of components. In most cases this should remain unchanged.</param>
         private void RenderAgent(float x, float y, float w, float h, float p)
         {
-            if (_selectedAgent == null)
+            if (SelectedAgent == null)
             {
                 _state = GuiState.Main;
                 return;
@@ -760,28 +850,31 @@ namespace EasyAI.Managers
                 length++;
             }
             
+            // Display all agent details.
             GuiBox(x, y, w, h, p, length);
             if (Agents.Count > 1)
             {
-                GuiLabel(x, y, w, h, p, _selectedAgent.name);
+                GuiLabel(x, y, w, h, p, SelectedAgent.name);
                 y = NextItem(y, h, p);
             }
 
-            GuiLabel(x, y, w, h, p, $"Type: {_selectedAgent}");
+            GuiLabel(x, y, w, h, p, $"Type: {SelectedAgent}");
             y = NextItem(y, h, p);
-            Mind mind = _selectedAgent.Mind;
-            GuiLabel(x, y, w, h, p, (mind != null ? $"Mind: {mind}" : "Mind: None") + $" | Performance: {_selectedAgent.Performance}");
+            Mind mind = SelectedAgent.Mind;
+            GuiLabel(x, y, w, h, p, (mind != null ? $"Mind: {mind}" : "Mind: None") + $" | Performance: {SelectedAgent.Performance}");
             y = NextItem(y, h, p);
-            GuiLabel(x, y, w, h, p, $"Position: {_selectedAgent.Position} | " + (_selectedAgent.MovingToTarget ? $"Moving to {_selectedAgent.MoveTarget}." : "Not moving."));
+            GuiLabel(x, y, w, h, p, $"Position: {SelectedAgent.Position} | " + (SelectedAgent.MovingToTarget ? $"Moving to {SelectedAgent.MoveTarget}." : "Not moving."));
             y = NextItem(y, h, p);
-            GuiLabel(x, y, w, h, p, $"Rotation: {_selectedAgent.Rotation.eulerAngles.y} | " + (_selectedAgent.LookingToTarget ? $"Looking to {_selectedAgent.LookTarget}." : "Not looking."));
+            GuiLabel(x, y, w, h, p, $"Rotation: {SelectedAgent.Rotation.eulerAngles.y} | " + (SelectedAgent.LookingToTarget ? $"Looking to {SelectedAgent.LookTarget}." : "Not looking."));
 
+            // Display any custom details implemented for the mind.
             if (mind != null)
             {
-                y = _selectedAgent.Mind.DisplayDetails(x, y, w, h, p);
+                y = SelectedAgent.Mind.DisplayDetails(x, y, w, h, p);
             }
 
-            if (_selectedAgent.Sensors.Length > 0 && _selectedAgent.Actuators.Length > 0)
+            // Display all sensors for the agent.
+            if (SelectedAgent.Sensors.Length > 0 && SelectedAgent.Actuators.Length > 0)
             {
                 y = NextItem(y, h, p);
                 if (GuiButton(x, y, w, h, "Sensors, Actuators, Percepts, and Actions"))
@@ -795,6 +888,7 @@ namespace EasyAI.Managers
                 return;
             }
 
+            // Display all messages for the agent.
             y = RenderMessageOptions(x, y, w, h, p);
             
             y = NextItem(y, h, p);
@@ -823,23 +917,25 @@ namespace EasyAI.Managers
         /// <param name="p">Padding of components. In most cases this should remain unchanged.</param>
         private void RenderComponents(float x, float y, float w, float h, float p)
         {
-            if (_selectedAgent == null)
+            if (SelectedAgent == null)
             {
                 _state = GuiState.Main;
                 return;
             }
             
+            // List all sensors.
             y = NextItem(y, h, p);
             GuiBox(x, y, w, h, p, 1);
-            GuiLabel(x, y, w, h, p, _selectedAgent.Sensors.Length switch
+            GuiLabel(x, y, w, h, p, SelectedAgent.Sensors.Length switch
             {
                 0 => "No Sensors",
                 1 => "1 Sensor",
-                _ => $"{_selectedAgent.Sensors.Length} Sensors"
+                _ => $"{SelectedAgent.Sensors.Length} Sensors"
             });
 
-            foreach (Sensor sensor in _selectedAgent.Sensors)
+            foreach (Sensor sensor in SelectedAgent.Sensors)
             {
+                // Button to select a sensor.
                 y = NextItem(y, h, p);
                 if (!GuiButton(x, y, w, h, sensor.ToString()))
                 {
@@ -850,17 +946,19 @@ namespace EasyAI.Managers
                 _state = GuiState.Component;
             }
             
+            // Display all actuators.
             y = NextItem(y, h, p);
             GuiBox(x, y, w, h, p, 1);
-            GuiLabel(x, y, w, h, p, _selectedAgent.Actuators.Length switch
+            GuiLabel(x, y, w, h, p, SelectedAgent.Actuators.Length switch
             {
                 0 => "No Actuators",
                 1 => "1 Actuator",
-                _ => $"{_selectedAgent.Actuators.Length} Actuators"
+                _ => $"{SelectedAgent.Actuators.Length} Actuators"
             });
             
-            foreach (Actuator actuator in _selectedAgent.Actuators)
+            foreach (Actuator actuator in SelectedAgent.Actuators)
             {
+                // Button to select an actuator.
                 y = NextItem(y, h, p);
                 if (!GuiButton(x, y, w, h, actuator.ToString()))
                 {
@@ -871,7 +969,8 @@ namespace EasyAI.Managers
                 _state = GuiState.Component;
             }
             
-            Percept[] percepts = _selectedAgent.Percepts.Where(p => p != null).ToArray();
+            // Display all percepts.
+            Percept[] percepts = SelectedAgent.Percepts.Where(p => p != null).ToArray();
             if (percepts.Length > 0)
             {
                 y = NextItem(y, h, p);
@@ -887,7 +986,8 @@ namespace EasyAI.Managers
                 }
             }
 
-            EasyAI.Actions.Action[] actions = _selectedAgent.Actions?.Where(a => a != null).ToArray();
+            // Display all actions.
+            EasyAI.Actions.Action[] actions = SelectedAgent.Actions?.Where(a => a != null).ToArray();
             if (actions != null && actions.Length > 0)
             {
                 y = NextItem(y, h, p);
@@ -903,6 +1003,7 @@ namespace EasyAI.Managers
                 }
             }
         }
+        
         /// <summary>
         /// Render the automatic component GUI.
         /// </summary>
@@ -919,22 +1020,26 @@ namespace EasyAI.Managers
                 return;
             }
             
+            // Display component details.
             y = NextItem(y, h, p);
             GuiBox(x, y, w, h, p, 1);
-            GuiLabel(x, y, w, h, p, $"{_selectedAgent.name} | {_selectedComponent}");
+            GuiLabel(x, y, w, h, p, $"{SelectedAgent.name} | {_selectedComponent}");
             
+            // Display any custom details implemented for the component.
             y = _selectedComponent.DisplayDetails(x, y, w, h, p);
+            
+            // Display component messages.
+            if (!_selectedComponent.HasMessages)
+            {
+                GuiBox(x, y, w, h, p, 1);
+                GuiLabel(x, y, w, h, p, "No messages.");
+                return;
+            }
             
             y = RenderMessageOptions(x, y, w, h, p);
             
             y = NextItem(y, h, p);
-            GuiBox(x, y, w, h, p, !_selectedComponent.HasMessages ? 1 : _selectedComponent.MessageCount);
-            
-            if (!_selectedComponent.HasMessages)
-            {
-                GuiLabel(x, y, w, h, p, "No messages.");
-                return;
-            }
+            GuiBox(x, y, w, h, p, _selectedComponent.MessageCount);
 
             foreach (string message in _selectedComponent.Messages)
             {
@@ -970,6 +1075,7 @@ namespace EasyAI.Managers
             
             x = Screen.width - x - w;
 
+            // Button open/close controls.
             if (GuiButton(x, y, w, h, _controlsOpen ? "Close" : "Controls"))
             {
                 _controlsOpen = !_controlsOpen;
@@ -983,6 +1089,7 @@ namespace EasyAI.Managers
             y = NextItem(y, h, p);
             y = CustomRendering(x, y, w, h, p);
 
+            // Button to pause or resume the scene.
             if (GuiButton(x, y, w, h, Playing ? "Pause" : "Resume"))
             {
                 if (Playing)
@@ -997,6 +1104,7 @@ namespace EasyAI.Managers
 
             if (!Playing)
             {
+                // Button to take a single time step.
                 y = NextItem(y, h, p);
                 if (GuiButton(x, y, w, h, "Step"))
                 {
@@ -1004,6 +1112,7 @@ namespace EasyAI.Managers
                 }
             }
             
+            // Button to change gizmos mode.
             y = NextItem(y, h, p);
             if (GuiButton(x, y, w, h, _gizmos switch
                 {
@@ -1015,15 +1124,20 @@ namespace EasyAI.Managers
                 ChangeGizmosState();
             }
 
-            foreach (Camera cam in Cameras)
+            if (Cameras.Length > 1)
             {
-                y = NextItem(y, h, p);
-                if (GUI.Button(new Rect(x, y, w, h), cam.name))
+                // Buttons to switch cameras.
+                foreach (Camera cam in Cameras)
                 {
-                    SwitchCamera(cam);
+                    y = NextItem(y, h, p);
+                    if (GUI.Button(new Rect(x, y, w, h), cam.name))
+                    {
+                        SwitchCamera(cam);
+                    }
                 }
             }
 
+            // Button to quit.
             y = NextItem(y, h, p);
             if (GuiButton(x, y, w, h, "Quit"))
             {

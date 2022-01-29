@@ -27,7 +27,7 @@ namespace EasyAI.Agents
         /// <summary>
         /// Character controller movement.
         /// </summary>
-        protected override void Move()
+        public override void Move()
         {
             // Get the agent's position prior to any movement.
             Vector3 lastPosition = transform.position;
@@ -44,6 +44,11 @@ namespace EasyAI.Agents
             }
 
             DidMove = transform.position != lastPosition;
+            
+            if (DidMove && Mind != null)
+            {
+                Mind.AddMessage($"Moved towards {MoveTarget}.");
+            }
         }
     }
 }

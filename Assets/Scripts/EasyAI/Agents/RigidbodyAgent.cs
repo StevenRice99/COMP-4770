@@ -14,8 +14,6 @@ namespace EasyAI.Agents
 
         protected override void Start()
         {
-            base.Update();
-            
             // Get the rigidbody.
             _rigidbody = GetComponent<Rigidbody>();
             if (_rigidbody == null)
@@ -30,17 +28,7 @@ namespace EasyAI.Agents
             }
         }
         
-        protected virtual void FixedUpdate()
-        {
-            // Move in FixedUpdate as the rigidbody uses physics.
-            Move();
-            if (DidMove && Mind != null)
-            {
-                Mind.AddMessage($"Moved towards {MoveTarget}.");
-            }
-        }
-        
-        protected override void Move()
+        public override void Move()
         {
             Vector3 lastPosition = transform.position;
             
@@ -51,6 +39,11 @@ namespace EasyAI.Agents
             }
             
             DidMove = transform.position != lastPosition;
+            
+            if (DidMove && Mind != null)
+            {
+                Mind.AddMessage($"Moved towards {MoveTarget}.");
+            }
         }
     }
 }

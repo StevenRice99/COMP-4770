@@ -7,22 +7,10 @@ namespace EasyAI.Agents
     /// </summary>
     public class TransformAgent : Agent
     {
-        protected override void Update()
-        {
-            base.Update();
-            
-            // Add in movement every frame.
-            Move();
-            if (DidMove && Mind != null)
-            {
-                Mind.AddMessage($"Moved towards {MoveTarget}.");
-            }
-        }
-        
         /// <summary>
         /// Transform movement.
         /// </summary>
-        protected override void Move()
+        public override void Move()
         {
             // If the agent should not be moving simply return.
             if (!MovingToTarget)
@@ -37,6 +25,11 @@ namespace EasyAI.Agents
             position = Vector3.MoveTowards(position, MoveTarget, moveSpeed * Time.deltaTime);
             DidMove = position != lastPosition;
             transform.position = position;
+            
+            if (DidMove && Mind != null)
+            {
+                Mind.AddMessage($"Moved towards {MoveTarget}.");
+            }
         }
     }
 }
