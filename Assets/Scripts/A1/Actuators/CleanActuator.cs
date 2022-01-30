@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace A1.Actuators
 {
+    /// <summary>
+    /// Actuator to clean a floor tile.
+    /// </summary>
     public class CleanActuator : Actuator
     {
         [SerializeField]
@@ -12,31 +15,45 @@ namespace A1.Actuators
         [Tooltip("The time in seconds it takes to clean a floor tile.")]
         private float timeToClean;
 
-        private float timeSpentCleaning;
+        /// <summary>
+        /// How long the floor tile has been getting cleaned for.
+        /// </summary>
+        private float timeSpentCleaning = 0.25f;
         
+        /// <summary>
+        /// Clean a floor tile.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns>True if the floor tile has finished being cleaned, false otherwise.</returns>
         protected override bool Act(Action action)
         {
+            // Only act if there is a clean action.
             if (!(action is CleanAction cleanAction))
             {
                 return false;
             }
 
+            // This should never happen, but check just in case.
+            if (cleanAction.Floor == null)
+            {
+                AddMessage("Unable to clean current floor tile.");
+                return false;
+            }
+
+            // Increment how long the floor has been getting cleaned for.
             timeSpentCleaning += DeltaTime;
+            
+            // If the tile has not been cleaned long enough, return false as it has not finished getting cleaned.
             if (timeSpentCleaning < timeToClean)
             {
                 AddMessage("Cleaning current floor tile.");
                 return false;
             }
-
-            if (cleanAction.floor == null)
-            {
-                AddMessage("Unable to clean current floor tile.");
-                return false;
-            }
             
+            // The floor has finished being cleaned so reset the time spent cleaning.
             AddMessage("Finished cleaning current floor tile.");
             timeSpentCleaning = 0;
-            cleanAction.floor.Clean();
+            cleanAction.Floor.Clean();
             cleanAction.Complete = true;
             return true;
         }

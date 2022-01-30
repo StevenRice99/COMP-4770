@@ -8,10 +8,18 @@ using UnityEngine;
 
 namespace A1.Sensors
 {
+    /// <summary>
+    /// Sense the dirt state of the current tile the agent is on.
+    /// </summary>
     public class DirtySensor : Sensor
     {
+        /// <summary>
+        /// Sense the dirt state of the current tile the agent is on.
+        /// </summary>
+        /// <returns>A DirtyPercept with the dirt state of the current tile the agent is on.</returns>
         protected override Percept Sense()
         {
+            // Get all floors. If there is none, return null as there was nothing sensed.
             List<Floor> floors = FloorManager.FloorManagerSingleton.Floors;
             if (floors.Count == 0)
             {
@@ -19,6 +27,7 @@ namespace A1.Sensors
                 return null;
             }
 
+            // Create the percept with the dirt level of the closest floor.
             DirtyPercept percept = new DirtyPercept
             {
                 Floor = floors.OrderBy(f => Vector3.Distance(Position, f.transform.position)).First()
