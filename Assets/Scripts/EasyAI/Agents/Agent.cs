@@ -91,6 +91,11 @@ namespace EasyAI.Agents
         public Action[] Actions { get; private set; }
 
         /// <summary>
+        /// The root transform that holds the visuals for this agent used to rotate the agent towards its look target.
+        /// </summary>
+        public Transform Visuals { get; private set; }
+
+        /// <summary>
         /// The position of this agent.
         /// </summary>
         public Vector3 Position => transform.position;
@@ -98,7 +103,7 @@ namespace EasyAI.Agents
         /// <summary>
         /// The rotation of this agent.
         /// </summary>
-        public Quaternion Rotation => _visuals.rotation;
+        public Quaternion Rotation => Visuals.rotation;
 
         /// <summary>
         /// The local position of this agent.
@@ -108,17 +113,12 @@ namespace EasyAI.Agents
         /// <summary>
         /// The local rotation of this agent.
         /// </summary>
-        public Quaternion LocalRotation => _visuals.localRotation;
+        public Quaternion LocalRotation => Visuals.localRotation;
 
         /// <summary>
         /// The performance measure of this agent.
         /// </summary>
         private PerformanceMeasure _performanceMeasure;
-
-        /// <summary>
-        /// The root transform that holds the visuals for this agent used to rotate the agent towards its look target.
-        /// </summary>
-        private Transform _visuals;
 
         /// <summary>
         /// Assign a mind to this agent.
@@ -412,17 +412,17 @@ namespace EasyAI.Agents
             if (children.Length == 0)
             {
                 GameObject go = new GameObject("Visuals");
-                _visuals = go.transform;
+                Visuals = go.transform;
                 go.transform.parent = transform;
                 go.transform.localPosition = Vector3.zero;
                 go.transform.localRotation = Quaternion.identity;
                 return;
             }
 
-            _visuals = children.FirstOrDefault(t => t.name == "Visuals");
-            if (_visuals == null)
+            Visuals = children.FirstOrDefault(t => t.name == "Visuals");
+            if (Visuals == null)
             {
-                _visuals = children[0];
+                Visuals = children[0];
             }
         }
         
@@ -444,7 +444,7 @@ namespace EasyAI.Agents
             }
             
             // We only want to rotate along the Y axis so update the target rotation to be at the same Y level.
-            Transform visuals = _visuals;
+            Transform visuals = Visuals;
             Vector3 target = new Vector3(LookTarget.x, visuals.position.y, LookTarget.z);
             
             // If the position to look at is the current position, simply return.
@@ -455,10 +455,10 @@ namespace EasyAI.Agents
             }
 
             // Look towards the target.
-            Quaternion rotation = _visuals.rotation;
+            Quaternion rotation = Visuals.rotation;
             Quaternion lastRotation = rotation;
             rotation = Quaternion.LookRotation(Vector3.RotateTowards(visuals.forward, target - visuals.position, lookSpeed * Time.deltaTime, 0.0f));
-            _visuals.rotation = rotation;
+            Visuals.rotation = rotation;
             DidLook = rotation != lastRotation;
 
             if (DidLook && Mind != null)
