@@ -2,9 +2,11 @@
 
 namespace A1.Percepts
 {
-    public class CurrentFloorDirtyPercept : Percept
+    public class DirtyPercept : Percept
     {
-        public bool IsDirty;
+        public Floor Floor;
+
+        public bool IsDirty => Floor != null && Floor.State >= Floor.DirtLevel.Dirty;
 
         public override string DetailsDisplay()
         {

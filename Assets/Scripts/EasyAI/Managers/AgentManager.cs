@@ -86,7 +86,7 @@ namespace EasyAI.Managers
         [SerializeField]
         [Min(0)]
         [Tooltip("How wide the details list is. Set to zero to disable details list rendering.")]
-        private float detailsWidth = 400;
+        private float detailsWidth = 350;
         
         [SerializeField]
         [Min(0)]

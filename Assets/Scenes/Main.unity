@@ -385,7 +385,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxAgentsPerUpdate: 0
   maxMessages: 100
-  detailsWidth: 400
+  detailsWidth: 350
   controlsWidth: 120
   gizmos: 1
   selectedCamera: {fileID: 448259072}

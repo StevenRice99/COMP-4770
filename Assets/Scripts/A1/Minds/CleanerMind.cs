@@ -13,20 +13,21 @@ namespace A1.Minds
     {
         public override Action[] Think(Percept[] percepts)
         {
-            if (CanClean(percepts))
+            Floor floorToClean = CanClean(percepts);
+            if (floorToClean != null)
             {
                 AddMessage("Cleaning current floor tile.");
                 StopMoveToLookAtTarget();
-                return new Action[] { new CleanAction() };
+                return new Action[] { new CleanAction { floor = floorToClean } };
             }
 
             MoveToLookAtTarget(DetermineNextToClean(percepts));
             return null;
         }
 
-        private static bool CanClean(IEnumerable<Percept> percepts)
+        private static Floor CanClean(IEnumerable<Percept> percepts)
         {
-            return percepts.OfType<CurrentFloorDirtyPercept>().ToArray().Any(isDirtyPercept => isDirtyPercept.IsDirty);
+            return percepts.OfType<DirtyPercept>().ToArray().FirstOrDefault(isDirtyPercept => isDirtyPercept.IsDirty)?.Floor;
         }
 
         private Vector3 DetermineNextToClean(IEnumerable<Percept> percepts)

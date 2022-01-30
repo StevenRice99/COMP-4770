@@ -2,5 +2,8 @@
 
 namespace A1.Actions
 {
-    public class CleanAction : Action { }
+    public class CleanAction : Action
+    {
+        public Floor floor;
+    }
 }
