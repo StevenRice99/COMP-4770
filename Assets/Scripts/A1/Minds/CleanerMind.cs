@@ -27,7 +27,7 @@ namespace A1.Minds
             {
                 // Stop movement and start cleaning the current floor tile.
                 AddMessage("Cleaning current floor tile.");
-                StopMoveToLookAtTarget();
+                StopMoveToTarget();
                 return new Action[] { new CleanAction { Floor = floorToClean } };
             }
 
