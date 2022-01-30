@@ -4,56 +4,35 @@ using UnityEngine;
 
 namespace EasyAI.Cameras
 {
+    /// <summary>
+    /// Camera for following behind an agent.
+    /// </summary>
     [RequireComponent(typeof(Camera))]
-    public class FollowCamera : MonoBehaviour
+    public class FollowAgentCamera : MonoBehaviour
     {
-        /// <summary>
-        /// The singleton look at agent camera.
-        /// </summary>
-        public static FollowCamera Singleton;
-        
-        [SerializeField]
         [Tooltip("How much to vertically offset the camera for viewing agents.")]
-        private float offset;
+        public float offset = 1;
         
         [SerializeField]
         [Min(0)]
         [Tooltip("How fast the camera should look to the agent for smooth looking. Set to zero for instant camera looking.")]
         private float lookSpeed;
         
-        [SerializeField]
         [Min(0)]
         [Tooltip("How fast the camera should move to the agent for smooth movement. Set to zero for instant camera movement.")]
-        private float moveSpeed;
+        public float moveSpeed = 5;
 
-        [SerializeField]
         [Min(0)]
         [Tooltip("How far away from the agent should the camera be.")]
-        private float distance;
+        public float distance = 5;
 
-        [SerializeField]
         [Min(0)]
         [Tooltip("How high from the agent should the camera be.")]
-        private float height;
-        
-        private void Awake()
-        {
-            if (Singleton == this)
-            {
-                return;
-            }
-
-            if (Singleton != null)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            Singleton = this;
-        }
+        public float height = 5;
 
         private void Start()
         {
+            // Snap look right away.
             float look = lookSpeed;
             float move = moveSpeed;
             lookSpeed = 0;
@@ -65,27 +44,30 @@ namespace EasyAI.Cameras
         
         private void LateUpdate()
         {
+            // Get the agent to look towards.
             Agent agent = AgentManager.Singleton.SelectedAgent;
-            if (agent == null)
+            if (agent == null && AgentManager.Singleton.Agents.Count > 0)
             {
-                agent = FindObjectOfType<Agent>();
+                agent = AgentManager.Singleton.Agents[0];
             }
-            
-            if (agent == null)
+            else
             {
                 return;
             }
 
+            // Determine where to move and look to.
             Transform agentTransform = agent.Visuals == null ? agent.transform : agent.Visuals;
             Vector3 target = agentTransform.position;
             target = new Vector3(target.x, target.y + offset, target.z);
-            Vector3 move = target + agentTransform.rotation * new Vector3(0, height, -distance);;
+            Vector3 move = target + agentTransform.rotation * new Vector3(0, height, -distance);
 
             Transform t = transform;
             Vector3 position = t.position;
 
+            // Move to the location.
             transform.position = moveSpeed <= 0 ? move : Vector3.Slerp(position, move, moveSpeed * Time.deltaTime);
 
+            // Look at the agent.
             if (lookSpeed <= 0)
             {
                 transform.LookAt(target);

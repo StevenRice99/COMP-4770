@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace A1.Sensors
 {
-    public class CurrentFloorDirtySensor : Sensor
+    public class DirtySensor : Sensor
     {
         protected override Percept Sense()
         {

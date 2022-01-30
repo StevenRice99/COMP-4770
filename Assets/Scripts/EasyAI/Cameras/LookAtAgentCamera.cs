@@ -1,45 +1,25 @@
-﻿using System;
-using EasyAI.Agents;
+﻿using EasyAI.Agents;
 using EasyAI.Managers;
 using UnityEngine;
 
 namespace EasyAI.Cameras
 {
+    /// <summary>
+    /// Camera for looking at an agent from a set position.
+    /// </summary>
     [RequireComponent(typeof(Camera))]
     public class LookAtAgentCamera : MonoBehaviour
     {
-        /// <summary>
-        /// The singleton look at agent camera.
-        /// </summary>
-        public static LookAtAgentCamera Singleton;
-
-        [SerializeField]
         [Tooltip("How much to vertically offset the camera for viewing agents.")]
-        private float offset;
+        public float offset = 1;
 
-        [SerializeField]
         [Min(0)]
         [Tooltip("How fast the camera should look to the agent for smooth looking. Set to zero for instant camera looking.")]
-        private float lookSpeed;
-        
-        private void Awake()
-        {
-            if (Singleton == this)
-            {
-                return;
-            }
-
-            if (Singleton != null)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            Singleton = this;
-        }
+        public float lookSpeed = 5;
 
         private void Start()
         {
+            // Snap look right away.
             float look = lookSpeed;
             lookSpeed = 0;
             LateUpdate();
@@ -48,26 +28,29 @@ namespace EasyAI.Cameras
 
         private void LateUpdate()
         {
+            // Get the agent to look towards.
             Agent agent = AgentManager.Singleton.SelectedAgent;
-            if (agent == null)
+            if (agent == null && AgentManager.Singleton.Agents.Count > 0)
             {
-                agent = FindObjectOfType<Agent>();
+                agent = AgentManager.Singleton.Agents[0];
             }
-            
-            if (agent == null)
+            else
             {
                 return;
             }
             
+            // Determine where to look at.
             Vector3 target = agent.Visuals == null ? agent.Position : agent.Visuals.position;
             target = new Vector3(target.x, target.y + offset, target.z);
 
+            // Look instantly.
             if (lookSpeed <= 0)
             {
                 transform.LookAt(target);
                 return;
             }
 
+            // Look towards it.
             Transform t = transform;
             transform.rotation = Quaternion.Slerp(t.rotation, Quaternion.LookRotation(target - t.position), lookSpeed * Time.deltaTime);
         }

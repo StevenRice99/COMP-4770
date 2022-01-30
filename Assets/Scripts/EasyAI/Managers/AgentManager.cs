@@ -79,18 +79,37 @@ namespace EasyAI.Managers
         private int maxAgentsPerUpdate;
 
         [SerializeField]
+        [Min(0)]
         [Tooltip("The maximum number of messages any component can hold.")]
         private int maxMessages = 100;
         
         [SerializeField]
         [Min(0)]
         [Tooltip("How wide the details list is. Set to zero to disable details list rendering.")]
-        private float detailsWidth = 450;
+        private float detailsWidth = 400;
         
         [SerializeField]
         [Min(0)]
         [Tooltip("How wide the controls list is. Set to zero to disable controls list rendering.")]
         private float controlsWidth = 120;
+
+        /// Determine what gizmos lines are drawn.
+        /// Off - No lines are drawn.
+        /// All - Every line from every agent, sensor, and actuator is drawn.
+        /// Selected - If an agent is selected, only it and its sensors and actuators are drawn. If an individual sensor or actuator is selected, only it is drawn.
+        
+        [SerializeField]
+        [Tooltip(
+            "Determine what gizmos lines are drawn.\n" +
+             "Off - No lines are drawn.\n" +
+             "All - Every line from every agent, sensor, and actuator is drawn.\n" +
+             "Selected - If an agent is selected, only it and its sensors and actuators are drawn. If an individual sensor or actuator is selected, only it is drawn."
+        )]
+        private GizmosState gizmos;
+
+        [SerializeField]
+        [Tooltip("The currently selected camera. Set this to start with that camera active. Leaving empty will default to the first camera by alphabetic order.")]
+        protected Camera selectedCamera;
 
         /// <summary>
         /// Getter for the maximum number of messages any component can hold.
@@ -120,12 +139,12 @@ namespace EasyAI.Managers
         /// <summary>
         /// All agents in the scene.
         /// </summary>
-        protected List<Agent> Agents = new List<Agent>();
+        public List<Agent> Agents { get; } = new List<Agent>();
 
         /// <summary>
         /// All cameras in the scene.
         /// </summary>
-        protected Camera[] Cameras = Array.Empty<Camera>();
+        public Camera[] Cameras { get; protected set; } = Array.Empty<Camera>();
 
         /// <summary>
         /// All agents which move during an update tick.
@@ -136,6 +155,8 @@ namespace EasyAI.Managers
         /// All agents which move during a fixed update tick.
         /// </summary>
         private List<Agent> FixedUpdateAgents = new List<Agent>();
+        
+        private GuiState _state;
 
         /// <summary>
         /// The agent which is currently thinking.
@@ -146,16 +167,6 @@ namespace EasyAI.Managers
         /// True if the scene is taking a single time step.
         /// </summary>
         private bool _stepping;
-
-        /// <summary>
-        /// The current state of the GUI.
-        /// </summary>
-        private GuiState _state;
-
-        /// <summary>
-        /// The current gizmos rendering mode.
-        /// </summary>
-        private GizmosState _gizmos;
 
         /// <summary>
         /// If the details menu is currently open.
@@ -397,13 +408,13 @@ namespace EasyAI.Managers
         /// </summary>
         public void ChangeGizmosState()
         {
-            if (_gizmos == GizmosState.Selected)
+            if (gizmos == GizmosState.Selected)
             {
-                _gizmos = GizmosState.Off;
+                gizmos = GizmosState.Off;
                 return;
             }
 
-            _gizmos++;
+            gizmos++;
         }
 
         /// <summary>
@@ -412,7 +423,7 @@ namespace EasyAI.Managers
         /// <param name="state">The state to change to.</param>
         public void ChangeGizmosState(GizmosState state)
         {
-            _gizmos = state;
+            gizmos = state;
         }
 
         /// <summary>
@@ -441,6 +452,7 @@ namespace EasyAI.Managers
         /// <param name="cam">The camera to switch to.</param>
         public void SwitchCamera(Camera cam)
         {
+            selectedCamera = cam;
             cam.enabled = true;
             foreach (Camera cam2 in Cameras)
             {
@@ -470,7 +482,11 @@ namespace EasyAI.Managers
         protected virtual void Start()
         {
             FindCameras();
-            if (Cameras.Length > 0)
+            if (selectedCamera != null)
+            {
+                SwitchCamera(selectedCamera);
+            }
+            else if (Cameras.Length > 0)
             {
                 SwitchCamera(Cameras[0]);
             }
@@ -596,7 +612,7 @@ namespace EasyAI.Managers
         private void OnRenderObject()
         {
             // Nothing to do if gizmos are turned off.
-            if (_gizmos == GizmosState.Off)
+            if (gizmos == GizmosState.Off)
             {
                 return;
             }
@@ -609,7 +625,7 @@ namespace EasyAI.Managers
             GL.Begin(GL.LINES);
 
             // Render either all or the selected agent/component.
-            if (_gizmos == GizmosState.All)
+            if (gizmos == GizmosState.All)
             {
                 foreach (Agent agent in Agents)
                 {
@@ -1114,7 +1130,7 @@ namespace EasyAI.Managers
             
             // Button to change gizmos mode.
             y = NextItem(y, h, p);
-            if (GuiButton(x, y, w, h, _gizmos switch
+            if (GuiButton(x, y, w, h, gizmos switch
                 {
                     GizmosState.Off => "Gizmos: Off",
                     GizmosState.Selected => "Gizmos: Selected",
