@@ -31,13 +31,16 @@ namespace EasyAI.Cameras
         {
             // Get the agent to look towards.
             Agent agent = AgentManager.Singleton.SelectedAgent;
-            if (agent == null && AgentManager.Singleton.Agents.Count > 0)
+            if (agent == null)
             {
-                agent = AgentManager.Singleton.Agents[0];
-            }
-            else
-            {
-                return;
+                if (AgentManager.Singleton.Agents.Count > 0)
+                {
+                    agent = AgentManager.Singleton.Agents[0];
+                }
+                else
+                {
+                    return;
+                }
             }
 
             // Move over the agent.

@@ -1,7 +1,7 @@
 ﻿using A1.Actions;
-using EasyAI.Actions;
 using EasyAI.Actuators;
 using UnityEngine;
+using Action = EasyAI.Actions.Action;
 
 namespace A1.Actuators
 {
@@ -13,13 +13,25 @@ namespace A1.Actuators
         [SerializeField]
         [Min(0)]
         [Tooltip("The time in seconds it takes to clean a floor tile.")]
-        private float timeToClean;
+        private float timeToClean = 0.25f;
+
+        [SerializeField]
+        [Tooltip("Dirt particles system to display when cleaning.")]
+        private ParticleSystem dirtParticles;
 
         /// <summary>
         /// How long the floor tile has been getting cleaned for.
         /// </summary>
-        private float timeSpentCleaning = 0.25f;
-        
+        private float timeSpentCleaning;
+
+        private void Start()
+        {
+            if (dirtParticles != null)
+            {
+                dirtParticles.Stop();
+            }
+        }
+
         /// <summary>
         /// Clean a floor tile.
         /// </summary>
@@ -43,6 +55,11 @@ namespace A1.Actuators
             // Increment how long the floor has been getting cleaned for.
             timeSpentCleaning += DeltaTime;
             
+            if (dirtParticles != null)
+            {
+                dirtParticles.Play();
+            }
+
             // If the tile has not been cleaned long enough, return false as it has not finished getting cleaned.
             if (timeSpentCleaning < timeToClean)
             {
@@ -55,6 +72,10 @@ namespace A1.Actuators
             timeSpentCleaning = 0;
             cleanAction.Floor.Clean();
             cleanAction.Complete = true;
+            if (dirtParticles != null)
+            {
+                dirtParticles.Stop();
+            }
             return true;
         }
     }
