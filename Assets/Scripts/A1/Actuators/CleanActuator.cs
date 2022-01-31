@@ -26,10 +26,7 @@ namespace A1.Actuators
 
         private void Start()
         {
-            if (dirtParticles != null)
-            {
-                dirtParticles.Stop();
-            }
+            StopCleaning();
         }
 
         /// <summary>
@@ -42,6 +39,7 @@ namespace A1.Actuators
             // Only act if there is a clean action.
             if (!(action is CleanAction cleanAction))
             {
+                StopCleaning();
                 return false;
             }
 
@@ -49,21 +47,18 @@ namespace A1.Actuators
             if (cleanAction.Floor == null)
             {
                 AddMessage("Unable to clean current floor tile.");
+                StopCleaning();
                 return false;
             }
 
             // Increment how long the floor has been getting cleaned for.
             timeSpentCleaning += DeltaTime;
-            
-            if (dirtParticles != null)
-            {
-                dirtParticles.Play();
-            }
 
             // If the tile has not been cleaned long enough, return false as it has not finished getting cleaned.
             if (timeSpentCleaning < timeToClean)
             {
                 AddMessage("Cleaning current floor tile.");
+                StartCleaning();
                 return false;
             }
             
@@ -72,11 +67,37 @@ namespace A1.Actuators
             timeSpentCleaning = 0;
             cleanAction.Floor.Clean();
             cleanAction.Complete = true;
-            if (dirtParticles != null)
-            {
-                dirtParticles.Stop();
-            }
+            StopCleaning();
             return true;
+        }
+
+        private void StartCleaning()
+        {
+            if (dirtParticles == null)
+            {
+                return;
+            }
+
+            if (dirtParticles.isPlaying)
+            {
+                return;
+            }
+            dirtParticles.Play();
+        }
+
+        private void StopCleaning()
+        {
+            if (dirtParticles == null)
+            {
+                return;
+            }
+
+            if (!dirtParticles.isPlaying)
+            {
+                return;
+            }
+                
+            dirtParticles.Stop();
         }
     }
 }
