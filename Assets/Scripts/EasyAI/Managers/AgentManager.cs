@@ -879,9 +879,9 @@ namespace EasyAI.Managers
             Mind mind = SelectedAgent.SelectedMind;
             GuiLabel(x, y, w, h, p, (mind != null ? $"Mind: {mind}" : "Mind: None") + $" | Performance: {SelectedAgent.Performance}");
             y = NextItem(y, h, p);
-            GuiLabel(x, y, w, h, p, $"Position: {SelectedAgent.Position} | " + (SelectedAgent.MovingToTarget ? $"Moving to {SelectedAgent.MoveTarget}." : "Not moving."));
+            GuiLabel(x, y, w, h, p, $"Position: {SelectedAgent.Position} | " + (SelectedAgent.MovingToTarget ? $"Moving to {SelectedAgent.MoveTarget} at {SelectedAgent.MoveVelocity} units/second." : "Not moving."));
             y = NextItem(y, h, p);
-            GuiLabel(x, y, w, h, p, $"Rotation: {SelectedAgent.Rotation.eulerAngles.y} | " + (SelectedAgent.LookingToTarget ? $"Looking to {SelectedAgent.LookTarget}." : "Not looking."));
+            GuiLabel(x, y, w, h, p, $"Rotation: {SelectedAgent.Rotation.eulerAngles.y} | " + (SelectedAgent.LookingToTarget ? $"Looking to {SelectedAgent.LookTarget} at {SelectedAgent.LookVelocity} degrees/second." : "Not looking."));
 
             // Display any custom details implemented for the mind.
             if (mind != null)

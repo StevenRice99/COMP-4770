@@ -20,12 +20,53 @@ namespace EasyAI.Agents
         [SerializeField]
         [Min(0)]
         [Tooltip("How fast this agent can move in units per second.")]
-        protected float moveSpeed;
+        protected float moveSpeed = 10;
         
         [SerializeField]
+        [Min(0)]
         [Tooltip("How fast this agent can look in degrees per second.")]
-        protected float lookSpeed;
+        protected float lookSpeed = 5;
 
+        [SerializeField]
+        [Min(0)]
+        [Tooltip("How fast the agent's movement can accelerate. Set to zero for instantaneous accelerate.")]
+        protected float moveAcceleration;
+
+        [SerializeField]
+        [Min(0)]
+        [Tooltip("How fast the agent's rotation can accelerate Set to zero for instantaneous accelerate.")]
+        protected float lookAcceleration;
+
+        /// <summary>
+        /// Getter for the move speed.
+        /// </summary>
+        public float MoveSpeed => moveSpeed;
+
+        /// <summary>
+        /// Getter for the look speed.
+        /// </summary>
+        public float LookSpeed => lookSpeed;
+
+        /// <summary>
+        /// Getter for the move acceleration.
+        /// </summary>
+        public float MoveAcceleration => moveAcceleration;
+
+        /// <summary>
+        /// Getter for the look acceleration.
+        /// </summary>
+        public float LookAcceleration => lookAcceleration;
+
+        /// <summary>
+        /// The current move velocity if move acceleration is being used.
+        /// </summary>
+        public float MoveVelocity { get; protected set; }
+
+        /// <summary>
+        /// The current look velocity if look acceleration is being used.
+        /// </summary>
+        public float LookVelocity { get; protected set; }
+        
         /// <summary>
         /// The time passed since the last time the agent's mind made decisions. Use this instead of Time.DeltaTime.
         /// </summary>
@@ -388,16 +429,13 @@ namespace EasyAI.Agents
             }
             
             // Find the performance measure.
+            _performanceMeasure = GetComponent<PerformanceMeasure>();
             if (_performanceMeasure == null)
             {
-                _performanceMeasure = GetComponent<PerformanceMeasure>();
+                _performanceMeasure = GetComponentInChildren<PerformanceMeasure>();
                 if (_performanceMeasure == null)
                 {
-                    _performanceMeasure = GetComponentInChildren<PerformanceMeasure>();
-                    if (_performanceMeasure == null)
-                    {
-                        _performanceMeasure = FindObjectsOfType<PerformanceMeasure>().FirstOrDefault(m => m.Agent == null);
-                    }
+                    _performanceMeasure = FindObjectsOfType<PerformanceMeasure>().FirstOrDefault(m => m.Agent == null);
                 }
             }
 
@@ -455,6 +493,7 @@ namespace EasyAI.Agents
             // If the agent should not be looking simply return.
             if (!LookingToTarget)
             {
+                LookVelocity = 0;
                 DidLook = false;
                 return;
             }
@@ -466,14 +505,18 @@ namespace EasyAI.Agents
             // If the position to look at is the current position, simply return.
             if (visuals.position == target)
             {
+                LookVelocity = 0;
                 DidLook = false;
                 return;
             }
 
+            // Calculate how fast we can look this frame.
+            CalculateLookSpeed();
+
             // Look towards the target.
             Quaternion rotation = Visuals.rotation;
             Quaternion lastRotation = rotation;
-            rotation = Quaternion.LookRotation(Vector3.RotateTowards(visuals.forward, target - visuals.position, lookSpeed * Time.deltaTime, 0.0f));
+            rotation = Quaternion.LookRotation(Vector3.RotateTowards(visuals.forward, target - visuals.position, LookVelocity * Time.deltaTime, 0.0f));
             Visuals.rotation = rotation;
             DidLook = rotation != lastRotation;
 
@@ -508,6 +551,28 @@ namespace EasyAI.Agents
                 AgentManager.Singleton.RemoveAgent(this);
             }
             catch { }
+        }
+
+        protected void CalculateMoveVelocity()
+        {
+            if (moveAcceleration <= 0)
+            {
+                MoveVelocity = moveSpeed;
+                return;
+            }
+
+            MoveVelocity = Mathf.Clamp(MoveVelocity + moveAcceleration, 0, moveSpeed);
+        }
+
+        private void CalculateLookSpeed()
+        {
+            if (lookAcceleration <= 0)
+            {
+                LookVelocity = lookSpeed;
+                return;
+            }
+
+            LookVelocity = Mathf.Clamp(LookVelocity + lookAcceleration, 0, lookSpeed);
         }
 
         /// <summary>

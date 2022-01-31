@@ -15,14 +15,18 @@ namespace EasyAI.Agents
             // If the agent should not be moving simply return.
             if (!MovingToTarget)
             {
+                MoveVelocity = 0;
                 DidMove = false;
                 return;
             }
+            
+            // Calculate how fast we can move this frame.
+            CalculateMoveVelocity();
 
             // Move towards the target position.
             Vector3 position = transform.position;
             Vector3 lastPosition = position;
-            position = Vector3.MoveTowards(position, MoveTarget, moveSpeed * Time.deltaTime);
+            position = Vector3.MoveTowards(position, MoveTarget, MoveVelocity * Time.deltaTime);
             DidMove = position != lastPosition;
             transform.position = position;
             

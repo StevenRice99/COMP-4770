@@ -71,6 +71,9 @@ namespace A1.Actuators
             return true;
         }
 
+        /// <summary>
+        /// Start the cleaning particles.
+        /// </summary>
         private void StartCleaning()
         {
             if (dirtParticles == null)
@@ -85,6 +88,9 @@ namespace A1.Actuators
             dirtParticles.Play();
         }
 
+        /// <summary>
+        /// Stop the cleaning particles.
+        /// </summary>
         private void StopCleaning()
         {
             if (dirtParticles == null)

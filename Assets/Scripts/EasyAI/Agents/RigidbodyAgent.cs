@@ -34,8 +34,15 @@ namespace EasyAI.Agents
             
             if (MovingToTarget)
             {
+                // Calculate how fast we can move this frame.
+                CalculateMoveVelocity();
+                
                 Vector3 position = transform.position;
-                _rigidbody.AddForce(Vector3.MoveTowards(position, MoveTarget, moveSpeed * Time.fixedDeltaTime) - position);
+                _rigidbody.AddForce(Vector3.MoveTowards(position, MoveTarget, MoveVelocity * Time.fixedTime) - position);
+            }
+            else
+            {
+                MoveVelocity = 0;
             }
             
             DidMove = transform.position != lastPosition;

@@ -35,12 +35,16 @@ namespace EasyAI.Agents
             // If the agent should not be moving, still call to move so gravity is applied.
             if (!MovingToTarget)
             {
+                MoveVelocity = 0;
                 _characterController.SimpleMove(Vector3.zero);
             }
             else
             {
+                // Calculate how fast we can move this frame.
+                CalculateMoveVelocity();
+                
                 Vector3 position = transform.position;
-                _characterController.SimpleMove(Vector3.MoveTowards(position, MoveTarget, moveSpeed * Time.deltaTime) - position);
+                _characterController.SimpleMove(Vector3.MoveTowards(position, MoveTarget, MoveVelocity * Time.deltaTime) - position);
             }
 
             DidMove = transform.position != lastPosition;
