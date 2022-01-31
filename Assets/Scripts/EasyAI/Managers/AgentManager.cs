@@ -588,9 +588,9 @@ namespace EasyAI.Managers
         /// <param name="agent">The agent to display gizmos for.</param>
         private static void AgentGizmos(Agent agent)
         {
-            if (agent.Mind != null)
+            if (agent.SelectedMind != null)
             {
-                agent.Mind.DisplayGizmos();
+                agent.SelectedMind.DisplayGizmos();
             }
 
             foreach (Actuator actuator in agent.Actuators)
@@ -813,7 +813,7 @@ namespace EasyAI.Managers
             {
                 // Button to select an agent.
                 y = NextItem(y, h, p);
-                if (!GuiButton(x, y, w, h, $"{agent.name} - {agent}" + (agent.Mind == null ? " - No Mind." : $" - {agent.Mind}")))
+                if (!GuiButton(x, y, w, h, $"{agent.name} - {agent}" + (agent.SelectedMind == null ? " - No Mind." : $" - {agent.SelectedMind}")))
                 {
                     continue;
                 }
@@ -876,7 +876,7 @@ namespace EasyAI.Managers
 
             GuiLabel(x, y, w, h, p, $"Type: {SelectedAgent}");
             y = NextItem(y, h, p);
-            Mind mind = SelectedAgent.Mind;
+            Mind mind = SelectedAgent.SelectedMind;
             GuiLabel(x, y, w, h, p, (mind != null ? $"Mind: {mind}" : "Mind: None") + $" | Performance: {SelectedAgent.Performance}");
             y = NextItem(y, h, p);
             GuiLabel(x, y, w, h, p, $"Position: {SelectedAgent.Position} | " + (SelectedAgent.MovingToTarget ? $"Moving to {SelectedAgent.MoveTarget}." : "Not moving."));
@@ -886,7 +886,7 @@ namespace EasyAI.Managers
             // Display any custom details implemented for the mind.
             if (mind != null)
             {
-                y = SelectedAgent.Mind.DisplayDetails(x, y, w, h, p);
+                y = SelectedAgent.SelectedMind.DisplayDetails(x, y, w, h, p);
             }
 
             // Display all sensors for the agent.

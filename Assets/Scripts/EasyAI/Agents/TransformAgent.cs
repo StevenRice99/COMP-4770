@@ -26,9 +26,9 @@ namespace EasyAI.Agents
             DidMove = position != lastPosition;
             transform.position = position;
             
-            if (DidMove && Mind != null)
+            if (DidMove)
             {
-                Mind.AddMessage($"Moved towards {MoveTarget}.");
+                AddMessage($"Moved towards {MoveTarget}.");
             }
         }
     }

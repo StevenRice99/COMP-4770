@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using EasyAI.Actuators;
@@ -64,11 +65,16 @@ namespace EasyAI.Agents
         /// The performance measure of the agent.
         /// </summary>
         public float Performance { get; private set; }
+
+        /// <summary>
+        /// Get the currently selected mind of the agent.
+        /// </summary>
+        public Mind SelectedMind => Minds != null && Minds.Length > 0 ? Minds[_selectedMindIndex] : null;
         
         /// <summary>
         /// The mind of this agent.
         /// </summary>
-        public Mind Mind { get; private set; }
+        public Mind[] Minds { get; private set; }
 
         /// <summary>
         /// The sensors of this agent.
@@ -121,13 +127,30 @@ namespace EasyAI.Agents
         private PerformanceMeasure _performanceMeasure;
 
         /// <summary>
+        /// The index of the currently selected mind.
+        /// </summary>
+        private int _selectedMindIndex;
+
+        /// <summary>
         /// Assign a mind to this agent.
         /// </summary>
-        /// <param name="mind">The mind to assign.</param>
-        public void AssignMind(Mind mind)
+        /// <param name="type">The type of mind to assign.</param>
+        public void AssignMind(Type type)
         {
-            Mind = mind;
-            ConfigureMind();
+            if (Minds == null || Minds.Length == 0 || type == null)
+            {
+                _selectedMindIndex = 0;
+                return;
+            }
+
+            Mind mind = Minds.FirstOrDefault(m => m.GetType() == type);
+            if (mind == null)
+            {
+                _selectedMindIndex = 0;
+                return;
+            }
+
+            _selectedMindIndex = Minds.ToList().IndexOf(mind);
         }
 
         /// <summary>
@@ -279,13 +302,13 @@ namespace EasyAI.Agents
         public void Perform()
         {
             // Can only sense, think, and act if there is a mind attached.
-            if (Mind != null)
+            if (Minds != null && Minds.Length > 0)
             {
                 // Sense the agent's surroundings.
                 Sense();
                 
                 // Have the mind make decisions on what actions to take.
-                Action[] decisions = Mind.Think(Percepts);
+                Action[] decisions = Minds[_selectedMindIndex].Think(Percepts);
             
                 // If new decisions were made, update the actions to be them.
                 if (decisions != null)
@@ -333,12 +356,12 @@ namespace EasyAI.Agents
         /// <param name="message">The message to add.</param>
         public void AddMessage(string message)
         {
-            if (Mind == null)
+            if (Minds == null || Minds.Length == 0)
             {
                 return;
             }
             
-            Mind.AddMessage(message);
+            Minds[_selectedMindIndex].AddMessage(message);
         }
 
         /// <summary>
@@ -355,21 +378,14 @@ namespace EasyAI.Agents
             // Register this agent with the manager.
             AgentManager.Singleton.AddAgent(this);
             
-            // Find the mind.
-            if (Mind == null)
+            // Find all minds.
+            List<Mind> minds = GetComponents<Mind>().ToList();
+            minds.AddRange(GetComponentsInChildren<Mind>());
+            Minds = minds.Distinct().ToArray();
+            foreach (Mind mind in minds)
             {
-                Mind = GetComponent<Mind>();
-                if (Mind == null)
-                {
-                    Mind = GetComponentInChildren<Mind>();
-                    if (Mind == null)
-                    {
-                        Mind = FindObjectsOfType<Mind>().FirstOrDefault(m => m.Agent == null);
-                    }
-                }
+                mind.Agent = this;
             }
-
-            ConfigureMind();
             
             // Find the performance measure.
             if (_performanceMeasure == null)
@@ -461,7 +477,7 @@ namespace EasyAI.Agents
             Visuals.rotation = rotation;
             DidLook = rotation != lastRotation;
 
-            if (DidLook && Mind != null)
+            if (DidLook)
             {
                 AddMessage($"Looked towards {LookTarget}.");
             }
@@ -555,17 +571,6 @@ namespace EasyAI.Agents
 
             // Remove actions which were completed.
             Actions = Actions.Where(a => !a.Complete).ToArray();
-        }
-
-        /// <summary>
-        /// Link the mind to this agent.
-        /// </summary>
-        private void ConfigureMind()
-        {
-            if (Mind != null)
-            {
-                Mind.Agent = this;
-            }
         }
         
         /// <summary>
