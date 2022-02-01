@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using EasyAI.Runtime.Managers;
 using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;

@@ -1,7 +1,5 @@
 ﻿using A1.Actions;
-using EasyAI.Runtime.Actuators;
 using UnityEngine;
-using Action = EasyAI.Runtime.Actions.Action;
 
 namespace A1.Actuators
 {

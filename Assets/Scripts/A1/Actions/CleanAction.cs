@@ -1,6 +1,4 @@
-﻿using EasyAI.Runtime.Actions;
-
-namespace A1.Actions
+﻿namespace A1.Actions
 {
     /// <summary>
     /// Action to clean a given floor tile.

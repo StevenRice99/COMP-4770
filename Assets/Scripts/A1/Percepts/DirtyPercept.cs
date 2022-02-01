@@ -1,6 +1,4 @@
-﻿using EasyAI.Runtime.Percepts;
-
-namespace A1.Percepts
+﻿namespace A1.Percepts
 {
     /// <summary>
     /// Hold the dirt state of the current tile the agent is on.

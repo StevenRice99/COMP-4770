@@ -1,0 +1,24 @@
+{
+  "name": "com.stevenrice.com.stevenrice99.easyai",
+  "version": "1.0.0",
+  "displayName": "Easy AI",
+  "description": "Easily implement basic artificial intelligence.",
+  "documentationUrl": "",
+  "changelogUrl": "",
+  "licensesUrl": "",
+  "dependencies": {
+    "com.unity.inputsystem": "1.2.0"
+  },
+  "keywords": [
+    "Easy",
+    "AI",
+    "Artificial",
+    "Intelligence"
+  ],
+  "author": {
+    "name": "Steven Rice",
+    "email": "TheStevenRice@Gmail.com",
+    "url": "https://stevenrice.ca"
+  },
+  "type": "library"
+}
