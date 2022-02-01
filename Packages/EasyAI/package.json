@@ -1,5 +1,5 @@
 {
-  "name": "com.stevenrice.com.stevenrice99.easyai",
+  "name": "com.stevenrice.easyai",
   "version": "1.0.0",
   "displayName": "Easy AI",
   "description": "Easily implement basic artificial intelligence.",
@@ -7,7 +7,7 @@
   "changelogUrl": "",
   "licensesUrl": "",
   "dependencies": {
-    "com.unity.inputsystem": "1.2.0"
+    "com.unity.inputsystem": "1.3.0"
   },
   "keywords": [
     "Easy",
@@ -20,5 +20,6 @@
     "email": "TheStevenRice@Gmail.com",
     "url": "https://stevenrice.ca"
   },
-  "type": "library"
+  "type": "library",
+  "unity": "2020.3"
 }
