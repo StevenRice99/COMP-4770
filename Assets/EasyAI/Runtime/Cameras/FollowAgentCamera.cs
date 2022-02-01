@@ -1,8 +1,8 @@
-﻿using EasyAI.Agents;
-using EasyAI.Managers;
+﻿using EasyAI.Runtime.Agents;
+using EasyAI.Runtime.Managers;
 using UnityEngine;
 
-namespace EasyAI.Cameras
+namespace EasyAI.Runtime.Cameras
 {
     /// <summary>
     /// Camera for following behind an agent.

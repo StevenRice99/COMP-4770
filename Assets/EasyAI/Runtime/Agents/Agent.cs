@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using EasyAI.Actuators;
-using EasyAI.Managers;
-using EasyAI.Minds;
-using EasyAI.Percepts;
-using EasyAI.PerformanceMeasures;
-using EasyAI.Sensors;
+using EasyAI.Runtime.Actuators;
+using EasyAI.Runtime.Managers;
+using EasyAI.Runtime.Minds;
+using EasyAI.Runtime.Percepts;
+using EasyAI.Runtime.PerformanceMeasures;
+using EasyAI.Runtime.Sensors;
 using UnityEngine;
-using Action = EasyAI.Actions.Action;
+using Action = EasyAI.Runtime.Actions.Action;
 
-namespace EasyAI.Agents
+namespace EasyAI.Runtime.Agents
 {
     /// <summary>
     /// Base class for all agents.

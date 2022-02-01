@@ -1,6 +1,6 @@
-﻿using EasyAI.Components;
+﻿using EasyAI.Runtime.Components;
 
-namespace EasyAI.PerformanceMeasures
+namespace EasyAI.Runtime.PerformanceMeasures
 {
     /// <summary>
     /// Base class for implementing a formula to calculate the performance of an agent.

@@ -1,10 +1,10 @@
-﻿using EasyAI.Actions;
-using EasyAI.Components;
-using EasyAI.Percepts;
-using EasyAI.PerformanceMeasures;
+﻿using EasyAI.Runtime.Actions;
+using EasyAI.Runtime.Components;
+using EasyAI.Runtime.Percepts;
+using EasyAI.Runtime.PerformanceMeasures;
 using UnityEngine;
 
-namespace EasyAI.Minds
+namespace EasyAI.Runtime.Minds
 {
     /// <summary>
     /// The mind which will decide on what actions an agent's actuators will perform based on the percepts it sensed.

@@ -2,8 +2,8 @@
 using System.Linq;
 using A1.Managers;
 using A1.Percepts;
-using EasyAI.Percepts;
-using EasyAI.Sensors;
+using EasyAI.Runtime.Percepts;
+using EasyAI.Runtime.Sensors;
 using UnityEngine;
 
 namespace A1.Sensors

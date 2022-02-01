@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using EasyAI.Percepts;
+using EasyAI.Runtime.Percepts;
 using UnityEngine;
 
 namespace A1.Percepts

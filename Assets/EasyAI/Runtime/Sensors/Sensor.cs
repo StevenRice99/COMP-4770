@@ -1,7 +1,7 @@
-﻿using EasyAI.Components;
-using EasyAI.Percepts;
+﻿using EasyAI.Runtime.Components;
+using EasyAI.Runtime.Percepts;
 
-namespace EasyAI.Sensors
+namespace EasyAI.Runtime.Sensors
 {
     /// <summary>
     /// Base sensor class for sensing percepts and sending them back to the agent where they will be processed by its mind.

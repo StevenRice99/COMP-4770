@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using EasyAI.Actuators;
-using EasyAI.Agents;
-using EasyAI.Managers;
-using EasyAI.Percepts;
-using EasyAI.Sensors;
+using EasyAI.Runtime.Actuators;
+using EasyAI.Runtime.Agents;
+using EasyAI.Runtime.Managers;
+using EasyAI.Runtime.Percepts;
+using EasyAI.Runtime.Sensors;
 using UnityEngine;
-using Action = EasyAI.Actions.Action;
+using Action = EasyAI.Runtime.Actions.Action;
 
-namespace EasyAI.Components
+namespace EasyAI.Runtime.Components
 {
     /// <summary>
     /// Base component for sensors, actuators, minds, and performance measures.

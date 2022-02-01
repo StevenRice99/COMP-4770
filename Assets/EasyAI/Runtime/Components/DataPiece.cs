@@ -1,4 +1,4 @@
-﻿namespace EasyAI.Components
+﻿namespace EasyAI.Runtime.Components
 {
     /// <summary>
     /// Base class for non-MonoBehaviour classes being actions and percepts.

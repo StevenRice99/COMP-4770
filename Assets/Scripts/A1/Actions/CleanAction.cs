@@ -1,4 +1,4 @@
-﻿using EasyAI.Actions;
+﻿using EasyAI.Runtime.Actions;
 
 namespace A1.Actions
 {

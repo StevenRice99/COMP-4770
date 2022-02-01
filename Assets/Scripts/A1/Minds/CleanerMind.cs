@@ -2,9 +2,9 @@
 using System.Linq;
 using A1.Actions;
 using A1.Percepts;
-using EasyAI.Actions;
-using EasyAI.Minds;
-using EasyAI.Percepts;
+using EasyAI.Runtime.Actions;
+using EasyAI.Runtime.Minds;
+using EasyAI.Runtime.Percepts;
 using UnityEngine;
 
 namespace A1.Minds

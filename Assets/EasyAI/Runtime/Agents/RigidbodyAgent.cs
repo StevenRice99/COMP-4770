@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace EasyAI.Agents
+namespace EasyAI.Runtime.Agents
 {
     /// <summary>
     /// Agent which moves through a rigidbody.

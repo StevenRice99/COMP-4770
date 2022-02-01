@@ -2,15 +2,16 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using EasyAI.Actuators;
-using EasyAI.Agents;
-using EasyAI.Components;
-using EasyAI.Minds;
-using EasyAI.Percepts;
-using EasyAI.Sensors;
+using EasyAI.Runtime.Actuators;
+using EasyAI.Runtime.Agents;
+using EasyAI.Runtime.Components;
+using EasyAI.Runtime.Minds;
+using EasyAI.Runtime.Percepts;
+using EasyAI.Runtime.Sensors;
 using UnityEngine;
+using Action = EasyAI.Runtime.Actions.Action;
 
-namespace EasyAI.Managers
+namespace EasyAI.Runtime.Managers
 {
     /// <summary>
     /// Singleton to handle agents and GUI rendering. Must be exactly one of this or an extension of this present in every scene.
@@ -1003,7 +1004,7 @@ namespace EasyAI.Managers
             }
 
             // Display all actions.
-            EasyAI.Actions.Action[] actions = SelectedAgent.Actions?.Where(a => a != null).ToArray();
+            Action[] actions = SelectedAgent.Actions?.Where(a => a != null).ToArray();
             if (actions != null && actions.Length > 0)
             {
                 y = NextItem(y, h, p);
@@ -1011,7 +1012,7 @@ namespace EasyAI.Managers
             
                 GuiLabel(x, y, w, h, p, actions.Length == 1 ? "1 Action" :$"{actions.Length} Actions");
 
-                foreach (EasyAI.Actions.Action action in actions)
+                foreach (Action action in actions)
                 {
                     string msg = action.DetailsDisplay();
                     y = NextItem(y, h, p);

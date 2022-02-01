@@ -1,4 +1,4 @@
-﻿using EasyAI.Percepts;
+﻿using EasyAI.Runtime.Percepts;
 
 namespace A1.Percepts
 {

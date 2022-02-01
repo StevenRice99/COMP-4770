@@ -1,6 +1,6 @@
-﻿using EasyAI.Components;
+﻿using EasyAI.Runtime.Components;
 
-namespace EasyAI.Actions
+namespace EasyAI.Runtime.Actions
 {
     /// <summary>
     /// Base class for actions which will be performed by actuators.

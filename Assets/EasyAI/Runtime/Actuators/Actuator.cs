@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using EasyAI.Actions;
-using EasyAI.Components;
+using EasyAI.Runtime.Actions;
+using EasyAI.Runtime.Components;
 
-namespace EasyAI.Actuators
+namespace EasyAI.Runtime.Actuators
 {
     /// <summary>
     /// Base actuator class for performing actions requested by the agent.
