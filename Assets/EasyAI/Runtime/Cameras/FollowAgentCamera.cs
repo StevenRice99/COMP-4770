@@ -1,6 +1,7 @@
 ﻿using EasyAI.Runtime.Agents;
 using EasyAI.Runtime.Managers;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace EasyAI.Runtime.Cameras
 {
@@ -23,15 +24,29 @@ namespace EasyAI.Runtime.Cameras
         public float moveSpeed = 5;
 
         [Min(0)]
-        [Tooltip("How far away from the agent should the camera be.")]
-        public float distance = 5;
+        [Tooltip("How far away from the agent should the camera be. Set this, height, and min distance to zero for a first-person camera.")]
+        public float depth = 5;
 
         [Min(0)]
-        [Tooltip("How high from the agent should the camera be.")]
+        [Tooltip("How high from the agent should the camera be. Set this, depth and min distance to zero for a first-person camera.")]
         public float height = 5;
+
+        [Min(0)]
+        [Tooltip("How close the camera can zoom in to on either its depth or height. Set to zero for ")]
+        public float minDistance = 3;
+
+        /// <summary>
+        /// The attached camera.
+        /// </summary>
+        private Camera _camera;
+
+        private float _ratio;
 
         private void Start()
         {
+            _camera = GetComponent<Camera>();
+            _ratio = depth / height;
+            
             // Snap look right away.
             float look = lookSpeed;
             float move = moveSpeed;
@@ -57,12 +72,49 @@ namespace EasyAI.Runtime.Cameras
                     return;
                 }
             }
+            
+            // Allow for zooming in if this is the selected camera.
+            if (AgentManager.Singleton.selectedCamera == _camera)
+            {
+                Vector2 scroll = Mouse.current.scroll.ReadValue();
+                if (_ratio >= 0)
+                {
+                    depth -= scroll.y * Time.unscaledDeltaTime;
+                    depth = Mathf.Max(depth, minDistance);
+                    height = depth / _ratio;
+                }
+                else
+                {
+                    height -= scroll.y * Time.unscaledDeltaTime;
+                    height = Mathf.Max(height, minDistance);
+                    depth = height * _ratio;
+                }
+
+                depth = Mathf.Max(depth, 0);
+                height = Mathf.Max(height, 0);
+            }
 
             // Determine where to move and look to.
             Transform agentTransform = agent.Visuals == null ? agent.transform : agent.Visuals;
             Vector3 target = agentTransform.position;
             target = new Vector3(target.x, target.y + offset, target.z);
-            Vector3 move = target + agentTransform.rotation * new Vector3(0, height, -distance);
+
+            // Lock to first person if height and distance are zero.
+            if (height <= 0 && depth <= 0)
+            {
+                transform.position = target;
+                if (agent.LookingToTarget)
+                {
+                    transform.LookAt(agent.LookTarget);
+                }
+                else
+                {
+                    transform.rotation = agentTransform.rotation;
+                }
+                return;
+            }
+            
+            Vector3 move = target + agentTransform.rotation * new Vector3(0, height, -depth);
 
             Transform t = transform;
             Vector3 position = t.position;

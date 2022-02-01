@@ -1,6 +1,7 @@
 ﻿using EasyAI.Runtime.Agents;
 using EasyAI.Runtime.Managers;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace EasyAI.Runtime.Cameras
 {
@@ -17,9 +18,20 @@ namespace EasyAI.Runtime.Cameras
         [Min(0)]
         [Tooltip("How high from the agent should the camera be.")]
         public float height = 10;
+
+        [Min(0)]
+        [Tooltip("How low the camera can zoom in to.")]
+        public float minHeight = 3;
+
+        /// <summary>
+        /// The attached camera.
+        /// </summary>
+        private Camera _camera;
         
         private void Start()
         {
+            _camera = GetComponent<Camera>();
+            
             // Snap look right away.
             float move = moveSpeed;
             moveSpeed = 0;
@@ -41,6 +53,14 @@ namespace EasyAI.Runtime.Cameras
                 {
                     return;
                 }
+            }
+
+            // Allow for zooming in if this is the selected camera.
+            if (AgentManager.Singleton.selectedCamera == _camera)
+            {
+                Vector2 scroll = Mouse.current.scroll.ReadValue();
+                height -= scroll.y * Time.unscaledDeltaTime;
+                height = Mathf.Max(height, minHeight);
             }
 
             // Move over the agent.

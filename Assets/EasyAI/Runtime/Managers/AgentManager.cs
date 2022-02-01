@@ -110,7 +110,7 @@ namespace EasyAI.Runtime.Managers
 
         [SerializeField]
         [Tooltip("The currently selected camera. Set this to start with that camera active. Leaving empty will default to the first camera by alphabetic order.")]
-        protected Camera selectedCamera;
+        public Camera selectedCamera;
 
         /// <summary>
         /// Getter for the maximum number of messages any component can hold.

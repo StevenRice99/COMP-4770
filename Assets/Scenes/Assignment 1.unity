@@ -538,8 +538,9 @@ MonoBehaviour:
   offset: 1
   lookSpeed: 0
   moveSpeed: 5
-  distance: 5
+  depth: 5
   height: 5
+  minDistance: 3
 --- !u!1 &1678594198
 GameObject:
   m_ObjectHideFlags: 0
@@ -666,6 +667,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 5
   height: 10
+  minHeight: 3
 --- !u!114 &1784874879
 MonoBehaviour:
   m_ObjectHideFlags: 0
