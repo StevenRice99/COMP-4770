@@ -6,7 +6,7 @@ public abstract class Sensor : IntelligenceComponent
     /// <summary>
     /// Send the percept back to the agent where it will be processed by its mind.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>The percept sent back to the agent.</returns>
     public Percept Read()
     {
         Percept percept = Sense();

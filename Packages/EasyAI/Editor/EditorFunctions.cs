@@ -78,7 +78,7 @@ namespace Editor
         /// Create a follow agent camera.
         /// </summary>
         /// <param name="menuCommand">Automatically passed by Unity.</param>
-        [MenuItem("GameObject/Easy AI/Cameras/Follow Agent Camera", false, 10)]
+        [MenuItem("GameObject/Easy AI/Cameras/Follow Camera", false, 10)]
         private static void CreateFollowAgentCamera(MenuCommand menuCommand)
         {
             if (Object.FindObjectOfType<FollowAgentCamera>() != null)
@@ -86,7 +86,7 @@ namespace Editor
                 Debug.Log("Already have a follow agent camera in the scene.");
             }
             
-            GameObject camera = CreateCamera("Follow Agent Camera");
+            GameObject camera = CreateCamera("Follow Camera");
             camera.AddComponent<FollowAgentCamera>();
             FinishCreation(menuCommand, camera);
         }
@@ -95,7 +95,7 @@ namespace Editor
         /// Create a look at agent camera.
         /// </summary>
         /// <param name="menuCommand">Automatically passed by Unity.</param>
-        [MenuItem("GameObject/Easy AI/Cameras/Look At Agent Camera", false, 10)]
+        [MenuItem("GameObject/Easy AI/Cameras/Look At Camera", false, 10)]
         private static void CreateLookAtAgentCamera(MenuCommand menuCommand)
         {
             if (Object.FindObjectOfType<LookAtAgentCamera>() != null)
@@ -103,7 +103,7 @@ namespace Editor
                 Debug.Log("Already have a look at agent camera in the scene.");
             }
             
-            GameObject camera = CreateCamera("Look at Agent Camera");
+            GameObject camera = CreateCamera("Look At Camera");
             camera.AddComponent<LookAtAgentCamera>();
             FinishCreation(menuCommand, camera);
         }
@@ -112,7 +112,7 @@ namespace Editor
         /// Create a track agent camera.
         /// </summary>
         /// <param name="menuCommand">Automatically passed by Unity.</param>
-        [MenuItem("GameObject/Easy AI/Cameras/Track Agent Camera", false, 10)]
+        [MenuItem("GameObject/Easy AI/Cameras/Track Camera", false, 10)]
         private static void CreateTrackAgentCamera(MenuCommand menuCommand)
         {
             if (Object.FindObjectOfType<TrackAgentCamera>() != null)
@@ -120,7 +120,7 @@ namespace Editor
                 Debug.Log("Already have a track agent camera in the scene.");
             }
             
-            GameObject camera = CreateCamera("Track Agent Camera");
+            GameObject camera = CreateCamera("Track Camera");
             camera.AddComponent<TrackAgentCamera>();
             FinishCreation(menuCommand, camera);
         }
