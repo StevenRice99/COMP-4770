@@ -14,7 +14,7 @@ namespace EasyAI.Editor
         /// Create a transform agent.
         /// </summary>
         /// <param name="menuCommand">Automatically passed by Unity.</param>
-        [MenuItem("GameObject/EasyAI/Agents/Transform Agent", false, 10)]
+        [MenuItem("GameObject/Easy AI/Agents/Transform Agent", false, 10)]
         private static void CreateTransformAgent(MenuCommand menuCommand)
         {
             GameObject agent = CreateAgent("Transform Agent");
@@ -26,7 +26,7 @@ namespace EasyAI.Editor
         /// Create a character controller agent.
         /// </summary>
         /// <param name="menuCommand">Automatically passed by Unity.</param>
-        [MenuItem("GameObject/EasyAI/Agents/Character Agent", false, 10)]
+        [MenuItem("GameObject/Easy AI/Agents/Character Agent", false, 10)]
         private static void CreateCharacterAgent(MenuCommand menuCommand)
         {
             GameObject agent = CreateAgent("Character Agent");
@@ -40,7 +40,7 @@ namespace EasyAI.Editor
         /// Create a rigidbody agent.
         /// </summary>
         /// <param name="menuCommand">Automatically passed by Unity.</param>
-        [MenuItem("GameObject/EasyAI/Agents/Rigidbody Agent", false, 10)]
+        [MenuItem("GameObject/Easy AI/Agents/Rigidbody Agent", false, 10)]
         private static void CreateRigidbodyAgent(MenuCommand menuCommand)
         {
             GameObject agent = CreateAgent("Rigidbody Agent");
@@ -57,7 +57,7 @@ namespace EasyAI.Editor
         /// Create all types of cameras which only adds in those that are not yet present in the scene.
         /// </summary>
         /// <param name="menuCommand"></param>
-        [MenuItem("GameObject/EasyAI/Cameras/All", false, 10)]
+        [MenuItem("GameObject/Easy AI/Cameras/All", false, 10)]
         private static void CreateAllCameras(MenuCommand menuCommand)
         {
             if (Object.FindObjectOfType<FollowAgentCamera>() == null)
@@ -80,7 +80,7 @@ namespace EasyAI.Editor
         /// Create a follow agent camera.
         /// </summary>
         /// <param name="menuCommand">Automatically passed by Unity.</param>
-        [MenuItem("GameObject/EasyAI/Cameras/Follow Agent Camera", false, 10)]
+        [MenuItem("GameObject/Easy AI/Cameras/Follow Agent Camera", false, 10)]
         private static void CreateFollowAgentCamera(MenuCommand menuCommand)
         {
             if (Object.FindObjectOfType<FollowAgentCamera>() != null)
@@ -97,7 +97,7 @@ namespace EasyAI.Editor
         /// Create a look at agent camera.
         /// </summary>
         /// <param name="menuCommand">Automatically passed by Unity.</param>
-        [MenuItem("GameObject/EasyAI/Cameras/Look At Agent Camera", false, 10)]
+        [MenuItem("GameObject/Easy AI/Cameras/Look At Agent Camera", false, 10)]
         private static void CreateLookAtAgentCamera(MenuCommand menuCommand)
         {
             if (Object.FindObjectOfType<LookAtAgentCamera>() != null)
@@ -114,7 +114,7 @@ namespace EasyAI.Editor
         /// Create a track agent camera.
         /// </summary>
         /// <param name="menuCommand">Automatically passed by Unity.</param>
-        [MenuItem("GameObject/EasyAI/Cameras/Track Agent Camera", false, 10)]
+        [MenuItem("GameObject/Easy AI/Cameras/Track Agent Camera", false, 10)]
         private static void CreateTrackAgentCamera(MenuCommand menuCommand)
         {
             if (Object.FindObjectOfType<TrackAgentCamera>() != null)
