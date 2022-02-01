@@ -11,7 +11,7 @@ public abstract class PerformanceMeasure : IntelligenceComponent
     /// <summary>
     /// Calculate and return the performance value.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>Return the performance to the agent.</returns>
     public float GetPerformance()
     {
         if (Agent != null)

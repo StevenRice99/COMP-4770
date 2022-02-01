@@ -1,0 +1,12 @@
+public class #SCRIPTNAME# : PerformanceMeasure
+{
+    /// <summary>
+    /// Implement to calculate the performance.
+    /// </summary>
+    /// <returns>The calculated performance.</returns>
+    /// <returns>The actions the agent's actuators will perform.</returns>
+    protected override float CalculatePerformance()
+    {
+        return 0;
+    }
+}

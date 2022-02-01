@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Editor
 {
     /// <summary>
-    /// Editor methods for creating EasyAI objects.
+    /// Editor methods for creating Easy AI objects.
     /// </summary>
     public static class EditorFunctions
     {
