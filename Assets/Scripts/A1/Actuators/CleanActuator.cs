@@ -22,8 +22,9 @@ namespace A1.Actuators
         /// </summary>
         private float timeSpentCleaning;
 
-        private void Start()
+        protected override void Start()
         {
+            base.Start();
             StopCleaning();
         }
 

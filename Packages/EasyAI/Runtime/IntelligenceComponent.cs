@@ -168,4 +168,44 @@ public abstract class IntelligenceComponent : MonoBehaviour
     {
         return GetType().Name;
     }
+
+    protected virtual void Start()
+    {
+        Setup();
+    }
+    
+    protected virtual void OnEnable()
+    {
+        try
+        {
+            Setup();
+        }
+        catch { }
+    }
+
+    protected virtual void OnDisable()
+    {
+        try
+        {
+            Setup();
+        }
+        catch { }
+    }
+
+    protected virtual void OnDestroy()
+    {
+        try
+        {
+            Setup();
+        }
+        catch { }
+    }
+
+    private void Setup()
+    {
+        if (Agent == null)
+        {
+            AgentManager.Singleton.RefreshAgents();
+        }
+    }
 }

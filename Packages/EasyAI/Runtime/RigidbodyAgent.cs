@@ -28,18 +28,24 @@ public class RigidbodyAgent : Agent
         
     public override void Move()
     {
+        if (_rigidbody == null)
+        {
+            return;
+        }
+        
         Vector3 lastPosition = transform.position;
-            
+        
         if (MovingToTarget)
         {
             // Calculate how fast we can move this frame.
             CalculateMoveVelocity();
                 
             Vector3 position = transform.position;
-            _rigidbody.AddForce(Vector3.MoveTowards(position, MoveTarget, MoveVelocity * Time.fixedTime) - position);
+            _rigidbody.AddForce(Vector3.MoveTowards(position, MoveTarget, MoveVelocity * Time.fixedDeltaTime) - position, ForceMode.VelocityChange);
         }
         else
         {
+            _rigidbody.velocity = new Vector3(0, _rigidbody.velocity.y, 0);
             MoveVelocity = 0;
         }
             

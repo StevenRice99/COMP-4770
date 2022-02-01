@@ -9,12 +9,12 @@ namespace A1.Managers
     /// <summary>
     /// Extension of AgentManager to handle floor tile generation.
     /// </summary>
-    public class FloorManager : AgentManager
+    public class CleanerAgentManager : AgentManager
     {
         /// <summary>
         /// Getter to cast the AgentManager singleton into a FloorManager.
         /// </summary>
-        public static FloorManager FloorManagerSingleton => Singleton as FloorManager;
+        public static CleanerAgentManager CleanerAgentManagerSingleton => Singleton as CleanerAgentManager;
 
         [SerializeField]
         [Tooltip("The prefab for the cleaning agent that will be spawned in.")]

@@ -17,7 +17,7 @@ namespace A1.Sensors
         protected override Percept Sense()
         {
             // Get all floors.
-            List<Floor> floors = FloorManager.FloorManagerSingleton.Floors;
+            List<Floor> floors = CleanerAgentManager.CleanerAgentManagerSingleton.Floors;
             
             // Build the percept.
             FloorsPercept percept = new FloorsPercept

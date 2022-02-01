@@ -18,7 +18,7 @@ namespace A1.Sensors
         protected override Percept Sense()
         {
             // Get all floors. If there is none, return null as there was nothing sensed.
-            List<Floor> floors = FloorManager.FloorManagerSingleton.Floors;
+            List<Floor> floors = CleanerAgentManager.CleanerAgentManagerSingleton.Floors;
             if (floors.Count == 0)
             {
                 AddMessage("No floors.");

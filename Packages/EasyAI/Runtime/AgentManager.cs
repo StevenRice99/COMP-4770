@@ -34,7 +34,7 @@ public class AgentManager : MonoBehaviour
         All,
         Selected
     }
-        
+    
     /// <summary>
     /// What GUI State to display.
     /// Main - Displays a list of all agents and global messages. Never in this state if there is only one agent in the scene.
@@ -78,7 +78,7 @@ public class AgentManager : MonoBehaviour
     [SerializeField]
     [Min(0)]
     [Tooltip("How wide the details list is. Set to zero to disable details list rendering.")]
-    private float detailsWidth = 350;
+    private float detailsWidth = 500;
         
     [SerializeField]
     [Min(0)]
@@ -189,6 +189,14 @@ public class AgentManager : MonoBehaviour
     public static void Pause()
     {
         Time.timeScale = 0;
+    }
+
+    public void RefreshAgents()
+    {
+        foreach (Agent agent in Agents)
+        {
+            agent.Setup();
+        }
     }
 
     /// <summary>
@@ -531,7 +539,7 @@ public class AgentManager : MonoBehaviour
     /// <returns>The updated Y position after all custom rendering has been done.</returns>
     protected virtual float CustomRendering(float x, float y, float w, float h, float p)
     {
-        return 0;
+        return y;
     }
 
     /// <summary>
@@ -585,14 +593,20 @@ public class AgentManager : MonoBehaviour
             agent.SelectedMind.DisplayGizmos();
         }
 
-        foreach (Actuator actuator in agent.Actuators)
+        if (agent.Actuators != null)
         {
-            actuator.DisplayGizmos();
+            foreach (Actuator actuator in agent.Actuators)
+            {
+                actuator.DisplayGizmos();
+            }
         }
 
-        foreach (Sensor sensor in agent.Sensors)
+        if (agent.Sensors != null)
         {
-            sensor.DisplayGizmos();
+            foreach (Sensor sensor in agent.Sensors)
+            {
+                sensor.DisplayGizmos();
+            }
         }
     }
 
@@ -754,7 +768,6 @@ public class AgentManager : MonoBehaviour
                 y = NextItem(y, h, p);
                 if (GuiButton(x, y, w, h, "Back to Overview"))
                 {
-                    SelectedAgent = null;
                     _state = GuiState.Main;
                 }
             }

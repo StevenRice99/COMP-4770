@@ -405,9 +405,9 @@ public abstract class Agent : MonoBehaviour
         return GetType().Name;
     }
 
-    protected virtual void Start()
+    public void Setup()
     {
-        // Register this agent with the manager.
+                // Register this agent with the manager.
         AgentManager.Singleton.AddAgent(this);
             
         // Find all minds.
@@ -469,6 +469,11 @@ public abstract class Agent : MonoBehaviour
         {
             Visuals = children[0];
         }
+    }
+
+    protected virtual void Start()
+    {
+        Setup();
     }
         
     /// <summary>
