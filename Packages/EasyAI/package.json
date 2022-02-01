@@ -2,7 +2,7 @@
   "name": "com.stevenrice.easyai",
   "version": "1.0.0",
   "displayName": "Easy AI",
-  "description": "Easily implement basic artificial intelligence.",
+  "description": "Easily create basic artificial intelligence in Unity.",
   "documentationUrl": "",
   "changelogUrl": "",
   "licensesUrl": "",
@@ -20,6 +20,5 @@
     "email": "TheStevenRice@Gmail.com",
     "url": "https://stevenrice.ca"
   },
-  "type": "library",
-  "unity": "2020.3"
+  "type": "library"
 }
