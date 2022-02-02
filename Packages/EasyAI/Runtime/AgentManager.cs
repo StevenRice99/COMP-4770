@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Singleton to handle agents and GUI rendering. Must be exactly one of this or an extension of this present in every scene.
@@ -617,6 +618,46 @@ public class AgentManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Go to the next scene.
+    /// </summary>
+    private static void NextScene()
+    {
+        int scenes = SceneManager.sceneCountInBuildSettings;
+        if (scenes <= 1)
+        {
+            return;
+        }
+
+        int next = SceneManager.GetActiveScene().buildIndex + 1;
+        if (next >= scenes)
+        {
+            next = 0;
+        }
+
+        SceneManager.LoadScene(next);
+    }
+
+    /// <summary>
+    /// Go to the previous scene.
+    /// </summary>
+    private static void LastScene()
+    {
+        int scenes = SceneManager.sceneCountInBuildSettings;
+        if (scenes <= 1)
+        {
+            return;
+        }
+
+        int next = SceneManager.GetActiveScene().buildIndex - 1;
+        if (next <= 0)
+        {
+            next = scenes - 1;
+        }
+
+        SceneManager.LoadScene(next);
+    }
+
     private void OnGUI()
     {
         Render(10, 10, 20, 5);
@@ -1165,6 +1206,26 @@ public class AgentManager : MonoBehaviour
             }
         }
 
+        if (SceneManager.sceneCountInBuildSettings > 1)
+        {
+            // Display button to go to the next scene.
+            y = NextItem(y, h, p);
+            if (GUI.Button(new Rect(x, y, w, h), "Next Scene"))
+            {
+                NextScene();
+            }
+
+            if (SceneManager.sceneCountInBuildSettings > 2)
+            {
+                // Display button to go to the previous scene.
+                y = NextItem(y, h, p);
+                if (GUI.Button(new Rect(x, y, w, h), "Last Scene"))
+                {
+                    LastScene();
+                }
+            }
+        }
+
         // Button to quit.
         y = NextItem(y, h, p);
         if (GuiButton(x, y, w, h, "Quit"))
@@ -1172,7 +1233,7 @@ public class AgentManager : MonoBehaviour
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.ExitPlaymode();
 #else
-                Application.Quit();
+            Application.Quit();
 #endif
         }
     }
