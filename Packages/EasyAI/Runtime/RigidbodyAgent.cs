@@ -45,7 +45,6 @@ public class RigidbodyAgent : Agent
         }
         else
         {
-            _rigidbody.velocity = new Vector3(0, _rigidbody.velocity.y, 0);
             MoveVelocity = 0;
         }
             

@@ -490,6 +490,13 @@ public class AgentManager : MonoBehaviour
         {
             SwitchCamera(Cameras[0]);
         }
+        else
+        {
+            EasyAIStatic.CreateFollowAgentCamera();
+            EasyAIStatic.CreateTrackAgentCamera();
+            FindCameras();
+            SwitchCamera(Cameras[0]);
+        }
     }
 
     protected virtual void Update()

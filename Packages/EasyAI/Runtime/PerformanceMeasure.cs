@@ -28,8 +28,9 @@ public abstract class PerformanceMeasure : IntelligenceComponent
     /// <returns>The calculated performance.</returns>
     protected abstract float CalculatePerformance();
 
-    protected virtual void Start()
+    protected override void Start()
     {
+        base.Start();
         CalculatePerformance();
     }
 }

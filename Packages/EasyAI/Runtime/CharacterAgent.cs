@@ -10,6 +10,9 @@ public class CharacterAgent : TransformAgent
     /// </summary>
     private CharacterController _characterController;
 
+    /// <summary>
+    /// Used to manually apply gravity.
+    /// </summary>
     private float _velocityY;
 
     protected override void Start()
@@ -47,10 +50,13 @@ public class CharacterAgent : TransformAgent
             _characterController.Move(Vector3.MoveTowards(position, MoveTarget, MoveVelocity * Time.deltaTime) - position);
         }
 
+        // Reset gravity if grounded.
         if (_characterController.isGrounded)
         {
             _velocityY = 0;
         }
+        
+        // Apply gravity.
         _velocityY += Physics.gravity.y * Time.deltaTime;
         _characterController.Move(new Vector3(0, _velocityY, 0));
 

@@ -201,6 +201,9 @@ public abstract class IntelligenceComponent : MonoBehaviour
         catch { }
     }
 
+    /// <summary>
+    /// If this was added to the agent later, it won't yet be connected to it, so call the configuration again.
+    /// </summary>
     private void Setup()
     {
         if (Agent == null)
