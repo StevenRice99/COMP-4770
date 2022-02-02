@@ -2,11 +2,14 @@
 
 **Easily create basic artificial intelligence in Unity.**
 
-- [Overview](#overview 'Overview')
-- [Features](#features 'Features')
-- [Installation](#installation 'Installation')
-- [Getting Started](#getting-started 'Getting Started')
-- [Dependencies](#dependencies 'Dependencies')
+- [Overview](#overview "Overview")
+- [Features](#features "Features")
+- [Installation](#installation "Installation")
+  - [Package Manager](#package-manager "Package Manager")
+  - [Manually](#manually "Manually")
+- [Script Templates](#script-templates "Script Templates")
+- [Getting Started](#getting-started "Getting Started")
+- [Dependencies](#dependencies "Dependencies")
 
 # Overview
 
@@ -30,11 +33,41 @@ Easy AI was created to allow for easily creating intelligent agents in Unity wit
 
 # Installation
 
-TODO
+You can install Easy AI either through the package manager or by manually downloading it as a ZIP and adding it to your project, with the package manager being the recommended mode of installation.
+
+## Package Manager
+
+*Note this method requires you have GIT installed on your computer.*
+
+1. Click the "Code" button above and under "Clone", copy the https URL.
+2. Open your Unity project and go to "Window > Package Manager" and hit the "+" icon in the top left of the Package Manager window followed by "Add package from git URL..." and paste in the link you copied in step one.
+
+## Manually
+
+1. Click the "Code" button above and click "Download ZIP".
+2. Extract the ZIP file.
+3. Open your Unity project and go to "Window > Package Manager" and hit the "+" icon in the top left of the Package Manager window followed by "Add package from disk..." and navigate to the extracted package where you must select the "package.json" file.
 
 # Getting Started
 
-TODO
+- For a sample scene, in the project explorer go to "Packages > Easy AI > Samples > Easy AI Sample Scene". This scene demonstrates the three included types of agents and how they move compared to each other and has a few sample scripts all of which are fully documented in the same directory.
+- The general workflow for Easy AI is as follows:
+  - Sensors generate percepts which are sent to the agent.
+  - Percepts are passed to the mind of the agent of processing where it decides on actions to take.
+  - Actions are passed to the agent's actuators where they will perform tasks.
+- There must be exactly one "AgentManager" or a component deriving from it present in every scene.
+- To create a starter agent, right click in the hierarchy and go to "Easy AI > Agents" followed by the type of agent you wish to create.
+  - Add your sensors and percepts to either this agent or any of its child objects where they will automatically be linked when the application is run.
+  - Cameras can be added in the same way with "Easy AI > Cameras" in the hierarchy.
+
+# Script Templates
+
+Although you can simply create a new script in Unity and change it to inherit from sensor, actuator, mind, or performance measure, you can add a few more files to allow for you to right click in the project explorer and go to "Create > Easy AI" followed by the type of script you used to create. These need to be added manually outside of the package to work. To install these script templates:
+1. Go [here](https://github.com/StevenRice99/Easy-AI-Script-Templates "Easy AI Script Templates").
+2. Click the "Code" button above and click "Download ZIP".
+3. Extract the ZIP file.
+4. Copy "ScriptTemplates" and "ScriptTemplates.meta" directly into the "Assets" folder of your Unity project.
+5. If Unity is running, restart it and the script templates will be working.
 
 # Dependencies
 
