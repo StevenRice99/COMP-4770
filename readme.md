@@ -8,7 +8,7 @@
 
 # Overview
 
-- If you would prefer to read this file on GitHub for markdown formatting, email me your GitHub account and I will add you to the repository [here](https://github.com/StevenRice99/COMP-4770 "COMP 4770 Repository") which otherwise I am keeping private so others in the class do not have access to my solutions.
+- If you would like access to the GitHub repository, email me your GitHub account and I will add you to the repository [here](https://github.com/StevenRice99/COMP-4770 "COMP 4770 Repository") which otherwise I am keeping private so others in the class do not have access to my solutions.
 - This project uses my own AI library, [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI"), so there will likely be some differences between my solutions and those using Dr. Goodwin's library although [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI") is based upon Dr. Goodwin's library. I will explain any of these differences when they occur.
   - I developed [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI") directly in this project and its fully commented source code can be found under "Packages > Easy AI".
   - Samples for [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI") are also included under "Assets > Samples" although they are not directly related to assignment solutions.
