@@ -21,6 +21,18 @@
 - Under "Assets", go to "Scenes" and open "Assignment 1". The level will generate itself and spawn the cleaner agent when you click play.
 - All scripts for assignment one are located under "Assets > Scripts > A1" and the sub folders within.
 - The prefab for the cleaner agent is located at "Assets > Prefabs > Cleaner Agent".
+- The general flow of the scene is as follow:
+  1. A floor is generated of multiple tiles each with a "Floor" component attached to them where a percentage of floor tiles are twice as likely to get dirty as others being distinguished by their whiter and shinier material.
+  2. At a set interval, tiles are randomly chosen to increase in dirt level which changes their materials.
+  3. If the agent is on a dirty floor tile, it cleans it which takes a set amount of time. Otherwise, the agent moves and looks towards the nearest dirty floor tile if there are any. If all tiles are clean, the agent calculates and moves towards the weighted midpoint of the level being the optimal place to wait while factoring in the tiles that are more likely to get dirty than others.
+- The general controls for the scene are as follows:
+  - Click the "Details" button to see:
+    - The agent, its performance, position, rotation, and all messages.
+    - Further clicking buttons in this GUI will allow you to view messages for specific sensors and actuators.
+  - Click the "Controls" button to see:
+    - Buttons to increase or decrease the size of the floor.
+    - Buttons to pause, resume, or step through the scene.
+    - Buttons to switch between cameras.
 
 ## Requirements
 
@@ -102,7 +114,7 @@
 
 - Floor tiles which are white and shiny are "likely to get dirty" meaning they are twice as likely to get dirty as other tiles when dirt is added to the floors.
 - For instance, if floor tiles have a five percent chance to get dirty, these "likely to get dirty" floor tiles have a ten percent chance of getting dirty.
-- If the entire floor is clean, instead of returning to the exact center of the floor, the agent calculates the weighted midpoint of all floor tiles.
+- If the entire floor is clean, instead of returning to the exact center of the floor, the agent calculates the weighted midpoint of all floor tiles. You can see the agent's current position at any point in time by clicking the "Details" button.
   - First, it sums the positions of all floor tiles once.
   - Then, it adds the positions of all floor tiles that are likely to get dirty again which will shift this midpoint as now these tiles have been added to the sum twice given they are twice as likely to get dirty.
   - Then, the agent moves to this location. Given the nature of this being a square floor, this will still be close to the center of the floor, and depending upon how the floor was randomly generated, may be the exact center, however, it is often slightly off center to be at the weighted center of the floor tiles.
