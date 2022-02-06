@@ -59,12 +59,12 @@
 
 - The mind is called "CleanerMind" instead of "SimpleReflexMind" and it is located in "Assets > Scripts > A1 > Minds".
 - The mind is attached to the cleaner agent.
-- The mind operates by first seeing if its sensors detected if it is standing on a dirty floor tile in which case it stops to clean the current floor tile. Otherwise, it moves towards the nearest dirty floor tile which has the highest dirt level meaning it moves towards an extremely dirty floor tile before a very dirty one, and a very dirty one before a dirty one.
+- The mind operates by first seeing if its sensors detected if it is standing on a dirty floor tile in which case it stops to clean the current floor tile. Otherwise, it moves towards the nearest dirty floor tile.
 
 7. **Add a sensor to detect the location and status of the agent’s current position.**
 
 - The cleaner agent has two sensors both of which the scripts for can be found in "Assets > Scripts > A1 > Sensors" and both are attached to the cleaner agent.
-- "FloorsSensor" reads all floors in the level and returns their position and dirty level and returns them to the agent in a "FloorsPercept".
+- "FloorsSensor" reads all floors in the level and returns their position and if they are dirty to the agent in a "FloorsPercept".
 - "DirtySensor" detects if the floor tile the agent is currently on is dirty or not and returns this to the agent in a "DirtyPercept".
 
 8. **Add a suction actuator to change the dirty/clean status of the location of the agent.**
@@ -78,6 +78,7 @@
 - The performance measure is named "CleanerPerformance" and is located in "Assets > Scripts > A1 > PerformanceMeasures" and is attached to the cleaner agent.
 - The performance measure is a value from zero to a hundred representing a percentage as to how clean the entirety of the floor is. If the entire floor is clean, it is a hundred percent. If the entire floor is extremely dirty, it is zero percent.
 - The current value of the performance measure can be seen by clicking the "Details" button when the scene is running.
+- The agent in this scenario has no concept of energy level thus it never gets tired or experience any similar effects and its sole objective is to keep the floors clean, thus, I did not add any factor to the performance measure involving how much the agent moves since there realistically is no punishment for this. If this was a more advanced multi-agent scenario where perhaps after an agent got tired and needed to rest it would swap roles with another agent, then adding in a measure for movement would be valuable, but in this limited scenario, it serves little benefit thus I did not incorporate one.
 
 10. **Add anything else you need for functionality, elegant framework, creativity, esthetics.**
 
@@ -100,11 +101,11 @@
 13. **Challenge: What if the locations had different probabilities of becoming dirty and the agent knew this? Could its performance be enhanced? Example: Think of strategies for positioning the read/write head of a disk or the idle position of an elevator based on anticipated requests.**
 
 - Floor tiles which are white and shiny are "likely to get dirty" meaning they are twice as likely to get dirty as other tiles when dirt is added to the floors.
-- For instance, if floor tiles have a five percent chance to get dirty, these likely to get dirty floor tiles have a ten percent chance of getting dirty.
-- If the entire floor is clean, instead of returning to the exact center of the floor, the agent calculated the weighted midpoint of all floor tiles.
+- For instance, if floor tiles have a five percent chance to get dirty, these "likely to get dirty" floor tiles have a ten percent chance of getting dirty.
+- If the entire floor is clean, instead of returning to the exact center of the floor, the agent calculates the weighted midpoint of all floor tiles.
   - First, it sums the positions of all floor tiles once.
   - Then, it adds the positions of all floor tiles that are likely to get dirty again which will shift this midpoint as now these tiles have been added to the sum twice given they are twice as likely to get dirty.
-  - Then, the agent moves to this location. Given the nature of this being a square floor, this will still be close to the center of the floor, and depending upon how the floor was generated, may be the exact center, however, it is often slightly off center to be at the weighted center of the floor tiles.
+  - Then, the agent moves to this location. Given the nature of this being a square floor, this will still be close to the center of the floor, and depending upon how the floor was randomly generated, may be the exact center, however, it is often slightly off center to be at the weighted center of the floor tiles.
 
 # Details
 

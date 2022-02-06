@@ -59,8 +59,6 @@ namespace A1.Minds
             
             List<Vector3> all = new List<Vector3>();
             List<Vector3> dirty = new List<Vector3>();
-            List<Vector3> veryDirty = new List<Vector3>();
-            List<Vector3> extremelyDirty = new List<Vector3>();
             List<Vector3> likelyToGetDirty = new List<Vector3>();
 
             // Build lists.
@@ -74,36 +72,22 @@ namespace A1.Minds
                     {
                         likelyToGetDirty.Add(dirtPercept.Positions[i]);
                     }
-                    
-                    switch (dirtPercept.States[i])
+
+                    if (dirtPercept.Dirty[i])
                     {
-                        case Floor.DirtLevel.Dirty:
-                            dirty.Add(dirtPercept.Positions[i]);
-                            break;
-                        case Floor.DirtLevel.VeryDirty:
-                            veryDirty.Add(dirtPercept.Positions[i]);
-                            break;
-                        case Floor.DirtLevel.ExtremelyDirty:
-                            extremelyDirty.Add(dirtPercept.Positions[i]);
-                            break;
+                        dirty.Add(dirtPercept.Positions[i]);
                     }
                 }
             }
 
-            // If there are extremely dirty floor tiles, return the position of the closest one.
-            return extremelyDirty.Count > 0
-                ? NearestPosition(extremelyDirty)
-                // Else if there are very dirty floor tiles, return the position of the closest one.
-                : veryDirty.Count > 0
-                    ? NearestPosition(veryDirty)
-                    // Else if there are dirty floor tiles, return the position of the closest one.
-                    : dirty.Count > 0
-                        ? NearestPosition(dirty)
-                        // Else if there are tiles more likely to get dirty than others, return the weighted midpoint.
-                        : likelyToGetDirty.Count > 0
-                            ? CalculateMidPoint(all, likelyToGetDirty)
-                            // Otherwise there are no tiles more likely to get dirty than others so simply return (0, 0, 0).
-                            : Vector3.zero;
+            // If there are dirty floor tiles, return the position of the closest one.
+            return dirty.Count > 0
+                ? NearestPosition(dirty)
+                // Else if there are tiles more likely to get dirty than others, return the weighted midpoint.
+                : likelyToGetDirty.Count > 0
+                    ? CalculateMidPoint(all, likelyToGetDirty)
+                    // Otherwise there are no tiles more likely to get dirty than others so simply return (0, 0, 0).
+                    : Vector3.zero;
         }
 
         /// <summary>

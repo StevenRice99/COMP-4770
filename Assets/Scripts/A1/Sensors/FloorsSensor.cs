@@ -23,7 +23,7 @@ namespace A1.Sensors
             FloorsPercept percept = new FloorsPercept
             {
                 Positions = new Vector3[floors.Count],
-                States = new Floor.DirtLevel[floors.Count],
+                Dirty = new bool[floors.Count],
                 LikelyToGetDirty = new bool[floors.Count]
             };
             
@@ -31,11 +31,11 @@ namespace A1.Sensors
             for (int i = 0; i < floors.Count; i++)
             {
                 percept.Positions[i] = floors[i].transform.position;
-                percept.States[i] = floors[i].State;
+                percept.Dirty[i] = floors[i].State >= Floor.DirtLevel.Dirty;
                 percept.LikelyToGetDirty[i] = floors[i].LikelyToGetDirty;
             }
             
-            AddMessage($"Detected {floors.Count} floor tiles.");
+            AddMessage($"Perceived {floors.Count} floor tiles.");
             
             return percept;
         }

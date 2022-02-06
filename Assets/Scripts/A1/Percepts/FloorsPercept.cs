@@ -14,9 +14,9 @@ namespace A1.Percepts
         public Vector3[] Positions;
 
         /// <summary>
-        /// Dirt levels of all floor tiles.
+        /// The floor tiles which are likely to get dirty.
         /// </summary>
-        public Floor.DirtLevel[] States;
+        public bool[] Dirty;
 
         /// <summary>
         /// If each floor tile is likely to get dirty or not.
@@ -29,7 +29,7 @@ namespace A1.Percepts
         /// <returns>String with the details of the percept.</returns>
         public override string DetailsDisplay()
         {
-            int dirtyCount = States.Count(state => state >= Floor.DirtLevel.Dirty);
+            int dirtyCount = Dirty.Count(dirty => dirty);
             int likelyCount = LikelyToGetDirty.Count(likely => likely);
             return $"{Positions.Length} floor tiles, {dirtyCount} dirty, {likelyCount} likely to get dirty.";
         }

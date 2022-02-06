@@ -5214,8 +5214,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 10
   lookSpeed: 5
-  moveAcceleration: 0.5
-  lookAcceleration: 0.5
+  moveAcceleration: 20
+  lookAcceleration: 10
 --- !u!114 &3411514612979016314
 MonoBehaviour:
   m_ObjectHideFlags: 0
