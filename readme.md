@@ -1,4 +1,4 @@
-﻿# COMP 4770
+# COMP 4770 - Artificial Intelligence for Games
 
 - [Overview](#overview "Overview")
 - [Assignment 1](#assignment-1 "Assignment 1")
