@@ -158,8 +158,15 @@ MonoBehaviour:
   controlsWidth: 120
   gizmos: 0
   selectedCamera: {fileID: 0}
-  microbePrefab: {fileID: 0}
-  radius: 15
+  microbePrefab: {fileID: 1567258149929102323, guid: b123d809f0c77554b9d8404a7e5f0874, type: 3}
+  redMicrobeMaterial: {fileID: 2100000, guid: 3a41b7aa03ddf024fbc0c1ea0563750d, type: 2}
+  blueMicrobeMaterial: {fileID: 2100000, guid: 67b0eeef50c9fcf4a971927cb01ed4d3, type: 2}
+  greenMicrobeMaterial: {fileID: 2100000, guid: 80a1e3b18dd54524d9eba3b07b234aad, type: 2}
+  yellowMicrobeMaterial: {fileID: 2100000, guid: f3826008cfa519a4b8ee5a95a8c05e85, type: 2}
+  hungerThreshold: 100
+  startingHunger: 10
+  floorRadius: 15
+  startingMicrobes: 5
 --- !u!4 &187274787
 Transform:
   m_ObjectHideFlags: 0

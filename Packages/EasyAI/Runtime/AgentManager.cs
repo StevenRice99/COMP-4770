@@ -134,7 +134,7 @@ public class AgentManager : MonoBehaviour
     /// <summary>
     /// All agents in the scene.
     /// </summary>
-    public List<Agent> Agents { get; } = new List<Agent>();
+    public List<Agent> Agents { get; private set; } = new List<Agent>();
 
     /// <summary>
     /// All cameras in the scene.
@@ -267,7 +267,7 @@ public class AgentManager : MonoBehaviour
                 return;
             }
         }
-            
+        
         GUI.Box(new Rect(x,y,w,(h + p) * number - p), string.Empty);
     }
 
@@ -382,6 +382,11 @@ public class AgentManager : MonoBehaviour
 
         // If the agent had any cameras attached to it we need to remove them.
         FindCameras();
+    }
+
+    public void SortAgents()
+    {
+        Agents = Agents.OrderBy(a => a.name).ToList();
     }
 
     /// <summary>
@@ -889,7 +894,7 @@ public class AgentManager : MonoBehaviour
         {
             // Button to select an agent.
             y = NextItem(y, h, p);
-            if (!GuiButton(x, y, w, h, $"{agent.name} - {agent}" + (agent.SelectedMind == null ? " - No Mind." : $" - {agent.SelectedMind}")))
+            if (!GuiButton(x, y, w, h, $"{agent.name} - {agent}" + (agent.SelectedMind == null ? string.Empty : $" - {agent.SelectedMind}")))
             {
                 continue;
             }
@@ -901,9 +906,6 @@ public class AgentManager : MonoBehaviour
         // Display global messages.
         if (GlobalMessages.Count == 0)
         {
-            y = NextItem(y, h, p);
-            GuiBox(x, y, w, h, p, 1);
-            GuiLabel(x, y, w, h, p, $"No messages.");
             return;
         }
             
@@ -936,12 +938,22 @@ public class AgentManager : MonoBehaviour
         }
             
         y = NextItem(y, h, p);
-        int length = 4;
+        int length = 5;
         if (Agents.Count > 1)
         {
             length++;
         }
-            
+
+        if (SelectedAgent.SelectedMind == null)
+        {
+            length--;
+        }
+
+        if (SelectedAgent.PerformanceMeasure == null)
+        {
+            length--;
+        }
+
         // Display all agent details.
         GuiBox(x, y, w, h, p, length);
         if (Agents.Count > 1)
@@ -952,9 +964,20 @@ public class AgentManager : MonoBehaviour
 
         GuiLabel(x, y, w, h, p, $"Type: {SelectedAgent}");
         y = NextItem(y, h, p);
+        
         Mind mind = SelectedAgent.SelectedMind;
-        GuiLabel(x, y, w, h, p, (mind != null ? $"Mind: {mind}" : "Mind: None") + $" | Performance: {SelectedAgent.Performance}");
-        y = NextItem(y, h, p);
+        if (mind != null)
+        {
+            GuiLabel(x, y, w, h, p, $"Mind: {mind}");
+            y = NextItem(y, h, p);
+        }
+        
+        if (SelectedAgent.PerformanceMeasure != null)
+        {
+            GuiLabel(x, y, w, h, p, $"Performance: {SelectedAgent.Performance}");
+            y = NextItem(y, h, p);
+        }
+        
         GuiLabel(x, y, w, h, p, $"Position: {SelectedAgent.Position} | " + (SelectedAgent.MovingToTarget ? $"Moving to {SelectedAgent.MoveTarget} at {SelectedAgent.MoveVelocity} units/second." : "Not moving."));
         y = NextItem(y, h, p);
         GuiLabel(x, y, w, h, p, $"Rotation: {SelectedAgent.Rotation.eulerAngles.y} | " + (SelectedAgent.LookingToTarget ? $"Looking to {SelectedAgent.LookTarget} at {SelectedAgent.LookVelocity} degrees/second." : "Not looking."));
@@ -988,7 +1011,6 @@ public class AgentManager : MonoBehaviour
 
         if (!mind.HasMessages)
         {
-            GuiLabel(x, y, w, h, p, "No messages.");
             return;
         }
             
@@ -1123,8 +1145,6 @@ public class AgentManager : MonoBehaviour
         // Display component messages.
         if (!_selectedComponent.HasMessages)
         {
-            GuiBox(x, y, w, h, p, 1);
-            GuiLabel(x, y, w, h, p, "No messages.");
             return;
         }
             

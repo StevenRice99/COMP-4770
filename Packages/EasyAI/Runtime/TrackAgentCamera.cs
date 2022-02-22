@@ -49,8 +49,12 @@ public class TrackAgentCamera : MonoBehaviour
             if (AgentManager.Singleton.Agents.Count > 0)
             {
                 agent = AgentManager.Singleton.Agents[0];
-                _target = (agent.Visuals == null ? agent.transform : agent.Visuals).position;
             }
+        }
+
+        if (agent != null)
+        {
+            _target = (agent.Visuals == null ? agent.transform : agent.Visuals).position;
         }
 
         // Allow for zooming in if this is the selected camera.

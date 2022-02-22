@@ -14,7 +14,7 @@ namespace A2.States
             
             if (Random.value < hungerChance && agent is Microbe microbe)
             {
-                microbe.hunger++;
+                microbe.Hunger++;
             }
         }
         

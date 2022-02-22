@@ -188,6 +188,11 @@ public abstract class Agent : MonoBehaviour
     public Transform Visuals { get; private set; }
 
     /// <summary>
+    /// The performance measure of this agent.
+    /// </summary>
+    public PerformanceMeasure PerformanceMeasure { get; private set; }
+
+    /// <summary>
     /// The position of this agent.
     /// </summary>
     public Vector3 Position => transform.position;
@@ -206,11 +211,6 @@ public abstract class Agent : MonoBehaviour
     /// The local rotation of this agent.
     /// </summary>
     public Quaternion LocalRotation => Visuals.localRotation;
-
-    /// <summary>
-    /// The performance measure of this agent.
-    /// </summary>
-    private PerformanceMeasure _performanceMeasure;
 
     /// <summary>
     /// The index of the currently selected mind.
@@ -274,7 +274,7 @@ public abstract class Agent : MonoBehaviour
     /// <param name="performanceMeasure">The performance measure to assign.</param>
     public void AssignPerformanceMeasure(PerformanceMeasure performanceMeasure)
     {
-        _performanceMeasure = performanceMeasure;
+        PerformanceMeasure = performanceMeasure;
         ConfigurePerformanceMeasure();
     }
 
@@ -474,9 +474,9 @@ public abstract class Agent : MonoBehaviour
         }
 
         // After all actions are performed, calculate the agent's new performance.
-        if (_performanceMeasure != null)
+        if (PerformanceMeasure != null)
         {
-            Performance = _performanceMeasure.GetPerformance();
+            Performance = PerformanceMeasure.GetPerformance();
         }
             
         // Reset the elapsed time for the next time this method is called.
@@ -521,13 +521,13 @@ public abstract class Agent : MonoBehaviour
         }
             
         // Find the performance measure.
-        _performanceMeasure = GetComponent<PerformanceMeasure>();
-        if (_performanceMeasure == null)
+        PerformanceMeasure = GetComponent<PerformanceMeasure>();
+        if (PerformanceMeasure == null)
         {
-            _performanceMeasure = GetComponentInChildren<PerformanceMeasure>();
-            if (_performanceMeasure == null)
+            PerformanceMeasure = GetComponentInChildren<PerformanceMeasure>();
+            if (PerformanceMeasure == null)
             {
-                _performanceMeasure = FindObjectsOfType<PerformanceMeasure>().FirstOrDefault(m => m.Agent == null);
+                PerformanceMeasure = FindObjectsOfType<PerformanceMeasure>().FirstOrDefault(m => m.Agent == null);
             }
         }
 
@@ -737,9 +737,9 @@ public abstract class Agent : MonoBehaviour
     /// </summary>
     private void ConfigurePerformanceMeasure()
     {
-        if (_performanceMeasure != null)
+        if (PerformanceMeasure != null)
         {
-            _performanceMeasure.Agent = this;
+            PerformanceMeasure.Agent = this;
         }
     }
 }
