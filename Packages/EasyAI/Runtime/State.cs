@@ -4,17 +4,17 @@ public class State : ScriptableObject
 {
     public virtual void Enter(Agent agent)
     {
-        StandardMessage(agent, "entered");
+        StandardMessage(agent, "Entered");
     }
 
     public virtual void Execute(Agent agent)
     {
-        StandardMessage(agent, "executed");
+        StandardMessage(agent, "Executed");
     }
 
     public virtual void Exit(Agent agent)
     {
-        StandardMessage(agent, "exited");
+        StandardMessage(agent, "Exited");
     }
 
     public virtual bool HandleEvent(Agent agent, AIEvent aiEvent)
@@ -24,7 +24,7 @@ public class State : ScriptableObject
 
     private void StandardMessage(Agent agent, string action)
     {
-        agent.AddMessage($"{agent} {action} {GetType().Name}.");
+        agent.AddMessage($"{action} {GetType().Name}.");
     }
 
     /// <summary>
