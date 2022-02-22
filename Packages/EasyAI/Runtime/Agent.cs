@@ -6,7 +6,7 @@ using UnityEngine;
 /// <summary>
 /// Base class for all agents.
 /// </summary>
-public abstract class Agent : MonoBehaviour
+public abstract class Agent : MessageComponent
 {
     [SerializeField]
     [Min(0)]
@@ -221,6 +221,28 @@ public abstract class Agent : MonoBehaviour
     /// The timer for state updates.
     /// </summary>
     private float _stateElapsedTime;
+    
+    /// <summary>
+    /// Display a green line from the agent's position to its move target and a blue line from the agent's position
+    /// to its look target. If the look target is the same as the move target, the blue line will not be drawn as
+    /// otherwise they would overlap.
+    /// </summary>
+    public override void DisplayGizmos()
+    {
+        if (MovingToTarget)
+        {
+            GL.Color(Color.green);
+            GL.Vertex(Position);
+            GL.Vertex(MoveTarget);
+        }
+
+        if (LookingToTarget && (!MovingToTarget || MoveTarget != LookTarget))
+        {
+            GL.Color(Color.blue);
+            GL.Vertex(Position);
+            GL.Vertex(LookTarget);
+        }
+    }
 
     public bool FireEvent(Agent receiver, int eventId, object details)
     {
@@ -481,20 +503,6 @@ public abstract class Agent : MonoBehaviour
             
         // Reset the elapsed time for the next time this method is called.
         DeltaTime = 0;
-    }
-
-    /// <summary>
-    /// Add a message to this agent's mind as the agent itself does not hold its own messages.
-    /// </summary>
-    /// <param name="message">The message to add.</param>
-    public void AddMessage(string message)
-    {
-        if (Minds == null || Minds.Length == 0)
-        {
-            return;
-        }
-            
-        Minds[_selectedMindIndex].AddMessage(message);
     }
 
     /// <summary>

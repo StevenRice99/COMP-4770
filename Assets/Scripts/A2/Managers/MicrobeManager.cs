@@ -55,7 +55,11 @@ namespace A2.Managers
 
         [SerializeField]
         [Min(1)]
-        private int startingMicrobes = 5;
+        private int minMicrobes = 5;
+
+        [SerializeField]
+        [Min(2)]
+        private int maxMicrobes = 20;
 
         public Material RedMicrobeMaterial => redMicrobeMaterial;
 
@@ -82,6 +86,11 @@ namespace A2.Managers
 
         public void SpawnMicrobe(MicrobeType microbeType, Vector3 position)
         {
+            if (Agents.Count >= maxMicrobes)
+            {
+                return;
+            }
+            
             GameObject go = Instantiate(microbePrefab, position, Quaternion.identity);
             Microbe microbe = go.GetComponent<Microbe>();
             if (microbe == null)
@@ -113,11 +122,14 @@ namespace A2.Managers
                     continue;
                 }
 
-                microbe.name = $"{n} {i}";
+                n = $"{n} {i}";
+                microbe.name = n;
                 break;
             }
 
             SortAgents();
+            
+            AddGlobalMessage($"Spawned microbe {n}.");
         }
 
         protected override void Start()
@@ -128,12 +140,33 @@ namespace A2.Managers
             floor.transform.localScale = new Vector3(floorRadius * 2, 1, floorRadius * 2);
             floor.name = "Floor";
 
-            for (int i = 0; i < startingMicrobes; i++)
+            for (int i = 0; i < minMicrobes; i++)
             {
                 SpawnMicrobe();
             }
             
             base.Start();
+        }
+
+        protected override void Update()
+        {
+            base.Update();
+
+            for (int index = 0; index < Agents.Count; index++)
+            {
+                if (!(Agents[index] is Microbe microbe) || Vector3.Distance(Agents[index].transform.position, Vector3.zero) <= floorRadius)
+                {
+                    continue;
+                }
+                
+                microbe.Die();
+                index--;
+            }
+
+            while (Agents.Count < minMicrobes)
+            {
+                SpawnMicrobe();
+            }
         }
     }
 }

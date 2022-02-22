@@ -40,6 +40,7 @@ namespace A2.States
 
         public void Die()
         {
+            AddMessage("Died.");
             Destroy(gameObject);
         }
     }

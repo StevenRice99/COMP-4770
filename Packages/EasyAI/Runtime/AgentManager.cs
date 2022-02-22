@@ -624,6 +624,8 @@ public class AgentManager : MonoBehaviour
     /// <param name="agent">The agent to display gizmos for.</param>
     private static void AgentGizmos(Agent agent)
     {
+        agent.DisplayGizmos();
+        
         if (agent.SelectedMind != null)
         {
             agent.SelectedMind.DisplayGizmos();
@@ -888,7 +890,7 @@ public class AgentManager : MonoBehaviour
         // Display all agents.
         y = NextItem(y, h, p);
         GuiBox(x, y, w, h, p, 1);
-        GuiLabel(x, y, w, h, p, $"{Agents.Count} Agents:");
+        GuiLabel(x, y, w, h, p, $"{Agents.Count} Agents");
 
         foreach (Agent agent in Agents)
         {
@@ -982,6 +984,9 @@ public class AgentManager : MonoBehaviour
         y = NextItem(y, h, p);
         GuiLabel(x, y, w, h, p, $"Rotation: {SelectedAgent.Rotation.eulerAngles.y} | " + (SelectedAgent.LookingToTarget ? $"Looking to {SelectedAgent.LookTarget} at {SelectedAgent.LookVelocity} degrees/second." : "Not looking."));
 
+        // Display any custom details implemented for the agent.
+        y = SelectedAgent.DisplayDetails(x, y, w, h, p);
+        
         // Display any custom details implemented for the mind.
         if (mind != null)
         {
@@ -998,7 +1003,7 @@ public class AgentManager : MonoBehaviour
             }
         }
 
-        if (mind == null)
+        if (!SelectedAgent.HasMessages)
         {
             return;
         }
@@ -1007,14 +1012,9 @@ public class AgentManager : MonoBehaviour
         y = RenderMessageOptions(x, y, w, h, p);
             
         y = NextItem(y, h, p);
-        GuiBox(x, y, w, h, p, !mind.HasMessages ? 1 : mind.MessageCount);
-
-        if (!mind.HasMessages)
-        {
-            return;
-        }
+        GuiBox(x, y, w, h, p, SelectedAgent.MessageCount);
             
-        foreach (string message in mind.Messages)
+        foreach (string message in SelectedAgent.Messages)
         {
             GuiLabel(x, y, w, h, p, message);
             y = NextItem(y, h, p);

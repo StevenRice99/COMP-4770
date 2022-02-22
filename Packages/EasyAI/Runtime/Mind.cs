@@ -11,28 +11,6 @@ public abstract class Mind : IntelligenceComponent
     /// <param name="percepts">The percepts which the agent's sensors sensed.</param>
     /// <returns>The actions the agent's actuators will perform.</returns>
     public abstract Action[] Think(Percept[] percepts);
-
-    /// <summary>
-    /// Display a green line from the agent's position to its move target and a blue line from the agent's position
-    /// to its look target. If the look target is the same as the move target, the blue line will not be drawn as
-    /// otherwise they would overlap.
-    /// </summary>
-    public override void DisplayGizmos()
-    {
-        if (MovingToTarget)
-        {
-            GL.Color(Color.green);
-            GL.Vertex(Position);
-            GL.Vertex(MoveTarget);
-        }
-
-        if (LookingAtTarget && (!MovingToTarget || MoveTarget != LookTarget))
-        {
-            GL.Color(Color.blue);
-            GL.Vertex(Position);
-            GL.Vertex(LookTarget);
-        }
-    }
         
     /// <summary>
     /// Assign a performance measure to this agent.
@@ -151,5 +129,14 @@ public abstract class Mind : IntelligenceComponent
     public void StopAllActions()
     {
         Agent.StopAllActions();
+    }
+
+    /// <summary>
+    /// Add a message to this component.
+    /// </summary>
+    /// <param name="message">The message to add.</param>
+    public override void AddMessage(string message)
+    {
+        Agent.AddMessage(message);
     }
 }
