@@ -28,6 +28,60 @@ public abstract class Agent : MonoBehaviour
     [Tooltip("How fast the agent's rotation can accelerate Set to zero for instantaneous acceleration.")]
     protected float lookAcceleration;
 
+    [Min(0)]
+    [Tooltip("The time in seconds between state updates.")]
+    public float stateUpdateInterval;
+    
+    [SerializeField]
+    [Tooltip("The current state the agent is in. Initialize it with the state to start in.")]
+    private State state;
+    
+    [SerializeField]
+    [Tooltip("The global state the agent is in. Initialize it with the global state to start it.")]
+    private State globalState;
+
+    public State CurrentState
+    {
+        get => state;
+        set
+        {
+            PreviousState = state;
+            
+            if (state != null)
+            {
+                state.Exit(this);
+            }
+
+            state = value;
+
+            if (state != null)
+            {
+                state.Execute(this);
+            }
+        }
+    }
+
+    public State GlobalState
+    {
+        get => globalState;
+        set
+        {
+            if (globalState != null)
+            {
+                globalState.Exit(this);
+            }
+
+            globalState = value;
+
+            if (globalState != null)
+            {
+                globalState.Execute(this);
+            }
+        }
+    }
+
+    public State PreviousState { get; private set; }
+
     /// <summary>
     /// Getter for the move speed.
     /// </summary>
@@ -162,6 +216,35 @@ public abstract class Agent : MonoBehaviour
     /// The index of the currently selected mind.
     /// </summary>
     private int _selectedMindIndex;
+
+    /// <summary>
+    /// The timer for state updates.
+    /// </summary>
+    private float _stateElapsedTime;
+
+    public bool FireEvent(Agent receiver, int eventId, object details)
+    {
+        return receiver != null && receiver.HandleEvent(new AIEvent(eventId, this, details));
+    }
+
+    public bool BroadcastEvent(int eventId, object details, bool requireAll = false)
+    {
+        bool all = true;
+        bool one = false;
+        foreach (bool result in AgentManager.Singleton.Agents.Select(receiver => receiver.HandleEvent(new AIEvent(eventId, this, details))))
+        {
+            if (result)
+            {
+                one = true;
+            }
+            else
+            {
+                all = false;
+            }
+        }
+
+        return requireAll ? all : one;
+    }
 
     /// <summary>
     /// Assign a mind to this agent.
@@ -335,6 +418,22 @@ public abstract class Agent : MonoBehaviour
     /// </summary>
     public void Perform()
     {
+        _stateElapsedTime += DeltaTime;
+        if (_stateElapsedTime >= stateUpdateInterval)
+        {
+            if (globalState != null)
+            {
+                globalState.Execute(this);
+            }
+
+            if (state != null)
+            {
+                state.Execute(this);
+            }
+
+            _stateElapsedTime = 0;
+        }
+
         // Can only sense, think, and act if there is a mind attached.
         if (Minds != null && Minds.Length > 0)
         {
@@ -409,7 +508,7 @@ public abstract class Agent : MonoBehaviour
 
     public void Setup()
     {
-                // Register this agent with the manager.
+        // Register this agent with the manager.
         AgentManager.Singleton.AddAgent(this);
             
         // Find all minds.
@@ -472,11 +571,6 @@ public abstract class Agent : MonoBehaviour
             Visuals = children[0];
         }
     }
-
-    protected virtual void Start()
-    {
-        Setup();
-    }
         
     /// <summary>
     /// Implement movement behaviour.
@@ -527,6 +621,11 @@ public abstract class Agent : MonoBehaviour
         AddMessage($"Looked towards {LookTarget}.");
     }
 
+    protected virtual void Start()
+    {
+        Setup();
+    }
+
     protected virtual void OnEnable()
     {
         try
@@ -563,6 +662,11 @@ public abstract class Agent : MonoBehaviour
         }
 
         MoveVelocity = Mathf.Clamp(MoveVelocity + moveAcceleration * deltaTime, 0, moveSpeed);
+    }
+
+    private bool HandleEvent(AIEvent aiEvent)
+    {
+        return state != null && state.HandleEvent(this, aiEvent) || globalState != null && globalState.HandleEvent(this, aiEvent);
     }
 
     /// <summary>

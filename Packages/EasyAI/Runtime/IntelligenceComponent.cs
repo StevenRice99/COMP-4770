@@ -122,7 +122,7 @@ public abstract class IntelligenceComponent : MonoBehaviour
     {
         return y;
     }
-        
+    
     /// <summary>
     /// Override to display custom GL.LINES gizmos.
     /// </summary>

@@ -60,6 +60,8 @@ public class AgentManager : MonoBehaviour
     /// The singleton agent manager.
     /// </summary>
     public static AgentManager Singleton;
+    
+    private static readonly Dictionary<Type, State> RegisteredStates = new Dictionary<Type, State>();
 
     /// <summary>
     /// The auto-generated material for displaying lines.
@@ -175,6 +177,21 @@ public class AgentManager : MonoBehaviour
     /// The currently selected component.
     /// </summary>
     private IntelligenceComponent _selectedComponent;
+
+    public void RegisterState(Type stateType, State stateToAdd)
+    {
+        RegisteredStates[stateType] = stateToAdd;
+    }
+
+    public void RemoveState(Type stateType)
+    {
+        RegisteredStates.Remove(stateType);
+    }
+
+    public State Lookup(Type stateType)
+    {
+        return RegisteredStates.ContainsKey(stateType) ? RegisteredStates[stateType] : CreateState(stateType);
+    }
 
     /// <summary>
     /// Resume playing.
@@ -525,7 +542,7 @@ public class AgentManager : MonoBehaviour
             agent.DeltaTime += Time.deltaTime;
             agent.Look();
         }
-            
+        
         // Move agents that do not require physics.
         MoveAgents(UpdateAgents);
     }
@@ -548,6 +565,12 @@ public class AgentManager : MonoBehaviour
     protected virtual float CustomRendering(float x, float y, float w, float h, float p)
     {
         return y;
+    }
+
+    private static State CreateState(Type stateType)
+    {
+        ScriptableObject.CreateInstance(stateType);
+        return RegisteredStates[stateType];
     }
 
     /// <summary>

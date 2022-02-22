@@ -23,6 +23,11 @@ public class TrackAgentCamera : MonoBehaviour
     /// The attached camera.
     /// </summary>
     private Camera _camera;
+
+    /// <summary>
+    /// The target position to look at.
+    /// </summary>
+    private Vector3 _target;
         
     private void Start()
     {
@@ -44,10 +49,7 @@ public class TrackAgentCamera : MonoBehaviour
             if (AgentManager.Singleton.Agents.Count > 0)
             {
                 agent = AgentManager.Singleton.Agents[0];
-            }
-            else
-            {
-                return;
+                _target = (agent.Visuals == null ? agent.transform : agent.Visuals).position;
             }
         }
 
@@ -60,8 +62,7 @@ public class TrackAgentCamera : MonoBehaviour
         }
 
         // Move over the agent.
-        Vector3 target = (agent.Visuals == null ? agent.transform : agent.Visuals).position;
-        target = new Vector3(target.x, target.y + height, target.z);
-        transform.position = moveSpeed <= 0 ? target : Vector3.Slerp(transform.position, target, moveSpeed * Time.deltaTime);
+        Vector3 position = new Vector3(_target.x, _target.y + height, _target.z);
+        transform.position = moveSpeed <= 0 ? position : Vector3.Slerp(transform.position, position, moveSpeed * Time.deltaTime);
     }
 }
