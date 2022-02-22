@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace A2.States
 {
+    [CreateAssetMenu(menuName = "A2/States/Microbe Global State")]
     public class MicrobeGlobalState : State
     {
         [SerializeField]

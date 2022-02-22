@@ -572,9 +572,10 @@ public class AgentManager : MonoBehaviour
         return y;
     }
 
-    private static State CreateState(Type stateType)
+    private State CreateState(Type stateType)
     {
-        ScriptableObject.CreateInstance(stateType);
+        ScriptableObject state = ScriptableObject.CreateInstance(stateType);
+        RegisterState(stateType, state as State);
         return RegisteredStates[stateType];
     }
 
@@ -940,10 +941,20 @@ public class AgentManager : MonoBehaviour
         }
             
         y = NextItem(y, h, p);
-        int length = 5;
+        int length = 7;
         if (Agents.Count > 1)
         {
             length++;
+        }
+
+        if (SelectedAgent.GlobalState == null)
+        {
+            length--;
+        }
+
+        if (SelectedAgent.State == null)
+        {
+            length--;
         }
 
         if (SelectedAgent.SelectedMind == null)
@@ -966,6 +977,18 @@ public class AgentManager : MonoBehaviour
 
         GuiLabel(x, y, w, h, p, $"Type: {SelectedAgent}");
         y = NextItem(y, h, p);
+        
+        if (SelectedAgent.GlobalState != null)
+        {
+            GuiLabel(x, y, w, h, p, $"Global State: {SelectedAgent.GlobalState}");
+            y = NextItem(y, h, p);
+        }
+        
+        if (SelectedAgent.State != null)
+        {
+            GuiLabel(x, y, w, h, p, $"State: {SelectedAgent.State}");
+            y = NextItem(y, h, p);
+        }
         
         Mind mind = SelectedAgent.SelectedMind;
         if (mind != null)

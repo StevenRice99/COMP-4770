@@ -33,33 +33,12 @@ public abstract class Agent : MessageComponent
     public float stateUpdateInterval;
     
     [SerializeField]
-    [Tooltip("The current state the agent is in. Initialize it with the state to start in.")]
-    private State state;
-    
-    [SerializeField]
     [Tooltip("The global state the agent is in. Initialize it with the global state to start it.")]
     private State globalState;
-
-    public State CurrentState
-    {
-        get => state;
-        set
-        {
-            PreviousState = state;
-            
-            if (state != null)
-            {
-                state.Exit(this);
-            }
-
-            state = value;
-
-            if (state != null)
-            {
-                state.Execute(this);
-            }
-        }
-    }
+    
+    [SerializeField]
+    [Tooltip("The current state the agent is in. Initialize it with the state to start in.")]
+    private State state;
 
     public State GlobalState
     {
@@ -76,6 +55,27 @@ public abstract class Agent : MessageComponent
             if (globalState != null)
             {
                 globalState.Execute(this);
+            }
+        }
+    }
+
+    public State State
+    {
+        get => state;
+        set
+        {
+            PreviousState = state;
+            
+            if (state != null)
+            {
+                state.Exit(this);
+            }
+
+            state = value;
+
+            if (state != null)
+            {
+                state.Execute(this);
             }
         }
     }
@@ -246,7 +246,7 @@ public abstract class Agent : MessageComponent
 
     public bool FireEvent(Agent receiver, int eventId, object details)
     {
-        return receiver != null && receiver.HandleEvent(new AIEvent(eventId, this, details));
+        return receiver != null && receiver != this && receiver.HandleEvent(new AIEvent(eventId, this, details));
     }
 
     public bool BroadcastEvent(int eventId, object details, bool requireAll = false)

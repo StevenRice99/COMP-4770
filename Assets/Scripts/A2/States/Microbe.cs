@@ -6,6 +6,10 @@ namespace A2.States
     public class Microbe : TransformAgent
     {
         public int Hunger { get; set; } = 10;
+        
+        public Microbe TargetMicrobe { get; private set; }
+
+        public bool IsHungry => Hunger >= MicrobeManager.MicrobeManagerSingleton.HungerThreshold;
 
         private MicrobeManager.MicrobeType _microbeType;
 

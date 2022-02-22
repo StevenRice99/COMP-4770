@@ -49,8 +49,8 @@ MonoBehaviour:
   moveAcceleration: 0
   lookAcceleration: 0
   stateUpdateInterval: 0
-  state: {fileID: 0}
-  globalState: {fileID: 0}
+  state: {fileID: 11400000, guid: 0dbbbbfc37da2304bbd48180d5f98c02, type: 2}
+  globalState: {fileID: 11400000, guid: 1c5677af39d17c748bb3dbf33fc8c7cb, type: 2}
 --- !u!1 &1779663618056566957
 GameObject:
   m_ObjectHideFlags: 0

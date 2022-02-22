@@ -26,4 +26,13 @@ public class State : ScriptableObject
     {
         agent.AddMessage($"{agent} {action} {GetType().Name}.");
     }
+
+    /// <summary>
+    /// Override to easily display the type of the component for easy usage in messages.
+    /// </summary>
+    /// <returns>Name of this type.</returns>
+    public override string ToString()
+    {
+        return GetType().Name;
+    }
 }
