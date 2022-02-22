@@ -22,7 +22,7 @@ public class State : ScriptableObject
         return false;
     }
 
-    private void StandardMessage(Agent agent, string action)
+    private void StandardMessage(MessageComponent agent, string action)
     {
         agent.AddMessage($"{action} {GetType().Name}.");
     }
