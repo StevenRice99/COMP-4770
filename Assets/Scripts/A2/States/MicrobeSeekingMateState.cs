@@ -40,7 +40,14 @@ namespace A2.States
 
             if (microbe.TargetMicrobe == null)
             {
-                agent.AddMessage("Cannot find a mate, roaming.");
+                if (microbe.IsHungry)
+                {
+                    agent.AddMessage("Hungry, stopping search for mate as there were none.");
+                    microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingFoodState));
+                    return;
+                }
+                
+                agent.AddMessage("Cannot find a mate.");
                 if (agent.DidMove)
                 {
                     return;

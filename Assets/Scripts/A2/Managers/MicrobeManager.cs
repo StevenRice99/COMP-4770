@@ -238,10 +238,7 @@ namespace A2.Managers
             floor.transform.localScale = new Vector3(floorRadius * 2, 1, floorRadius * 2);
             floor.name = "Floor";
 
-            for (int i = 0; i < minMicrobes; i++)
-            {
-                SpawnMicrobe();
-            }
+            ResetAgents();
             
             base.Start();
         }
@@ -285,6 +282,39 @@ namespace A2.Managers
                 {
                     SpawnMicrobe();
                 }
+            }
+        }
+        
+                /// <summary>
+        /// Render buttons to regenerate the floor or change its size..
+        /// </summary>
+        /// <param name="x">X rendering position. In most cases this should remain unchanged.</param>
+        /// <param name="y">Y rendering position. Update this with every component added and return it.</param>
+        /// <param name="w">Width of components. In most cases this should remain unchanged.</param>
+        /// <param name="h">Height of components. In most cases this should remain unchanged.</param>
+        /// <param name="p">Padding of components. In most cases this should remain unchanged.</param>
+        /// <returns>The updated Y position after all custom rendering has been done.</returns>
+        protected override float CustomRendering(float x, float y, float w, float h, float p)
+        {
+            // Regenerate the floor button.
+            if (GuiButton(x, y, w, h, "Reset"))
+            {
+                ResetAgents();
+            }
+            
+            return NextItem(y, h, p);
+        }
+
+        private void ResetAgents()
+        {
+            for (int i = Agents.Count - 1; i >= 0; i--)
+            {
+                Destroy(Agents[i].gameObject);
+            }
+            
+            for (int i = 0; i < minMicrobes; i++)
+            {
+                SpawnMicrobe();
             }
         }
     }
