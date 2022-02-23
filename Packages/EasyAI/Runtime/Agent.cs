@@ -268,6 +268,16 @@ public abstract class Agent : MessageComponent
         return requireAll ? all : one;
     }
 
+    public void AssignMoveSpeed(float speed)
+    {
+        moveSpeed = Math.Abs(speed);
+    }
+
+    public void AssignLookSpeed(float speed)
+    {
+        lookSpeed = Math.Abs(speed);
+    }
+
     /// <summary>
     /// Assign a mind to this agent.
     /// </summary>

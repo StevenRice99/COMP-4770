@@ -156,7 +156,7 @@ MonoBehaviour:
   maxMessages: 100
   detailsWidth: 500
   controlsWidth: 120
-  gizmos: 0
+  gizmos: 1
   selectedCamera: {fileID: 821404258}
   microbePrefab: {fileID: 1567258149929102323, guid: b123d809f0c77554b9d8404a7e5f0874, type: 3}
   redMicrobeMaterial: {fileID: 2100000, guid: 3a41b7aa03ddf024fbc0c1ea0563750d, type: 2}
@@ -165,9 +165,18 @@ MonoBehaviour:
   yellowMicrobeMaterial: {fileID: 2100000, guid: f3826008cfa519a4b8ee5a95a8c05e85, type: 2}
   hungerThreshold: 100
   startingHunger: 10
+  hungerRestoredFromEating: 100
   floorRadius: 15
   minMicrobes: 5
   maxMicrobes: 20
+  minMicrobeSpeed: 5
+  maxMicrobeSpeed: 10
+  minMicrobeLifespan: 20
+  maxMicrobeLifespan: 30
+  maxOffspring: 3
+  microbeInteractRadius: 2
+  minMicrobeSize: 0.25
+  maxMicrobeSize: 1
 --- !u!4 &187274787
 Transform:
   m_ObjectHideFlags: 0

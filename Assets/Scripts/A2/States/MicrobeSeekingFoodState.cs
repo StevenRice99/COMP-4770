@@ -28,6 +28,16 @@ namespace A2.States
                 agent.AddMessage("Cannot find any food.");
                 return;
             }
+
+            if (Vector3.Distance(microbe.transform.position, microbe.TargetMicrobe.transform.position) <= MicrobeManager.MicrobeManagerSingleton.MicrobeInteractRadius)
+            {
+                microbe.FireEvent(microbe.TargetMicrobe, (int) MicrobeManager.MicrobeEvents.Eaten);
+                if (microbe.Hunger <= MicrobeManager.MicrobeManagerSingleton.HungerThreshold)
+                {
+                    microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSleepingState));
+                }
+                return;
+            }
             
             agent.AddMessage($"Hunting {microbe.TargetMicrobe.name}.");
             agent.MoveToLookAtTarget(microbe.TargetMicrobe.transform);

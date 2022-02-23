@@ -19,13 +19,19 @@ namespace A2.States
 
             if (microbe.IsHungry)
             {
-                microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingFoodState));
                 agent.AddMessage("Hungry.");
+                microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingFoodState));
+                return;
             }
-            else
+
+            if (microbe.IsAdult)
             {
-                agent.AddMessage("Sleeping.");
+                agent.AddMessage("Want to find a mate.");
+                //microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingMateState));
+                return;
             }
+            
+            agent.AddMessage("Sleeping.");
         }
 
         public override void Exit(Agent agent)

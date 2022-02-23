@@ -11,6 +11,16 @@ public abstract class Mind : IntelligenceComponent
     /// <param name="percepts">The percepts which the agent's sensors sensed.</param>
     /// <returns>The actions the agent's actuators will perform.</returns>
     public abstract Action[] Think(Percept[] percepts);
+    
+    public void AssignMoveSpeed(float speed)
+    {
+       Agent.AssignMoveSpeed(speed);
+    }
+
+    public void AssignLookSpeed(float speed)
+    {
+        Agent.AssignLookSpeed(speed);
+    }
         
     /// <summary>
     /// Assign a performance measure to this agent.

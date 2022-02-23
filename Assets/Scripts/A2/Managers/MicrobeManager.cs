@@ -45,7 +45,11 @@ namespace A2.Managers
 
         [SerializeField]
         [Min(0)]
-        private int startingHunger = 10;
+        private int startingHunger = 0;
+
+        [SerializeField]
+        [Min(1)]
+        private int hungerRestoredFromEating = 100;
 
         [SerializeField]
         [Min(0)]
@@ -59,6 +63,42 @@ namespace A2.Managers
         [Min(2)]
         private int maxMicrobes = 20;
 
+        [SerializeField]
+        [Min(float.Epsilon)]
+        private float minMicrobeSpeed = 5f;
+
+        [SerializeField]
+        [Min(float.Epsilon)]
+        private float maxMicrobeSpeed = 10f;
+
+        [SerializeField]
+        [Min(float.Epsilon)]
+        private float minMicrobeLifespan = 20f;
+
+        [SerializeField]
+        [Min(float.Epsilon)]
+        private float maxMicrobeLifespan = 30f;
+
+        [SerializeField]
+        [Min(1)]
+        private int maxOffspring = 3;
+
+        [SerializeField]
+        [Min(float.Epsilon)]
+        private float microbeInteractRadius = 2;
+
+        [SerializeField]
+        [Min(float.Epsilon)]
+        private float minMicrobeSize = 0.25f;
+
+        [SerializeField]
+        [Min(float.Epsilon)]
+        private float maxMicrobeSize = 1;
+
+        public int HungerRestoredFromEating => hungerRestoredFromEating;
+
+        public float MicrobeInteractRadius => microbeInteractRadius;
+
         public Material RedMicrobeMaterial => redMicrobeMaterial;
 
         public Material BlueMicrobeMaterial => blueMicrobeMaterial;
@@ -68,6 +108,21 @@ namespace A2.Managers
         public Material YellowMicrobeMaterial => yellowMicrobeMaterial;
 
         public int HungerThreshold => hungerThreshold;
+
+        public int Mate(Microbe parentA, Microbe parentB)
+        {
+            int born;
+            for (born = 0; born < maxOffspring && Agents.Count < maxMicrobes; born++)
+            {
+                SpawnMicrobe(
+                    Random.value <= 0.5f ? parentA.MicrobeType : parentB.MicrobeType,
+                    (parentA.transform.position + parentB.transform.position) / 2,
+                    Mathf.Clamp((parentA.MoveSpeed + parentB.MoveSpeed) / 2 + Random.value - 0.5f, minMicrobeSpeed, maxMicrobeSpeed),
+                    Mathf.Clamp((parentA.LifeSpan + parentB.LifeSpan) / 2 + Random.value - 0.5f, minMicrobeLifespan, maxMicrobeLifespan));
+            }
+
+            return born;
+        }
 
         public void SpawnMicrobe()
         {
@@ -84,6 +139,11 @@ namespace A2.Managers
 
         public void SpawnMicrobe(MicrobeType microbeType, Vector3 position)
         {
+            SpawnMicrobe(microbeType, position, Random.Range(minMicrobeSpeed, maxMicrobeSpeed), Random.Range(minMicrobeLifespan, maxMicrobeLifespan));
+        }
+
+        public void SpawnMicrobe(MicrobeType microbeType, Vector3 position, float moveSpeed, float lifespan)
+        {
             if (Agents.Count >= maxMicrobes)
             {
                 return;
@@ -98,6 +158,8 @@ namespace A2.Managers
 
             microbe.MicrobeType = microbeType;
             microbe.Hunger = startingHunger;
+            microbe.LifeSpan = lifespan;
+            microbe.AssignMoveSpeed(moveSpeed);
 
             string n = microbeType switch
             {
@@ -149,6 +211,25 @@ namespace A2.Managers
             return microbes.Length == 0 ? null : microbes.OrderBy(m => Vector3.Distance(seeker.transform.position, m.transform.position)).First();
         }
 
+        public Microbe FindMate(Microbe seeker)
+        {
+            Microbe[] microbes = Agents.Where(a => a is Microbe m && m != seeker && m.IsAdult && !seeker.RejectedBy.Contains(m)).Cast<Microbe>().ToArray();
+            if (microbes.Length == 0)
+            {
+                return null;
+            }
+            
+            microbes = seeker.MicrobeType switch
+            {
+                MicrobeType.Red => microbes.Where(m => m.MicrobeType == MicrobeType.Red || m.MicrobeType == MicrobeType.Yellow).ToArray(),
+                MicrobeType.Blue => microbes.Where(m => m.MicrobeType == MicrobeType.Blue || m.MicrobeType == MicrobeType.Green).ToArray(),
+                MicrobeType.Green => microbes.Where(m => m.MicrobeType == MicrobeType.Blue || m.MicrobeType == MicrobeType.Green).ToArray(),
+                _ => microbes.Where(m => m.MicrobeType == MicrobeType.Red || m.MicrobeType == MicrobeType.Yellow).ToArray()
+            };
+            
+            return microbes.Length == 0 ? null : microbes.OrderBy(m => Vector3.Distance(seeker.transform.position, m.transform.position)).First();
+        }
+
         protected override void Start()
         {
             GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
@@ -171,11 +252,20 @@ namespace A2.Managers
 
             for (int index = 0; index < Agents.Count; index++)
             {
-                if (!(Agents[index] is Microbe microbe) || Vector3.Distance(Agents[index].transform.position, Vector3.zero) <= floorRadius)
+                if (!(Agents[index] is Microbe microbe))
                 {
                     continue;
                 }
-                
+
+                microbe.ElapsedLifespan += Time.deltaTime;
+
+                if (Vector3.Distance(Agents[index].transform.position, Vector3.zero) <= floorRadius && microbe.ElapsedLifespan < microbe.LifeSpan)
+                {
+                    float scale = (microbe.ElapsedLifespan / microbe.LifeSpan) * (maxMicrobeSize - minMicrobeSize) + minMicrobeSize;
+                    microbe.Visuals.localScale = new Vector3(scale, scale, scale);
+                    continue;
+                }
+
                 microbe.Die();
                 index--;
             }

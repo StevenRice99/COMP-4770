@@ -527,16 +527,28 @@ public class AgentManager : MonoBehaviour
         // Perform for all agents if there is no limit or only the next allowable number of agents if there is.
         if (maxAgentsPerUpdate <= 0)
         {
-            foreach (Agent agent in Agents)
+            for (int i = 0; i < Agents.Count; i++)
             {
-                agent.Perform();
+                try
+                {
+                    Agents[i].Perform();
+                }
+                catch { }
             }
         }
         else
         {
             for (int i = 0; i < maxAgentsPerUpdate && i < Agents.Count; i++)
             {
-                Agents[_currentAgentIndex].Perform();
+                try
+                {
+                    Agents[_currentAgentIndex].Perform();
+                }
+                catch
+                {
+                    continue;
+                }
+                
                 NextAgent();
             }
         }
