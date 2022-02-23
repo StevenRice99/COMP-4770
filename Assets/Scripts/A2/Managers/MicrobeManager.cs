@@ -18,8 +18,8 @@ namespace A2.Managers
         public enum MicrobeEvents
         {
             Eaten = 0,
-            Attracted,
-            Rejected
+            Impress,
+            Mated
         }
         
         public static MicrobeManager MicrobeManagerSingleton => Singleton as MicrobeManager;
@@ -57,11 +57,15 @@ namespace A2.Managers
 
         [SerializeField]
         [Min(1)]
-        private int minMicrobes = 5;
+        private int minMicrobes = 10;
 
         [SerializeField]
         [Min(2)]
-        private int maxMicrobes = 20;
+        private int maxMicrobes = 30;
+
+        [SerializeField]
+        [Min(0)]
+        private float randomSpawnChance = 0.0001f;
 
         [SerializeField]
         [Min(float.Epsilon)]
@@ -81,7 +85,7 @@ namespace A2.Managers
 
         [SerializeField]
         [Min(1)]
-        private int maxOffspring = 3;
+        private int maxOffspring = 4;
 
         [SerializeField]
         [Min(float.Epsilon)]
@@ -202,20 +206,14 @@ namespace A2.Managers
                 return null;
             }
 
-            microbes = seeker.MicrobeType switch
-            {
-                MicrobeType.Red => microbes.Where(m => m.MicrobeType == MicrobeType.Blue).ToArray(),
-                MicrobeType.Blue => microbes.Where(m => m.MicrobeType == MicrobeType.Yellow).ToArray(),
-                MicrobeType.Green => microbes.Where(m => m.MicrobeType == MicrobeType.Red).ToArray(),
-                _ => microbes.Where(m => m.MicrobeType == MicrobeType.Green).ToArray()
-            };
+            microbes = microbes.Where(m => m.MicrobeType != seeker.MicrobeType).ToArray();
 
             return microbes.Length == 0 ? null : microbes.OrderBy(m => Vector3.Distance(seeker.transform.position, m.transform.position)).First();
         }
 
         public Microbe FindMate(Microbe seeker)
         {
-            Microbe[] microbes = Agents.Where(a => a is Microbe m && m != seeker && m.IsAdult && !seeker.RejectedBy.Contains(m)).Cast<Microbe>().ToArray();
+            Microbe[] microbes = Agents.Where(a => a is Microbe m && m != seeker && m.IsAdult && m.State.GetType() == typeof(MicrobeSeekingMateState) && !seeker.RejectedBy.Contains(m)).Cast<Microbe>().ToArray();
             if (microbes.Length == 0)
             {
                 return null;
@@ -263,8 +261,12 @@ namespace A2.Managers
 
                 if (Vector3.Distance(Agents[index].transform.position, Vector3.zero) <= floorRadius && microbe.ElapsedLifespan < microbe.LifeSpan)
                 {
-                    float scale = (microbe.ElapsedLifespan / microbe.LifeSpan) * (maxMicrobeSize - minMicrobeSize) + minMicrobeSize;
-                    microbe.Visuals.localScale = new Vector3(scale, scale, scale);
+                    if (Agents[index].Visuals != null)
+                    {
+                        float scale = (microbe.ElapsedLifespan / microbe.LifeSpan) * (maxMicrobeSize - minMicrobeSize) + minMicrobeSize;
+                        Agents[index].Visuals.localScale = new Vector3(scale, scale, scale);
+                    }
+
                     continue;
                 }
 
@@ -275,6 +277,14 @@ namespace A2.Managers
             while (Agents.Count < minMicrobes)
             {
                 SpawnMicrobe();
+            }
+
+            for (int i = Agents.Count; i < maxMicrobes; i++)
+            {
+                if (Random.value <= randomSpawnChance)
+                {
+                    SpawnMicrobe();
+                }
             }
         }
     }

@@ -24,10 +24,10 @@ namespace A2.States
                 return;
             }
 
-            if (microbe.IsAdult)
+            if (microbe.IsAdult && !microbe.DidMate)
             {
                 agent.AddMessage("Want to find a mate.");
-                //microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingMateState));
+                microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingMateState));
                 return;
             }
             

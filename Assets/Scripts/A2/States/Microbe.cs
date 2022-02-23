@@ -14,6 +14,8 @@ namespace A2.States
         public float ElapsedLifespan { get; set; }
         
         public Microbe TargetMicrobe { get; set; }
+        
+        public bool DidMate { get; set; }
 
         public List<Microbe> RejectedBy { get; } = new List<Microbe>();
 
@@ -70,12 +72,15 @@ namespace A2.States
         public override float DisplayDetails(float x, float y, float w, float h, float p)
         {
             y = AgentManager.NextItem(y, h, p);
-            AgentManager.GuiBox(x, y, w, h, p, 2);
+            AgentManager.GuiBox(x, y, w, h, p, 3);
 
             AgentManager.GuiLabel(x, y, w, h, p, $"Hunger: {Hunger} | " + (IsHungry ? "Hungry" : "Not Hungry"));
             y = AgentManager.NextItem(y, h, p);
 
             AgentManager.GuiLabel(x, y, w, h, p, $"Lifespan: {ElapsedLifespan} / {LifeSpan} | " + (IsAdult ? "Adult" : "Infant"));
+            y = AgentManager.NextItem(y, h, p);
+            
+            AgentManager.GuiLabel(x, y, w, h, p, $"Mating: " + (IsAdult && !IsHungry ? "Mating" + (TargetMicrobe == null ? string.Empty : $" with {TargetMicrobe.name}") : "No"));
             
             return y;
         }
