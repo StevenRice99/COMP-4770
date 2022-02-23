@@ -7,7 +7,7 @@ namespace A2.States
     {
         public int Hunger { get; set; } = 10;
         
-        public Microbe TargetMicrobe { get; private set; }
+        public Microbe TargetMicrobe { get; set; }
 
         public bool IsHungry => Hunger >= MicrobeManager.MicrobeManagerSingleton.HungerThreshold;
 

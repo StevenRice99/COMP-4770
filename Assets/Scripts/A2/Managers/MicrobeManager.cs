@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using A2.States;
-using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -20,8 +18,8 @@ namespace A2.Managers
         public enum MicrobeEvents
         {
             Eaten = 0,
-            AttractMate,
-            RejectMate
+            Attracted,
+            Rejected
         }
         
         public static MicrobeManager MicrobeManagerSingleton => Singleton as MicrobeManager;
@@ -130,6 +128,25 @@ namespace A2.Managers
             SortAgents();
             
             AddGlobalMessage($"Spawned microbe {n}.");
+        }
+
+        public Microbe FindFood(Microbe seeker)
+        {
+            Microbe[] microbes = Agents.Where(a => a is Microbe m && m != seeker).Cast<Microbe>().ToArray();
+            if (microbes.Length == 0)
+            {
+                return null;
+            }
+
+            microbes = seeker.MicrobeType switch
+            {
+                MicrobeType.Red => microbes.Where(m => m.MicrobeType == MicrobeType.Blue).ToArray(),
+                MicrobeType.Blue => microbes.Where(m => m.MicrobeType == MicrobeType.Yellow).ToArray(),
+                MicrobeType.Green => microbes.Where(m => m.MicrobeType == MicrobeType.Red).ToArray(),
+                _ => microbes.Where(m => m.MicrobeType == MicrobeType.Green).ToArray()
+            };
+
+            return microbes.Length == 0 ? null : microbes.OrderBy(m => Vector3.Distance(seeker.transform.position, m.transform.position)).First();
         }
 
         protected override void Start()

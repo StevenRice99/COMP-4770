@@ -244,16 +244,16 @@ public abstract class Agent : MessageComponent
         }
     }
 
-    public bool FireEvent(Agent receiver, int eventId, object details)
+    public bool FireEvent(Agent receiver, int eventId, object details = null)
     {
         return receiver != null && receiver != this && receiver.HandleEvent(new AIEvent(eventId, this, details));
     }
 
-    public bool BroadcastEvent(int eventId, object details, bool requireAll = false)
+    public bool BroadcastEvent(int eventId, object details = null, bool requireAll = false)
     {
         bool all = true;
         bool one = false;
-        foreach (bool result in AgentManager.Singleton.Agents.Select(receiver => receiver.HandleEvent(new AIEvent(eventId, this, details))))
+        foreach (bool result in AgentManager.Singleton.Agents.Where(a => a != this).Select(a => a.HandleEvent(new AIEvent(eventId, this, details))))
         {
             if (result)
             {

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using A2.Managers;
+using UnityEngine;
 
 namespace A2.States
 {
@@ -12,12 +13,34 @@ namespace A2.States
 
         public override void Execute(Agent agent)
         {
-            agent.AddMessage("Searching for food.");
-            agent.MoveToLookAtTarget(Vector3.zero);
+            if (!(agent is Microbe microbe))
+            {
+                return;
+            }
+
+            if (microbe.TargetMicrobe == null)
+            {
+                microbe.TargetMicrobe = MicrobeManager.MicrobeManagerSingleton.FindFood(microbe);
+            }
+
+            if (microbe.TargetMicrobe == null)
+            {
+                agent.AddMessage("Cannot find any food.");
+                return;
+            }
+            
+            agent.AddMessage($"Hunting {microbe.TargetMicrobe.name}.");
+            agent.MoveToLookAtTarget(microbe.TargetMicrobe.transform);
         }
 
         public override void Exit(Agent agent)
         {
+            if (!(agent is Microbe microbe))
+            {
+                return;
+            }
+
+            microbe.TargetMicrobe = null;
             agent.AddMessage("No longer searching for food.");
         }
     }
