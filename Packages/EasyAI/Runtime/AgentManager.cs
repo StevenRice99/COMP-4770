@@ -150,7 +150,10 @@ public class AgentManager : MonoBehaviour
     /// All agents which move during a fixed update tick.
     /// </summary>
     private List<Agent> FixedUpdateAgents = new List<Agent>();
-        
+    
+    /// <summary>
+    /// State of the GUI system.
+    /// </summary>
     private GuiState _state;
 
     /// <summary>
@@ -177,6 +180,13 @@ public class AgentManager : MonoBehaviour
     /// The currently selected component.
     /// </summary>
     private IntelligenceComponent _selectedComponent;
+
+    public void SetSelectedAgent(Agent agent)
+    {
+        _selectedComponent = null;
+        SelectedAgent = agent;
+        _state = GuiState.Agent;
+    }
 
     public void RegisterState(Type stateType, State stateToAdd)
     {
