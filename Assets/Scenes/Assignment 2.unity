@@ -164,20 +164,21 @@ MonoBehaviour:
   greenMicrobeMaterial: {fileID: 2100000, guid: 80a1e3b18dd54524d9eba3b07b234aad, type: 2}
   yellowMicrobeMaterial: {fileID: 2100000, guid: f3826008cfa519a4b8ee5a95a8c05e85, type: 2}
   hungerThreshold: 100
-  startingHunger: 10
+  startingHunger: 0
   hungerRestoredFromEating: 100
   floorRadius: 15
   minMicrobes: 10
   maxMicrobes: 30
-  randomSpawnChance: 0.0001
+  randomSpawnChance: 0
   minMicrobeSpeed: 5
   maxMicrobeSpeed: 10
   minMicrobeLifespan: 20
   maxMicrobeLifespan: 30
-  maxOffspring: 3
+  maxOffspring: 4
   microbeInteractRadius: 1
   minMicrobeSize: 0.25
   maxMicrobeSize: 1
+  minMicrobeDetectionRange: 5
 --- !u!4 &187274787
 Transform:
   m_ObjectHideFlags: 0

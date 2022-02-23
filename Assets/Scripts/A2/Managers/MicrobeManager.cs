@@ -99,6 +99,10 @@ namespace A2.Managers
         [Min(float.Epsilon)]
         private float maxMicrobeSize = 1;
 
+        [SerializeField]
+        [Min(0)]
+        private float minMicrobeDetectionRange = 5;
+
         public int HungerRestoredFromEating => hungerRestoredFromEating;
 
         public float MicrobeInteractRadius => microbeInteractRadius;
@@ -124,7 +128,8 @@ namespace A2.Managers
                     Random.value <= 0.5f ? parentA.MicrobeType : parentB.MicrobeType,
                     (parentA.transform.position + parentB.transform.position) / 2,
                     Mathf.Clamp((parentA.MoveSpeed + parentB.MoveSpeed) / 2 + Random.value - 0.5f, minMicrobeSpeed, maxMicrobeSpeed),
-                    Mathf.Clamp((parentA.LifeSpan + parentB.LifeSpan) / 2 + Random.value - 0.5f, minMicrobeLifespan, maxMicrobeLifespan));
+                    Mathf.Clamp((parentA.LifeSpan + parentB.LifeSpan) / 2 + Random.value - 0.5f, minMicrobeLifespan, maxMicrobeLifespan),
+                    Mathf.Clamp((parentA.DetectionRange + parentB.DetectionRange) / 2 + Random.value - 0.5f, minMicrobeDetectionRange, floorRadius * 2));
             }
 
             return born;
@@ -145,10 +150,10 @@ namespace A2.Managers
 
         public void SpawnMicrobe(MicrobeType microbeType, Vector3 position)
         {
-            SpawnMicrobe(microbeType, position, Random.Range(minMicrobeSpeed, maxMicrobeSpeed), Random.Range(minMicrobeLifespan, maxMicrobeLifespan));
+            SpawnMicrobe(microbeType, position, Random.Range(minMicrobeSpeed, maxMicrobeSpeed), Random.Range(minMicrobeLifespan, maxMicrobeLifespan), Random.Range(minMicrobeDetectionRange, floorRadius * 2));
         }
 
-        public void SpawnMicrobe(MicrobeType microbeType, Vector3 position, float moveSpeed, float lifespan)
+        public void SpawnMicrobe(MicrobeType microbeType, Vector3 position, float moveSpeed, float lifespan, float detectionRange)
         {
             if (Agents.Count >= maxMicrobes)
             {
@@ -165,6 +170,7 @@ namespace A2.Managers
             microbe.MicrobeType = microbeType;
             microbe.Hunger = startingHunger;
             microbe.LifeSpan = lifespan;
+            microbe.DetectionRange = detectionRange;
             microbe.AssignMoveSpeed(moveSpeed);
 
             string n = microbeType switch
@@ -200,7 +206,7 @@ namespace A2.Managers
 
         public Microbe FindFood(Microbe seeker)
         {
-            Microbe[] microbes = Agents.Where(a => a is Microbe m && m != seeker).Cast<Microbe>().ToArray();
+            Microbe[] microbes = Agents.Where(a => a is Microbe m && m != seeker && Vector3.Distance(seeker.transform.position, a.transform.position) < seeker.DetectionRange).Cast<Microbe>().ToArray();
             if (microbes.Length == 0)
             {
                 return null;
@@ -213,7 +219,7 @@ namespace A2.Managers
 
         public Microbe FindMate(Microbe seeker)
         {
-            Microbe[] microbes = Agents.Where(a => a is Microbe m && m != seeker && m.IsAdult && m.State.GetType() == typeof(MicrobeSeekingMateState) && !seeker.RejectedBy.Contains(m)).Cast<Microbe>().ToArray();
+            Microbe[] microbes = Agents.Where(a => a is Microbe m && m != seeker && m.IsAdult && m.State.GetType() == typeof(MicrobeSeekingMateState) && !seeker.RejectedBy.Contains(m) && Vector3.Distance(seeker.transform.position, a.transform.position) < seeker.DetectionRange).Cast<Microbe>().ToArray();
             if (microbes.Length == 0)
             {
                 return null;

@@ -11,6 +11,8 @@ namespace A2.States
         
         public float LifeSpan { get; set; }
         
+        public float DetectionRange { get; set; }
+        
         public float ElapsedLifespan { get; set; }
         
         public Microbe TargetMicrobe { get; set; }
@@ -80,7 +82,7 @@ namespace A2.States
             AgentManager.GuiLabel(x, y, w, h, p, $"Lifespan: {ElapsedLifespan} / {LifeSpan} | " + (IsAdult ? "Adult" : "Infant"));
             y = AgentManager.NextItem(y, h, p);
             
-            AgentManager.GuiLabel(x, y, w, h, p, $"Mating: " + (IsAdult && !IsHungry ? "Mating" + (TargetMicrobe == null ? string.Empty : $" with {TargetMicrobe.name}") : "No"));
+            AgentManager.GuiLabel(x, y, w, h, p, $"Mating: " + (IsAdult && !IsHungry ? "Mating | " + (TargetMicrobe == null ? "Searching..." : $"With {TargetMicrobe.name}") : "No"));
             
             return y;
         }
