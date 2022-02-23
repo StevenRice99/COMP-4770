@@ -174,7 +174,7 @@ MonoBehaviour:
   minMicrobeLifespan: 20
   maxMicrobeLifespan: 30
   maxOffspring: 3
-  microbeInteractRadius: 2
+  microbeInteractRadius: 1
   minMicrobeSize: 0.25
   maxMicrobeSize: 1
 --- !u!4 &187274787

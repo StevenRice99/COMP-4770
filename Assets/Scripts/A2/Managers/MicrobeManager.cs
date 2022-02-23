@@ -109,6 +109,8 @@ namespace A2.Managers
 
         public int HungerThreshold => hungerThreshold;
 
+        public float FloorRadius => floorRadius;
+
         public int Mate(Microbe parentA, Microbe parentB)
         {
             int born;

@@ -25,7 +25,14 @@ namespace A2.States
 
             if (microbe.TargetMicrobe == null)
             {
-                agent.AddMessage("Cannot find any food.");
+                agent.AddMessage("Cannot find any food, roaming.");
+                if (agent.DidMove)
+                {
+                    return;
+                }
+
+                Vector3 position = Random.insideUnitSphere * MicrobeManager.MicrobeManagerSingleton.FloorRadius;
+                agent.MoveToLookAtTarget(new Vector3(position.x, 0, position.z));
                 return;
             }
 
