@@ -44,9 +44,12 @@ namespace A2.Agents
                 meshRenderer.material = _microbeType switch
                 {
                     MicrobeManager.MicrobeType.Red => MicrobeManager.MicrobeManagerSingleton.RedMicrobeMaterial,
-                    MicrobeManager.MicrobeType.Blue => MicrobeManager.MicrobeManagerSingleton.BlueMicrobeMaterial,
+                    MicrobeManager.MicrobeType.Orange => MicrobeManager.MicrobeManagerSingleton.OrangeMicrobeMaterial,
+                    MicrobeManager.MicrobeType.Yellow => MicrobeManager.MicrobeManagerSingleton.YellowMicrobeMaterial,
                     MicrobeManager.MicrobeType.Green => MicrobeManager.MicrobeManagerSingleton.GreenMicrobeMaterial,
-                    _ => MicrobeManager.MicrobeManagerSingleton.YellowMicrobeMaterial
+                    MicrobeManager.MicrobeType.Blue => MicrobeManager.MicrobeManagerSingleton.BlueMicrobeMaterial,
+                    MicrobeManager.MicrobeType.Purple => MicrobeManager.MicrobeManagerSingleton.PurpleMicrobeMaterial,
+                    _ => MicrobeManager.MicrobeManagerSingleton.PinkMicrobeMaterial
                 };
             }
         }

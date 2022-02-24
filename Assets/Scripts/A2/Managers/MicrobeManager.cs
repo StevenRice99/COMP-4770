@@ -11,9 +11,12 @@ namespace A2.Managers
         public enum MicrobeType
         {
             Red = 0,
-            Blue,
+            Orange,
+            Yellow,
             Green,
-            Yellow
+            Blue,
+            Purple,
+            Pink
         }
         
         public enum MicrobeEvents
@@ -32,13 +35,22 @@ namespace A2.Managers
         private Material redMicrobeMaterial;
 
         [SerializeField]
-        private Material blueMicrobeMaterial;
+        private Material orangeMicrobeMaterial;
+
+        [SerializeField]
+        private Material yellowMicrobeMaterial;
 
         [SerializeField]
         private Material greenMicrobeMaterial;
 
         [SerializeField]
-        private Material yellowMicrobeMaterial;
+        private Material blueMicrobeMaterial;
+
+        [SerializeField]
+        private Material purpleMicrobeMaterial;
+
+        [SerializeField]
+        private Material pinkMicrobeMaterial;
 
         [SerializeField]
         [Min(1)]
@@ -122,11 +134,17 @@ namespace A2.Managers
 
         public Material RedMicrobeMaterial => redMicrobeMaterial;
 
-        public Material BlueMicrobeMaterial => blueMicrobeMaterial;
+        public Material OrangeMicrobeMaterial => orangeMicrobeMaterial;
+
+        public Material YellowMicrobeMaterial => yellowMicrobeMaterial;
 
         public Material GreenMicrobeMaterial => greenMicrobeMaterial;
 
-        public Material YellowMicrobeMaterial => yellowMicrobeMaterial;
+        public Material BlueMicrobeMaterial => blueMicrobeMaterial;
+
+        public Material PurpleMicrobeMaterial => purpleMicrobeMaterial;
+
+        public Material PinkMicrobeMaterial => pinkMicrobeMaterial;
 
         public int HungerThreshold => hungerThreshold;
 
@@ -150,7 +168,7 @@ namespace A2.Managers
 
         public void SpawnMicrobe()
         {
-            SpawnMicrobe((MicrobeType) Random.Range((int) MicrobeType.Red, (int) MicrobeType.Yellow + 1));
+            SpawnMicrobe((MicrobeType) Random.Range((int) MicrobeType.Red, (int) MicrobeType.Pink + 1));
         }
 
         public void SpawnMicrobe(MicrobeType microbeType)
@@ -189,9 +207,12 @@ namespace A2.Managers
             string n = microbeType switch
             {
                 MicrobeType.Red => "Red",
-                MicrobeType.Blue => "Blue",
+                MicrobeType.Orange => "Orange",
+                MicrobeType.Yellow => "Yellow",
                 MicrobeType.Green => "Green",
-                _ => "Yellow"
+                MicrobeType.Blue => "Blue",
+                MicrobeType.Purple => "Purple",
+                _ => "Pink"
             };
 
             Agent[] coloredMicrobes = Agents.Where(a => a is Microbe m && m.MicrobeType == microbeType && m != microbe).ToArray();
@@ -224,8 +245,17 @@ namespace A2.Managers
             {
                 return null;
             }
-
-            microbes = microbes.Where(m => m.MicrobeType != seeker.MicrobeType).ToArray();
+            
+            microbes = seeker.MicrobeType switch
+            {
+                MicrobeType.Red => microbes.Where(m => m.MicrobeType != MicrobeType.Red && m.MicrobeType != MicrobeType.Orange && m.MicrobeType != MicrobeType.Pink).ToArray(),
+                MicrobeType.Orange => microbes.Where(m => m.MicrobeType != MicrobeType.Orange && m.MicrobeType != MicrobeType.Yellow && m.MicrobeType != MicrobeType.Red).ToArray(),
+                MicrobeType.Yellow => microbes.Where(m => m.MicrobeType != MicrobeType.Yellow && m.MicrobeType != MicrobeType.Green && m.MicrobeType != MicrobeType.Orange).ToArray(),
+                MicrobeType.Green => microbes.Where(m => m.MicrobeType != MicrobeType.Green && m.MicrobeType != MicrobeType.Blue && m.MicrobeType != MicrobeType.Yellow).ToArray(),
+                MicrobeType.Blue => microbes.Where(m => m.MicrobeType != MicrobeType.Blue && m.MicrobeType != MicrobeType.Purple && m.MicrobeType != MicrobeType.Green).ToArray(),
+                MicrobeType.Purple => microbes.Where(m => m.MicrobeType != MicrobeType.Purple && m.MicrobeType != MicrobeType.Pink && m.MicrobeType != MicrobeType.Blue).ToArray(),
+                _ => microbes.Where(m => m.MicrobeType != MicrobeType.Pink || m.MicrobeType != MicrobeType.Red || m.MicrobeType != MicrobeType.Purple).ToArray()
+            };
 
             return microbes.Length == 0 ? null : microbes.OrderBy(m => Vector3.Distance(seeker.transform.position, m.transform.position)).First();
         }
@@ -240,10 +270,13 @@ namespace A2.Managers
             
             microbes = seeker.MicrobeType switch
             {
-                MicrobeType.Red => microbes.Where(m => m.MicrobeType == MicrobeType.Red || m.MicrobeType == MicrobeType.Yellow).ToArray(),
-                MicrobeType.Blue => microbes.Where(m => m.MicrobeType == MicrobeType.Blue || m.MicrobeType == MicrobeType.Green).ToArray(),
-                MicrobeType.Green => microbes.Where(m => m.MicrobeType == MicrobeType.Blue || m.MicrobeType == MicrobeType.Green).ToArray(),
-                _ => microbes.Where(m => m.MicrobeType == MicrobeType.Red || m.MicrobeType == MicrobeType.Yellow).ToArray()
+                MicrobeType.Red => microbes.Where(m => m.MicrobeType == MicrobeType.Red || m.MicrobeType == MicrobeType.Orange || m.MicrobeType == MicrobeType.Pink).ToArray(),
+                MicrobeType.Orange => microbes.Where(m => m.MicrobeType == MicrobeType.Orange || m.MicrobeType == MicrobeType.Yellow || m.MicrobeType == MicrobeType.Red).ToArray(),
+                MicrobeType.Yellow => microbes.Where(m => m.MicrobeType == MicrobeType.Yellow || m.MicrobeType == MicrobeType.Green || m.MicrobeType == MicrobeType.Orange).ToArray(),
+                MicrobeType.Green => microbes.Where(m => m.MicrobeType == MicrobeType.Green || m.MicrobeType == MicrobeType.Blue || m.MicrobeType == MicrobeType.Yellow).ToArray(),
+                MicrobeType.Blue => microbes.Where(m => m.MicrobeType == MicrobeType.Blue || m.MicrobeType == MicrobeType.Purple || m.MicrobeType == MicrobeType.Green).ToArray(),
+                MicrobeType.Purple => microbes.Where(m => m.MicrobeType == MicrobeType.Purple || m.MicrobeType == MicrobeType.Pink || m.MicrobeType == MicrobeType.Blue).ToArray(),
+                _ => microbes.Where(m => m.MicrobeType == MicrobeType.Pink || m.MicrobeType == MicrobeType.Red || m.MicrobeType == MicrobeType.Purple).ToArray()
             };
             
             return microbes.Length == 0 ? null : microbes.OrderBy(m => Vector3.Distance(seeker.transform.position, m.transform.position)).First();
