@@ -1,4 +1,5 @@
-﻿using A2.Managers;
+﻿using A2.Agents;
+using A2.Managers;
 using UnityEngine;
 
 namespace A2.States

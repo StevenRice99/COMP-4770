@@ -1,4 +1,5 @@
-﻿using A2.Managers;
+﻿using A2.Agents;
+using A2.Managers;
 using UnityEngine;
 
 namespace A2.States
@@ -6,14 +7,11 @@ namespace A2.States
     [CreateAssetMenu(menuName = "A2/States/Microbe Global State")]
     public class MicrobeGlobalState : State
     {
-        [SerializeField]
-        private float hungerChance = 0.05f;
-        
         public override void Execute(Agent agent)
         {
             base.Execute(agent);
             
-            if (Random.value < hungerChance && agent is Microbe microbe)
+            if (Random.value < MicrobeManager.MicrobeManagerSingleton.hungerChance && agent is Microbe microbe)
             {
                 microbe.Hunger++;
             }
@@ -23,13 +21,13 @@ namespace A2.States
         {
             if (aiEvent.EventId != (int) MicrobeManager.MicrobeEvents.Eaten || !(agent is Microbe microbe) || !(aiEvent.Sender is Microbe sender))
             {
-                return false;
+                return base.HandleEvent(agent, aiEvent);
             }
             
             sender.Eat(microbe);
             microbe.Die();
 
-            return base.HandleEvent(agent, aiEvent);
+            return true;
         }
     }
 }

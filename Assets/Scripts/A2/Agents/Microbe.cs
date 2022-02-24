@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using A2.Managers;
 using UnityEngine;
 
-namespace A2.States
+namespace A2.Agents
 {
     public class Microbe : TransformAgent
     {
@@ -61,6 +62,13 @@ namespace A2.States
             AddMessage("Died.");
             Destroy(gameObject);
         }
+
+        public void Rejected(Microbe rejectedBy)
+        {
+            RejectedBy.Add(rejectedBy);
+            StopAllCoroutines();
+            StartCoroutine(RejectionReset());
+        }
         
         /// <summary>
         /// Override for custom detail rendering on the automatic GUI.
@@ -99,6 +107,12 @@ namespace A2.States
             }
             
             base.OnDestroy();
+        }
+
+        private IEnumerator RejectionReset()
+        {
+            yield return new WaitForSeconds(MicrobeManager.MicrobeManagerSingleton.rejectionResetTime);
+            RejectedBy.Clear();
         }
     }
 }

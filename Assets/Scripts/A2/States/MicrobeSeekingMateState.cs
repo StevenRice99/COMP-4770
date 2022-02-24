@@ -1,4 +1,5 @@
-﻿using A2.Managers;
+﻿using A2.Agents;
+using A2.Managers;
 using UnityEngine;
 
 namespace A2.States
@@ -33,7 +34,7 @@ namespace A2.States
                     else
                     {
                         agent.AddMessage($"Got rejected by {potentialMate.name}.");
-                        microbe.RejectedBy.Add(potentialMate);
+                        microbe.Rejected(potentialMate);
                     }
                 }
             }
@@ -60,7 +61,7 @@ namespace A2.States
 
             if (Vector3.Distance(microbe.transform.position, microbe.TargetMicrobe.transform.position) <= MicrobeManager.MicrobeManagerSingleton.MicrobeInteractRadius)
             {
-                if (microbe.FireEvent(microbe.TargetMicrobe, (int) MicrobeManager.MicrobeEvents.Mated))
+                if (microbe.FireEvent(microbe.TargetMicrobe, (int) MicrobeManager.MicrobeEvents.Mate))
                 {
                     agent.AddMessage($"Mating with {microbe.TargetMicrobe.name}.");
                     microbe.DidMate = true;
@@ -86,37 +87,46 @@ namespace A2.States
         
         public override bool HandleEvent(Agent agent, AIEvent aiEvent)
         {
-            if (aiEvent.EventId == (int) MicrobeManager.MicrobeEvents.Impress)
+            switch ((MicrobeManager.MicrobeEvents) aiEvent.EventId)
             {
-                if (!(agent is Microbe { IsAdult: true } microbe) || microbe.DidMate || microbe.TargetMicrobe != null)
+                case MicrobeManager.MicrobeEvents.Impress:
                 {
-                    agent.AddMessage($"Rejected {aiEvent.Sender.name}.");
-                    return false;
-                }
+                    if (!(agent is Microbe { IsAdult: true } microbe) || microbe.DidMate || microbe.TargetMicrobe != null || !(aiEvent.Sender is Microbe sender))
+                    {
+                        agent.AddMessage($"Cannot mate with {aiEvent.Sender.name}.");
+                        return false;
+                    }
 
-                agent.AddMessage($"Accepted advances of {aiEvent.Sender.name}.");
-                microbe.TargetMicrobe = aiEvent.Sender as Microbe;
-                return true;
-            }
-            
-            if (aiEvent.EventId == (int) MicrobeManager.MicrobeEvents.Mated)
-            {
-                if (!(agent is Microbe microbe))
+                    if (Random.value <= MicrobeManager.MicrobeManagerSingleton.rejectionChance)
+                    {
+                        agent.AddMessage($"Rejected {sender.name}.");
+                        return false;
+                    }
+
+                    agent.AddMessage($"Accepted advances of {sender.name}.");
+                    microbe.TargetMicrobe = sender;
+                    return true;
+                }
+                case MicrobeManager.MicrobeEvents.Mate:
                 {
-                    return false;
-                }
+                    if (!(agent is Microbe microbe))
+                    {
+                        return false;
+                    }
 
-                microbe.DidMate = true;
+                    microbe.DidMate = true;
                 
-                int offspring = MicrobeManager.MicrobeManagerSingleton.Mate(microbe, aiEvent.Sender as Microbe);
-                agent.AddMessage(offspring == 0
-                    ? $"Failed to have any offspring with {aiEvent.Sender.name}."
-                    : $"Have {offspring} offspring with {aiEvent.Sender.name}.");
-                agent.State = AgentManager.Singleton.Lookup(typeof(MicrobeSleepingState));
-                return true;
+                    int offspring = MicrobeManager.MicrobeManagerSingleton.Mate(microbe, aiEvent.Sender as Microbe);
+                    agent.AddMessage(offspring == 0
+                        ? $"Failed to have any offspring with {aiEvent.Sender.name}."
+                        : $"Have {offspring} offspring with {aiEvent.Sender.name}.");
+                    agent.State = AgentManager.Singleton.Lookup(typeof(MicrobeSleepingState));
+                    return true;
+                }
+                case MicrobeManager.MicrobeEvents.Eaten:
+                default:
+                    return base.HandleEvent(agent, aiEvent);
             }
-
-            return base.HandleEvent(agent, aiEvent);
         }
     }
 }

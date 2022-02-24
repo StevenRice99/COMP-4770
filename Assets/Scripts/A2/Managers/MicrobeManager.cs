@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using A2.Agents;
 using A2.States;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -19,7 +20,7 @@ namespace A2.Managers
         {
             Eaten = 0,
             Impress,
-            Mated
+            Mate
         }
         
         public static MicrobeManager MicrobeManagerSingleton => Singleton as MicrobeManager;
@@ -102,6 +103,18 @@ namespace A2.Managers
         [SerializeField]
         [Min(0)]
         private float minMicrobeDetectionRange = 5;
+        
+        [SerializeField]
+        [Min(0)]
+        public float hungerChance = 0.05f;
+
+        [SerializeField]
+        [Min(0)]
+        public float rejectionChance = 0.5f;
+
+        [SerializeField]
+        [Min(0)]
+        public float rejectionResetTime = 5f;
 
         public int HungerRestoredFromEating => hungerRestoredFromEating;
 
