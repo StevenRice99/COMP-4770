@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using A2.Agents;
+using A2.Pickups;
 using A2.States;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -30,6 +31,21 @@ namespace A2.Managers
         
         [SerializeField]
         private GameObject microbePrefab;
+
+        [SerializeField]
+        private GameObject fertilityPickupPrefab;
+
+        [SerializeField]
+        private GameObject neverHungryPickupPrefab;
+
+        [SerializeField]
+        private GameObject nukePickupPrefab;
+
+        [SerializeField]
+        private GameObject offspringPickupPrefab;
+
+        [SerializeField]
+        private GameObject rejuvenatePickupPrefab;
 
         [SerializeField]
         private Material floorMaterial;
@@ -81,12 +97,16 @@ namespace A2.Managers
         private float floorRadius = 10f;
 
         [SerializeField]
-        [Min(1)]
+        [Min(2)]
         private int minMicrobes = 10;
 
         [SerializeField]
         [Min(2)]
         private int maxMicrobes = 30;
+
+        [SerializeField]
+        [Min(1)]
+        private int activePickups = 5;
 
         [SerializeField]
         [Min(0)]
@@ -114,7 +134,7 @@ namespace A2.Managers
 
         [SerializeField]
         [Min(float.Epsilon)]
-        private float microbeInteractRadius = 2;
+        private float microbeInteractRadius = 1;
 
         [SerializeField]
         [Min(float.Epsilon)]
@@ -184,78 +204,6 @@ namespace A2.Managers
             return born;
         }
 
-        public void SpawnMicrobe()
-        {
-            SpawnMicrobe((MicrobeType) Random.Range((int) MicrobeType.Red, (int) MicrobeType.Pink + 1));
-        }
-
-        public void SpawnMicrobe(MicrobeType microbeType)
-        {
-            Vector3 position = Random.insideUnitSphere * floorRadius;
-            position = new Vector3(position.x, 0, position.z);
-            
-            SpawnMicrobe(microbeType, position);
-        }
-
-        public void SpawnMicrobe(MicrobeType microbeType, Vector3 position)
-        {
-            SpawnMicrobe(microbeType, position, Random.Range(minMicrobeSpeed, maxMicrobeSpeed), Random.Range(minMicrobeLifespan, maxMicrobeLifespan), Random.Range(minMicrobeDetectionRange, floorRadius * 2));
-        }
-
-        public void SpawnMicrobe(MicrobeType microbeType, Vector3 position, float moveSpeed, float lifespan, float detectionRange)
-        {
-            if (Agents.Count >= maxMicrobes)
-            {
-                return;
-            }
-            
-            GameObject go = Instantiate(microbePrefab, position, Quaternion.identity);
-            Microbe microbe = go.GetComponent<Microbe>();
-            if (microbe == null)
-            {
-                return;
-            }
-
-            microbe.MicrobeType = microbeType;
-            microbe.Hunger = startingHunger;
-            microbe.LifeSpan = lifespan;
-            microbe.DetectionRange = detectionRange;
-            microbe.AssignMoveSpeed(moveSpeed);
-
-            string n = microbeType switch
-            {
-                MicrobeType.Red => "Red",
-                MicrobeType.Orange => "Orange",
-                MicrobeType.Yellow => "Yellow",
-                MicrobeType.Green => "Green",
-                MicrobeType.Blue => "Blue",
-                MicrobeType.Purple => "Purple",
-                _ => "Pink"
-            };
-
-            Agent[] coloredMicrobes = Agents.Where(a => a is Microbe m && m.MicrobeType == microbeType && m != microbe).ToArray();
-            if (coloredMicrobes.Length == 0)
-            {
-                microbe.name = $"{n} 1";
-            }
-
-            for (int i = 1;; i++)
-            {
-                if (coloredMicrobes.Any(m => m.name == $"{n} {i}"))
-                {
-                    continue;
-                }
-
-                n = $"{n} {i}";
-                microbe.name = n;
-                break;
-            }
-
-            SortAgents();
-            
-            AddGlobalMessage($"Spawned microbe {n}.");
-        }
-
         public Microbe FindFood(Microbe seeker)
         {
             Microbe[] microbes = Agents.Where(a => a is Microbe m && m != seeker && Vector3.Distance(seeker.transform.position, a.transform.position) < seeker.DetectionRange).Cast<Microbe>().ToArray();
@@ -311,6 +259,11 @@ namespace A2.Managers
 
             ResetAgents();
             
+            for (int i = FindObjectsOfType<MicrobeBasePickup>().Length; i < activePickups; i++)
+            {
+                SpawnPickup();
+            }
+
             base.Start();
         }
 
@@ -354,9 +307,14 @@ namespace A2.Managers
                     SpawnMicrobe();
                 }
             }
+
+            for (int i = FindObjectsOfType<MicrobeBasePickup>().Length; i < activePickups; i++)
+            {
+                SpawnPickup();
+            }
         }
         
-                /// <summary>
+        /// <summary>
         /// Render buttons to regenerate the floor or change its size..
         /// </summary>
         /// <param name="x">X rendering position. In most cases this should remain unchanged.</param>
@@ -387,6 +345,95 @@ namespace A2.Managers
             {
                 SpawnMicrobe();
             }
+        }
+
+        private void SpawnMicrobe()
+        {
+            SpawnMicrobe((MicrobeType) Random.Range((int) MicrobeType.Red, (int) MicrobeType.Pink + 1));
+        }
+
+        private void SpawnMicrobe(MicrobeType microbeType)
+        {
+            Vector3 position = Random.insideUnitSphere * floorRadius;
+            position = new Vector3(position.x, 0, position.z);
+            
+            SpawnMicrobe(microbeType, position);
+        }
+
+        private void SpawnMicrobe(MicrobeType microbeType, Vector3 position)
+        {
+            SpawnMicrobe(microbeType, position, Random.Range(minMicrobeSpeed, maxMicrobeSpeed), Random.Range(minMicrobeLifespan, maxMicrobeLifespan), Random.Range(minMicrobeDetectionRange, floorRadius * 2));
+        }
+
+        private void SpawnMicrobe(MicrobeType microbeType, Vector3 position, float moveSpeed, float lifespan, float detectionRange)
+        {
+            if (Agents.Count >= maxMicrobes)
+            {
+                return;
+            }
+            
+            GameObject go = Instantiate(microbePrefab, position, Quaternion.identity);
+            Microbe microbe = go.GetComponent<Microbe>();
+            if (microbe == null)
+            {
+                return;
+            }
+
+            microbe.MicrobeType = microbeType;
+            microbe.Hunger = startingHunger;
+            microbe.LifeSpan = lifespan;
+            microbe.DetectionRange = detectionRange;
+            microbe.AssignMoveSpeed(moveSpeed);
+
+            string n = microbeType switch
+            {
+                MicrobeType.Red => "Red",
+                MicrobeType.Orange => "Orange",
+                MicrobeType.Yellow => "Yellow",
+                MicrobeType.Green => "Green",
+                MicrobeType.Blue => "Blue",
+                MicrobeType.Purple => "Purple",
+                _ => "Pink"
+            };
+
+            Agent[] coloredMicrobes = Agents.Where(a => a is Microbe m && m.MicrobeType == microbeType && m != microbe).ToArray();
+            if (coloredMicrobes.Length == 0)
+            {
+                microbe.name = $"{n} 1";
+            }
+
+            for (int i = 1;; i++)
+            {
+                if (coloredMicrobes.Any(m => m.name == $"{n} {i}"))
+                {
+                    continue;
+                }
+
+                n = $"{n} {i}";
+                microbe.name = n;
+                break;
+            }
+
+            SortAgents();
+            
+            AddGlobalMessage($"Spawned microbe {n}.");
+        }
+
+        private void SpawnPickup()
+        {
+            Vector3 position = Random.insideUnitSphere * floorRadius;
+            position = new Vector3(position.x, 0, position.z);
+            
+            GameObject go = Instantiate(Random.Range(0, 5) switch
+            {
+                4 => fertilityPickupPrefab,
+                3 => neverHungryPickupPrefab,
+                2 => nukePickupPrefab,
+                1 => offspringPickupPrefab,
+                _ => rejuvenatePickupPrefab
+            }, position, Quaternion.identity);
+
+            go.transform.localScale = new Vector3(0.5f, 1, 0.5f);
         }
     }
 }

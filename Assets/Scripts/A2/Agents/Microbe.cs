@@ -12,7 +12,7 @@ namespace A2.Agents
         [SerializeField]
         private MeshRenderer stateVisualization;
         
-        public int Hunger { get; set; } = 10;
+        public int Hunger { get; set; }
         
         public float LifeSpan { get; set; }
 
