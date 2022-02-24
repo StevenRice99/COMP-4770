@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 /// <summary>
 /// Singleton to handle agents and GUI rendering. Must be exactly one of this or an extension of this present in every scene.
@@ -180,7 +181,158 @@ public class AgentManager : MonoBehaviour
     /// The currently selected component.
     /// </summary>
     private IntelligenceComponent _selectedComponent;
+    
+        /// <summary>
+    /// Create a transform agent.
+    /// </summary>
+    public static GameObject CreateTransformAgent()
+    {
+        GameObject agent = CreateAgent("Transform Agent");
+        agent.AddComponent<TransformAgent>();
+        return agent;
+    }
 
+    /// <summary>
+    /// Create a character controller agent.
+    /// </summary>
+    public static GameObject CreateCharacterAgent()
+    {
+        GameObject agent = CreateAgent("Character Agent");
+        CharacterController c = agent.AddComponent<CharacterController>();
+        c.center = new Vector3(0, 1, 0);
+        c.minMoveDistance = 0;
+        agent.AddComponent<CharacterAgent>();
+        return agent;
+    }
+
+    /// <summary>
+    /// Create a rigidbody agent.
+    /// </summary>
+    public static GameObject CreateRigidbodyAgent()
+    {
+        GameObject agent = CreateAgent("Rigidbody Agent");
+        CapsuleCollider c = agent.AddComponent<CapsuleCollider>();
+        c.center = new Vector3(0, 1, 0);
+        c.height = 2;
+        Rigidbody rb = agent.AddComponent<Rigidbody>();
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+        rb.freezeRotation = true;
+        agent.AddComponent<RigidbodyAgent>();
+        return agent;
+    }
+
+    /// <summary>
+    /// Create all types of cameras which only adds in those that are not yet present in the scene.
+    /// </summary>
+    public static void CreateAllCameras()
+    {
+        if (FindObjectOfType<FollowAgentCamera>() == null)
+        {
+            CreateFollowAgentCamera();
+        }
+        else
+        {
+            Debug.Log("Already have a follow agent camera in the scene - skipping creating one.");
+        }
+        
+        if (FindObjectOfType<LookAtAgentCamera>() == null)
+        {
+            CreateLookAtAgentCamera();
+        }
+        else
+        {
+            Debug.Log("Already have a look at agent camera in the scene - skipping creating one.");
+        }
+        
+        if (FindObjectOfType<TrackAgentCamera>() == null)
+        {
+            CreateTrackAgentCamera();
+        }
+        else
+        {
+            Debug.Log("Already have a track agent camera in the scene - skipping creating one.");
+        }
+    }
+
+    /// <summary>
+    /// Create a follow agent camera.
+    /// </summary>
+    public static GameObject CreateFollowAgentCamera()
+    {
+        GameObject camera = CreateCamera("Follow Camera");
+        camera.AddComponent<FollowAgentCamera>();
+        return camera;
+    }
+
+    /// <summary>
+    /// Create a look at agent camera.
+    /// </summary>
+    public static GameObject CreateLookAtAgentCamera()
+    {
+        GameObject camera = CreateCamera("Look At Camera");
+        camera.AddComponent<LookAtAgentCamera>();
+        return camera;
+    }
+
+    /// <summary>
+    /// Create a track agent camera.
+    /// </summary>
+    public static GameObject CreateTrackAgentCamera()
+    {
+        GameObject camera = CreateCamera("Track Camera");
+        camera.AddComponent<TrackAgentCamera>();
+        camera.transform.localRotation = Quaternion.Euler(90, 0, 0);
+        return camera;
+    }
+
+    /// <summary>
+    /// Base method for setting up the core visuals of an agent.
+    /// </summary>
+    /// <param name="name">The name to give the agent.</param>
+    /// <returns>Game object with the visuals setup for a basic agent.</returns>
+    public static GameObject CreateAgent(string name)
+    {
+        GameObject agent = new GameObject(name);
+
+        GameObject visuals = new GameObject("Visuals");
+        visuals.transform.SetParent(agent.transform);
+        visuals.transform.localPosition = Vector3.zero;
+        visuals.transform.localRotation = Quaternion.identity;
+            
+        GameObject body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+        body.name = "Body";
+        body.transform.SetParent(visuals.transform);
+        body.transform.localPosition = new Vector3(0, 1, 0);
+        body.transform.localRotation = Quaternion.identity;
+        DestroyImmediate(body.GetComponent<CapsuleCollider>());
+            
+        GameObject eyes = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        eyes.name = "Eyes";
+        eyes.transform.SetParent(body.transform);
+        eyes.transform.localPosition = new Vector3(0, 0.4f, 0.25f);
+        eyes.transform.localRotation = Quaternion.identity;
+        eyes.transform.localScale = new Vector3(1, 0.2f, 0.5f);
+        DestroyImmediate(eyes.GetComponent<BoxCollider>());
+
+        return agent;
+    }
+
+    /// <summary>
+    /// Base method for setting up a camera.
+    /// </summary>
+    /// <param name="name">The name to give the camera.</param>
+    /// <returns>Game object with a camera.</returns>
+    public static GameObject CreateCamera(string name)
+    {
+        GameObject camera = new GameObject(name);
+        camera.AddComponent<Camera>();
+        return camera;
+    }
+
+    /// <summary>
+    /// Set the currently selected agent.
+    /// </summary>
+    /// <param name="agent">The agent to select.</param>
     public void SetSelectedAgent(Agent agent)
     {
         _selectedComponent = null;
@@ -188,17 +340,31 @@ public class AgentManager : MonoBehaviour
         _state = GuiState.Agent;
     }
 
-    public void RegisterState(Type stateType, State stateToAdd)
+    /// <summary>
+    /// Register a state type into the dictionary for future reference.
+    /// </summary>
+    /// <param name="stateType">The type of state.</param>
+    /// <param name="stateToAdd">The state itself.</param>
+    public static void RegisterState(Type stateType, State stateToAdd)
     {
         RegisteredStates[stateType] = stateToAdd;
     }
 
-    public void RemoveState(Type stateType)
+    /// <summary>
+    /// Remove a state type from the dictionary.
+    /// </summary>
+    /// <param name="stateType">The type of state.</param>
+    public static void RemoveState(Type stateType)
     {
         RegisteredStates.Remove(stateType);
     }
 
-    public State Lookup(Type stateType)
+    /// <summary>
+    /// Lookup a state type from the dictionary.
+    /// </summary>
+    /// <param name="stateType">The type of state.</param>
+    /// <returns>The state of the requested type.</returns>
+    public static State Lookup(Type stateType)
     {
         return RegisteredStates.ContainsKey(stateType) ? RegisteredStates[stateType] : CreateState(stateType);
     }
@@ -219,6 +385,9 @@ public class AgentManager : MonoBehaviour
         Time.timeScale = 0;
     }
 
+    /// <summary>
+    /// Setup all agents again.
+    /// </summary>
     public void RefreshAgents()
     {
         foreach (Agent agent in Agents)
@@ -394,6 +563,9 @@ public class AgentManager : MonoBehaviour
         FindCameras();
     }
 
+    /// <summary>
+    /// Sort all agents by name.
+    /// </summary>
     public void SortAgents()
     {
         Agents = Agents.OrderBy(a => a.name).ToList();
@@ -525,8 +697,8 @@ public class AgentManager : MonoBehaviour
         }
         else
         {
-            EasyAIStatic.CreateFollowAgentCamera();
-            EasyAIStatic.CreateTrackAgentCamera();
+            CreateFollowAgentCamera();
+            CreateTrackAgentCamera();
             FindCameras();
             SwitchCamera(Cameras[0]);
         }
@@ -594,10 +766,14 @@ public class AgentManager : MonoBehaviour
         return y;
     }
 
-    private State CreateState(Type stateType)
+    /// <summary>
+    /// Create a state if there was not one within the dictionary.
+    /// </summary>
+    /// <param name="stateType">The type of state to create.</param>
+    /// <returns></returns>
+    private static State CreateState(Type stateType)
     {
-        ScriptableObject state = ScriptableObject.CreateInstance(stateType);
-        RegisterState(stateType, state as State);
+        RegisterState(stateType, ScriptableObject.CreateInstance(stateType) as State);
         return RegisteredStates[stateType];
     }
 

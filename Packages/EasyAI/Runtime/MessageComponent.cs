@@ -2,6 +2,9 @@
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// Base component for all types which have message logging 
+/// </summary>
 public class MessageComponent : MonoBehaviour
 {
     /// <summary>

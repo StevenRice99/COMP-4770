@@ -40,6 +40,9 @@ public abstract class Agent : MessageComponent
     [Tooltip("The current state the agent is in. Initialize it with the state to start in.")]
     private State state;
 
+    /// <summary>
+    /// The global state the agent is in.
+    /// </summary>
     public State GlobalState
     {
         get => globalState;
@@ -59,6 +62,9 @@ public abstract class Agent : MessageComponent
         }
     }
 
+    /// <summary>
+    /// The state the agent is in.
+    /// </summary>
     public State State
     {
         get => state;
@@ -80,6 +86,9 @@ public abstract class Agent : MessageComponent
         }
     }
 
+    /// <summary>
+    /// The previous state the agent was in.
+    /// </summary>
     public State PreviousState { get; private set; }
 
     /// <summary>
@@ -244,11 +253,25 @@ public abstract class Agent : MessageComponent
         }
     }
 
+    /// <summary>
+    /// Fire an event to an agent.
+    /// </summary>
+    /// <param name="receiver">The agent to send the event to.</param>
+    /// <param name="eventId">The event ID which the receiver will use to identify the type of message.</param>
+    /// <param name="details">Object which contains all data for this message.</param>
+    /// <returns>True if the receiver handled the message, false otherwise.</returns>
     public bool FireEvent(Agent receiver, int eventId, object details = null)
     {
         return receiver != null && receiver != this && receiver.HandleEvent(new AIEvent(eventId, this, details));
     }
 
+    /// <summary>
+    /// Broadcast a message to all other agents.
+    /// </summary>
+    /// <param name="eventId">The event ID which the receivers will use to identify the type of message.</param>
+    /// <param name="details">Object which contains all data for this message.</param>
+    /// <param name="requireAll">Setting to true will check for all agents handling the message, false means only one agent needs to handle it.</param>
+    /// <returns>If require all is true, true if all agents handle the message and false otherwise and if require all is false, true if at least one agent handles the message, false otherwise.</returns>
     public bool BroadcastEvent(int eventId, object details = null, bool requireAll = false)
     {
         bool all = true;
@@ -268,11 +291,19 @@ public abstract class Agent : MessageComponent
         return requireAll ? all : one;
     }
 
+    /// <summary>
+    /// Assign the movement speed of the agent.
+    /// </summary>
+    /// <param name="speed">The movement speed.</param>
     public void AssignMoveSpeed(float speed)
     {
         moveSpeed = Math.Abs(speed);
     }
 
+    /// <summary>
+    /// Assign the look speed of the agent.
+    /// </summary>
+    /// <param name="speed">The look speed.</param>
     public void AssignLookSpeed(float speed)
     {
         lookSpeed = Math.Abs(speed);
@@ -671,6 +702,10 @@ public abstract class Agent : MessageComponent
         catch { }
     }
 
+    /// <summary>
+    /// Calculate how fast to move.
+    /// </summary>
+    /// <param name="deltaTime">The elapsed time step.</param>
     protected void CalculateMoveVelocity(float deltaTime)
     {
         if (moveAcceleration <= 0)
@@ -682,6 +717,11 @@ public abstract class Agent : MessageComponent
         MoveVelocity = Mathf.Clamp(MoveVelocity + moveAcceleration * deltaTime, 0, moveSpeed);
     }
 
+    /// <summary>
+    /// Handle receiving an event.
+    /// </summary>
+    /// <param name="aiEvent">The event to handle.</param>
+    /// <returns>True if either the global state or normal state handles the event, false otherwise.</returns>
     private bool HandleEvent(AIEvent aiEvent)
     {
         return state != null && state.HandleEvent(this, aiEvent) || globalState != null && globalState.HandleEvent(this, aiEvent);

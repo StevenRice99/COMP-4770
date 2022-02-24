@@ -78,9 +78,9 @@ namespace Samples
             // Create the agent.
             GameObject agent = agentType switch
             {
-                AgentType.Transform => EasyAIStatic.CreateTransformAgent(),
-                AgentType.Character => EasyAIStatic.CreateCharacterAgent(),
-                _ => EasyAIStatic.CreateRigidbodyAgent()
+                AgentType.Transform => CreateTransformAgent(),
+                AgentType.Character => CreateCharacterAgent(),
+                _ => CreateRigidbodyAgent()
             };
             agent.transform.position = position;
             agent.transform.SetParent(floor.transform);

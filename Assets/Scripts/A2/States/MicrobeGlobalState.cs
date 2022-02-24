@@ -27,7 +27,7 @@ namespace A2.States
                 {
                     return;
                 }
-                microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingFoodState));
+                microbe.State = AgentManager.Lookup(typeof(MicrobeSeekingFoodState));
                 microbe.SetStateVisual(microbe.State);
                 return;
             }
@@ -38,7 +38,7 @@ namespace A2.States
                 {
                     return;
                 }
-                microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSleepingState));
+                microbe.State = AgentManager.Lookup(typeof(MicrobeSleepingState));
                 microbe.SetStateVisual(microbe.State);
                 return;
             }
@@ -49,7 +49,7 @@ namespace A2.States
                 {
                     return;
                 }
-                microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingMateState));
+                microbe.State = AgentManager.Lookup(typeof(MicrobeSeekingMateState));
                 microbe.SetStateVisual(microbe.State);
                 return;
             }
@@ -58,7 +58,7 @@ namespace A2.States
             {
                 return;
             }
-            microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingPickupState));
+            microbe.State = AgentManager.Lookup(typeof(MicrobeSeekingPickupState));
             microbe.SetStateVisual(microbe.State);
         }
         
