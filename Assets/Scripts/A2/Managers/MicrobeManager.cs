@@ -45,6 +45,18 @@ namespace A2.Managers
         private GameObject rejuvenatePickupPrefab;
 
         [SerializeField]
+        private GameObject spawnParticlesPrefab;
+
+        [SerializeField]
+        private GameObject deathParticlesPrefab;
+
+        [SerializeField]
+        private GameObject mateParticlesPrefab;
+
+        [SerializeField]
+        private GameObject pickupParticlesPrefab;
+
+        [SerializeField]
         private Material floorMaterial;
 
         [SerializeField]
@@ -81,12 +93,10 @@ namespace A2.Managers
         private Material pickupIndicatorMaterial;
 
         [SerializeField]
-        [Min(1)]
-        private int hungerThreshold = 100;
+        private int startingHunger = -100;
 
         [SerializeField]
-        [Min(0)]
-        private int startingHunger = 0;
+        private int maxHunger = 200;
 
         [SerializeField]
         [Min(1)]
@@ -186,21 +196,35 @@ namespace A2.Managers
 
         public Material PickupIndicatorMaterial => pickupIndicatorMaterial;
 
-        public int HungerThreshold => hungerThreshold;
+        public GameObject SpawnParticlesPrefab => spawnParticlesPrefab;
+
+        public GameObject DeathParticlesPrefab => deathParticlesPrefab;
+
+        public GameObject MateParticlesPrefab => mateParticlesPrefab;
+
+        public GameObject PickupParticlesPrefab => pickupParticlesPrefab;
+
+        public int MaxHunger => maxHunger;
 
         public float FloorRadius => floorRadius;
 
         public int Mate(Microbe parentA, Microbe parentB)
         {
             int born;
+            Vector3 position = (parentA.transform.position + parentB.transform.position) / 2;
             for (born = 0; born < maxOffspring && Agents.Count < maxMicrobes; born++)
             {
                 SpawnMicrobe(
                     Random.value <= 0.5f ? parentA.MicrobeType : parentB.MicrobeType,
-                    (parentA.transform.position + parentB.transform.position) / 2,
+                    position,
                     Mathf.Clamp((parentA.MoveSpeed + parentB.MoveSpeed) / 2 + Random.value - 0.5f, minMicrobeSpeed, maxMicrobeSpeed),
                     Mathf.Clamp((parentA.LifeSpan + parentB.LifeSpan) / 2 + Random.value - 0.5f, minMicrobeLifespan, maxMicrobeLifespan),
                     Mathf.Clamp((parentA.DetectionRange + parentB.DetectionRange) / 2 + Random.value - 0.5f, minMicrobeDetectionRange, floorRadius * 2));
+            }
+
+            if (born > 0)
+            {
+                Instantiate(MateParticlesPrefab, position, Quaternion.Euler(270, 0, 0));
             }
 
             return born;
@@ -282,7 +306,7 @@ namespace A2.Managers
 
                 microbe.ElapsedLifespan += Time.deltaTime;
 
-                if (Vector3.Distance(Agents[index].transform.position, Vector3.zero) <= floorRadius && microbe.ElapsedLifespan < microbe.LifeSpan)
+                if (microbe.Hunger <= maxHunger && Vector3.Distance(Agents[index].transform.position, Vector3.zero) <= floorRadius && microbe.ElapsedLifespan < microbe.LifeSpan)
                 {
                     if (Agents[index].Visuals != null)
                     {
@@ -419,6 +443,8 @@ namespace A2.Managers
             SortAgents();
             
             AddGlobalMessage($"Spawned microbe {n}.");
+            
+            Instantiate(SpawnParticlesPrefab, microbe.transform.position, Quaternion.Euler(270, 0, 0));
         }
 
         private void SpawnPickup()

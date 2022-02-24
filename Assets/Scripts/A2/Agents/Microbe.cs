@@ -27,7 +27,7 @@ namespace A2.Agents
         
         public bool DidMate { get; set; }
 
-        public bool IsHungry => Hunger >= MicrobeManager.MicrobeManagerSingleton.HungerThreshold;
+        public bool IsHungry => Hunger >= 0;
 
         public bool IsAdult => ElapsedLifespan >= LifeSpan / 2;
 
@@ -68,6 +68,7 @@ namespace A2.Agents
         public void Die()
         {
             AddMessage("Died.");
+            Instantiate(MicrobeManager.MicrobeManagerSingleton.DeathParticlesPrefab, transform.position, Quaternion.Euler(270, 0, 0));
             Destroy(gameObject);
         }
 

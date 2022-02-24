@@ -23,6 +23,10 @@ namespace A2.States
 
             if (microbe.IsHungry)
             {
+                if (microbe.State.GetType() == typeof(MicrobeSeekingFoodState))
+                {
+                    return;
+                }
                 microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingFoodState));
                 microbe.SetStateVisual(microbe.State);
                 return;
@@ -30,6 +34,10 @@ namespace A2.States
 
             if (!microbe.IsAdult)
             {
+                if (microbe.State.GetType() == typeof(MicrobeSleepingState))
+                {
+                    return;
+                }
                 microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSleepingState));
                 microbe.SetStateVisual(microbe.State);
                 return;
@@ -37,11 +45,19 @@ namespace A2.States
 
             if (!microbe.DidMate)
             {
+                if (microbe.State.GetType() == typeof(MicrobeSeekingMateState))
+                {
+                    return;
+                }
                 microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingMateState));
                 microbe.SetStateVisual(microbe.State);
                 return;
             }
 
+            if (microbe.State.GetType() == typeof(MicrobeSeekingPickupState))
+            {
+                return;
+            }
             microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingPickupState));
             microbe.SetStateVisual(microbe.State);
         }

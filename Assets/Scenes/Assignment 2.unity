@@ -161,9 +161,12 @@ MonoBehaviour:
   microbePrefab: {fileID: 1567258149929102323, guid: b123d809f0c77554b9d8404a7e5f0874, type: 3}
   fertilityPickupPrefab: {fileID: 7500204360399200344, guid: b0639286cb0827542b09569dc590ac44, type: 3}
   neverHungryPickupPrefab: {fileID: 7500204360399200344, guid: c3056d8f78d4b5344b74144935a2cc53, type: 3}
-  nukePickupPrefab: {fileID: 7500204360399200344, guid: adcdc1eaed8b1354ca29ffe04ac47db5, type: 3}
   offspringPickupPrefab: {fileID: 7500204360399200344, guid: f3b21ee8473076442b6fcc979f9b7f2b, type: 3}
   rejuvenatePickupPrefab: {fileID: 7500204360399200344, guid: d75bba6a16096cc40bb25fd6a2956686, type: 3}
+  spawnParticlesPrefab: {fileID: 5968086345376651894, guid: 255bb67e626cd9a4eac18e4ac30c2ed7, type: 3}
+  deathParticlesPrefab: {fileID: 5968086345376651894, guid: b3a69deb1cb5b4e44a5b4a6b730c862a, type: 3}
+  mateParticlesPrefab: {fileID: 5968086345376651894, guid: 554a54d12ed0f724588bf3245e5eb94d, type: 3}
+  pickupParticlesPrefab: {fileID: 5968086345376651894, guid: 0d1fcc1c8d3e4b242821d0e125bcabf4, type: 3}
   floorMaterial: {fileID: 2100000, guid: e791b9002174a32479f595195851bbd6, type: 2}
   redMicrobeMaterial: {fileID: 2100000, guid: 3a41b7aa03ddf024fbc0c1ea0563750d, type: 2}
   orangeMicrobeMaterial: {fileID: 2100000, guid: ad1517e1a84462742ad0a39a139022b3, type: 2}
@@ -176,8 +179,8 @@ MonoBehaviour:
   foodIndicatorMaterial: {fileID: 2100000, guid: aa8e8bd4571316249991441dcbaeac6b, type: 2}
   mateIndicatorMaterial: {fileID: 2100000, guid: 058fae64fcb330341ad146cc95dcde37, type: 2}
   pickupIndicatorMaterial: {fileID: 2100000, guid: 44a0a939e3007bb4c813e5d5ddb6e00c, type: 2}
-  hungerThreshold: 100
-  startingHunger: 0
+  startingHunger: -100
+  maxHunger: 200
   hungerRestoredFromEating: 100
   floorRadius: 30
   minMicrobes: 30
