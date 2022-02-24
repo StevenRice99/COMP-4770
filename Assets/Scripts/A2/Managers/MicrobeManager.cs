@@ -39,9 +39,6 @@ namespace A2.Managers
         private GameObject neverHungryPickupPrefab;
 
         [SerializeField]
-        private GameObject nukePickupPrefab;
-
-        [SerializeField]
         private GameObject offspringPickupPrefab;
 
         [SerializeField]
@@ -81,6 +78,9 @@ namespace A2.Managers
         private Material mateIndicatorMaterial;
 
         [SerializeField]
+        private Material pickupIndicatorMaterial;
+
+        [SerializeField]
         [Min(1)]
         private int hungerThreshold = 100;
 
@@ -102,7 +102,7 @@ namespace A2.Managers
 
         [SerializeField]
         [Min(2)]
-        private int maxMicrobes = 30;
+        public int maxMicrobes = 30;
 
         [SerializeField]
         [Min(1)]
@@ -184,6 +184,8 @@ namespace A2.Managers
 
         public Material MateIndicatorMaterial => mateIndicatorMaterial;
 
+        public Material PickupIndicatorMaterial => pickupIndicatorMaterial;
+
         public int HungerThreshold => hungerThreshold;
 
         public float FloorRadius => floorRadius;
@@ -228,7 +230,7 @@ namespace A2.Managers
 
         public Microbe FindMate(Microbe seeker)
         {
-            Microbe[] microbes = Agents.Where(a => a is Microbe m && m != seeker && m.IsAdult && m.State.GetType() == typeof(MicrobeSeekingMateState) && !seeker.RejectedBy.Contains(m) && Vector3.Distance(seeker.transform.position, a.transform.position) < seeker.DetectionRange).Cast<Microbe>().ToArray();
+            Microbe[] microbes = Agents.Where(a => a is Microbe m && m != seeker && m.IsAdult && m.State.GetType() == typeof(MicrobeSeekingMateState) && Vector3.Distance(seeker.transform.position, a.transform.position) < seeker.DetectionRange).Cast<Microbe>().ToArray();
             if (microbes.Length == 0)
             {
                 return null;
@@ -424,11 +426,10 @@ namespace A2.Managers
             Vector3 position = Random.insideUnitSphere * floorRadius;
             position = new Vector3(position.x, 0, position.z);
             
-            GameObject go = Instantiate(Random.Range(0, 5) switch
+            GameObject go = Instantiate(Random.Range(0, 4) switch
             {
-                4 => fertilityPickupPrefab,
-                3 => neverHungryPickupPrefab,
-                2 => nukePickupPrefab,
+                3 => fertilityPickupPrefab,
+                2 => neverHungryPickupPrefab,
                 1 => offspringPickupPrefab,
                 _ => rejuvenatePickupPrefab
             }, position, Quaternion.identity);

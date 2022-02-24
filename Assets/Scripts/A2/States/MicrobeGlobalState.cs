@@ -10,11 +10,40 @@ namespace A2.States
         public override void Execute(Agent agent)
         {
             base.Execute(agent);
-            
-            if (Random.value < MicrobeManager.MicrobeManagerSingleton.hungerChance && agent is Microbe microbe)
+
+            if (!(agent is Microbe microbe))
+            {
+                return;
+            }
+
+            if (Random.value <= MicrobeManager.MicrobeManagerSingleton.hungerChance)
             {
                 microbe.Hunger++;
             }
+
+            if (microbe.IsHungry)
+            {
+                microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingFoodState));
+                microbe.SetStateVisual(microbe.State);
+                return;
+            }
+
+            if (!microbe.IsAdult)
+            {
+                microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSleepingState));
+                microbe.SetStateVisual(microbe.State);
+                return;
+            }
+
+            if (!microbe.DidMate)
+            {
+                microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingMateState));
+                microbe.SetStateVisual(microbe.State);
+                return;
+            }
+
+            microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingPickupState));
+            microbe.SetStateVisual(microbe.State);
         }
         
         public override bool HandleEvent(Agent agent, AIEvent aiEvent)

@@ -13,7 +13,7 @@ namespace A2.Pickups
         protected override void Execute(Microbe microbe)
         {
             microbe.AddMessage("Powered up - magically spawned offspring!");
-            for (int i = 0; i < spawnCount; i++)
+            for (int i = 0; i < spawnCount && AgentManager.Singleton.Agents.Count < MicrobeManager.MicrobeManagerSingleton.maxMicrobes; i++)
             {
                 MicrobeManager.MicrobeManagerSingleton.Mate(microbe, microbe);
             }

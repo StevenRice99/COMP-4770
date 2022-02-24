@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using A2.Managers;
+using A2.Pickups;
 using A2.States;
 using UnityEngine;
 
@@ -22,9 +23,9 @@ namespace A2.Agents
         
         public Microbe TargetMicrobe { get; set; }
         
+        public MicrobeBasePickup TargetPickup { get; set; }
+        
         public bool DidMate { get; set; }
-
-        public List<Microbe> RejectedBy { get; } = new List<Microbe>();
 
         public bool IsHungry => Hunger >= MicrobeManager.MicrobeManagerSingleton.HungerThreshold;
 
@@ -70,13 +71,6 @@ namespace A2.Agents
             Destroy(gameObject);
         }
 
-        public void Rejected(Microbe rejectedBy)
-        {
-            RejectedBy.Add(rejectedBy);
-            StopAllCoroutines();
-            StartCoroutine(RejectionReset());
-        }
-
         public void SetStateVisual(State state)
         {
             if (stateVisualization == null)
@@ -99,6 +93,11 @@ namespace A2.Agents
             if (state as MicrobeSeekingMateState)
             {
                 stateVisualization.material = MicrobeManager.MicrobeManagerSingleton.MateIndicatorMaterial;
+            }
+            
+            if (state as MicrobeSeekingPickupState)
+            {
+                stateVisualization.material = MicrobeManager.MicrobeManagerSingleton.PickupIndicatorMaterial;
             }
         }
         
@@ -132,26 +131,6 @@ namespace A2.Agents
             base.Start();
             
             SetStateVisual(State);
-        }
-
-        protected override void OnDestroy()
-        {
-            Microbe[] microbes = AgentManager.Singleton.Agents.Where(a => a is Microbe m && m != this).Cast<Microbe>().ToArray();
-            if (microbes.Length > 0)
-            {
-                foreach (Microbe microbe in microbes)
-                {
-                    microbe.RejectedBy.Remove(microbe);
-                }
-            }
-            
-            base.OnDestroy();
-        }
-
-        private IEnumerator RejectionReset()
-        {
-            yield return new WaitForSeconds(MicrobeManager.MicrobeManagerSingleton.rejectionResetTime);
-            RejectedBy.Clear();
         }
     }
 }

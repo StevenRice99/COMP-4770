@@ -1,5 +1,4 @@
-﻿using A2.Agents;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace A2.States
 {
@@ -13,27 +12,6 @@ namespace A2.States
 
         public override void Execute(Agent agent)
         {
-            if (!(agent is Microbe microbe))
-            {
-                return;
-            }
-
-            if (microbe.IsHungry)
-            {
-                agent.AddMessage("Hungry.");
-                microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingFoodState));
-                microbe.SetStateVisual(microbe.State);
-                return;
-            }
-
-            if (microbe.IsAdult && !microbe.DidMate)
-            {
-                agent.AddMessage("Want to find a mate.");
-                microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingMateState));
-                microbe.SetStateVisual(microbe.State);
-                return;
-            }
-            
             agent.AddMessage("Sleeping.");
         }
 

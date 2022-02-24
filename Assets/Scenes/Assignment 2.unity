@@ -175,6 +175,7 @@ MonoBehaviour:
   sleepingIndicatorMaterial: {fileID: 2100000, guid: 1503c7027b5c30247ae340e2ffb3380b, type: 2}
   foodIndicatorMaterial: {fileID: 2100000, guid: aa8e8bd4571316249991441dcbaeac6b, type: 2}
   mateIndicatorMaterial: {fileID: 2100000, guid: 058fae64fcb330341ad146cc95dcde37, type: 2}
+  pickupIndicatorMaterial: {fileID: 2100000, guid: 44a0a939e3007bb4c813e5d5ddb6e00c, type: 2}
   hungerThreshold: 100
   startingHunger: 0
   hungerRestoredFromEating: 100

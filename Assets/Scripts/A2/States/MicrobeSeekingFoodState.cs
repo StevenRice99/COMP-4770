@@ -40,11 +40,6 @@ namespace A2.States
             if (Vector3.Distance(microbe.transform.position, microbe.TargetMicrobe.transform.position) <= MicrobeManager.MicrobeManagerSingleton.MicrobeInteractRadius)
             {
                 microbe.FireEvent(microbe.TargetMicrobe, (int) MicrobeManager.MicrobeEvents.Eaten);
-                if (microbe.Hunger <= MicrobeManager.MicrobeManagerSingleton.HungerThreshold)
-                {
-                    microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSleepingState));
-                    microbe.SetStateVisual(microbe.State);
-                }
                 return;
             }
             

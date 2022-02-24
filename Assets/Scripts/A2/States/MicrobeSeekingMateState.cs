@@ -33,23 +33,14 @@ namespace A2.States
                     }
                     else
                     {
-                        agent.AddMessage($"Got rejected by {potentialMate.name}.");
-                        microbe.Rejected(potentialMate);
+                        agent.AddMessage($"Could not mate with {potentialMate.name}.");
                     }
                 }
             }
 
             if (microbe.TargetMicrobe == null)
             {
-                if (microbe.IsHungry)
-                {
-                    agent.AddMessage("Hungry, stopping search for mate as there were none.");
-                    microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingFoodState));
-                    microbe.SetStateVisual(microbe.State);
-                    return;
-                }
-                
-                agent.AddMessage("Cannot find a mate.");
+                agent.AddMessage("Cannot find a mate, roaming.");
                 if (agent.DidMove)
                 {
                     return;
@@ -66,8 +57,6 @@ namespace A2.States
                 {
                     agent.AddMessage($"Mating with {microbe.TargetMicrobe.name}.");
                     microbe.DidMate = true;
-                    microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSleepingState));
-                    microbe.SetStateVisual(microbe.State);
                 }
                 return;
             }
@@ -99,12 +88,6 @@ namespace A2.States
                         return false;
                     }
 
-                    if (Random.value <= MicrobeManager.MicrobeManagerSingleton.rejectionChance)
-                    {
-                        agent.AddMessage($"Rejected {sender.name}.");
-                        return false;
-                    }
-
                     agent.AddMessage($"Accepted advances of {sender.name}.");
                     microbe.TargetMicrobe = sender;
                     return true;
@@ -117,13 +100,17 @@ namespace A2.States
                     }
 
                     microbe.DidMate = true;
-                
-                    int offspring = MicrobeManager.MicrobeManagerSingleton.Mate(microbe, aiEvent.Sender as Microbe);
-                    agent.AddMessage(offspring == 0
-                        ? $"Failed to have any offspring with {aiEvent.Sender.name}."
-                        : $"Have {offspring} offspring with {aiEvent.Sender.name}.");
-                    agent.State = AgentManager.Singleton.Lookup(typeof(MicrobeSleepingState));
-                    microbe.SetStateVisual(microbe.State);
+
+                    Microbe sender = aiEvent.Sender as Microbe;
+                    if (sender != null)
+                    {
+                        sender.DidMate = true;
+                        int offspring = MicrobeManager.MicrobeManagerSingleton.Mate(microbe, sender);
+                        agent.AddMessage(offspring == 0
+                            ? $"Failed to have any offspring with {aiEvent.Sender.name}."
+                            : $"Have {offspring} offspring with {aiEvent.Sender.name}."
+                        );
+                    }
                     return true;
                 }
                 case MicrobeManager.MicrobeEvents.Eaten:
