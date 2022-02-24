@@ -57,6 +57,7 @@ namespace A2.States
                 {
                     agent.AddMessage($"Mating with {microbe.TargetMicrobe.name}.");
                     microbe.DidMate = true;
+                    microbe.PlayMateAudio();
                 }
                 return;
             }

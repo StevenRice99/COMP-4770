@@ -18,7 +18,8 @@ namespace A2.Pickups
             }
             
             Microbe microbe = microbes.OrderBy(m => Vector3.Distance(m.transform.position, transform.position)).First();
-            
+            microbe.AddMessage("Collecting pickup.");
+            microbe.PlayPickupAudio();
             Execute(microbe);
             Instantiate(MicrobeManager.MicrobeManagerSingleton.PickupParticlesPrefab, microbe.transform.position, Quaternion.Euler(270, 0, 0));
             Destroy(gameObject);

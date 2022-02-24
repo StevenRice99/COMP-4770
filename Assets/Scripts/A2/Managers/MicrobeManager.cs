@@ -204,7 +204,7 @@ namespace A2.Managers
 
         public GameObject PickupParticlesPrefab => pickupParticlesPrefab;
 
-        public int MaxHunger => maxHunger;
+        public int StartingHunger => startingHunger;
 
         public float FloorRadius => floorRadius;
 

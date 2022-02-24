@@ -8,10 +8,23 @@ using UnityEngine;
 
 namespace A2.Agents
 {
+    [RequireComponent(typeof(AudioSource))]
     public class Microbe : TransformAgent
     {
         [SerializeField]
         private MeshRenderer stateVisualization;
+
+        [SerializeField]
+        private AudioClip spawnAudio;
+
+        [SerializeField]
+        private AudioClip eatAudio;
+
+        [SerializeField]
+        private AudioClip mateAudio;
+
+        [SerializeField]
+        private AudioClip pickupAudio;
         
         public int Hunger { get; set; }
         
@@ -32,6 +45,8 @@ namespace A2.Agents
         public bool IsAdult => ElapsedLifespan >= LifeSpan / 2;
 
         private MicrobeManager.MicrobeType _microbeType;
+
+        private AudioSource _audioSource;
 
         public MicrobeManager.MicrobeType MicrobeType
         {
@@ -61,7 +76,8 @@ namespace A2.Agents
 
         public void Eat(Agent eaten)
         {
-            Hunger = Mathf.Max(0, Hunger - MicrobeManager.MicrobeManagerSingleton.HungerRestoredFromEating);
+            Hunger = Mathf.Max(MicrobeManager.MicrobeManagerSingleton.StartingHunger, Hunger - MicrobeManager.MicrobeManagerSingleton.HungerRestoredFromEating);
+            PlayAudio(eatAudio);
             AddMessage($"Ate {eaten.name}.");
         }
 
@@ -101,6 +117,16 @@ namespace A2.Agents
                 stateVisualization.material = MicrobeManager.MicrobeManagerSingleton.PickupIndicatorMaterial;
             }
         }
+
+        public void PlayMateAudio()
+        {
+            PlayAudio(mateAudio);
+        }
+
+        public void PlayPickupAudio()
+        {
+            PlayAudio(pickupAudio);
+        }
         
         /// <summary>
         /// Override for custom detail rendering on the automatic GUI.
@@ -122,7 +148,7 @@ namespace A2.Agents
             AgentManager.GuiLabel(x, y, w, h, p, $"Lifespan: {ElapsedLifespan} / {LifeSpan} | " + (IsAdult ? "Adult" : "Infant"));
             y = AgentManager.NextItem(y, h, p);
             
-            AgentManager.GuiLabel(x, y, w, h, p, $"Mating: " + (IsAdult && !IsHungry ? "Mating | " + (TargetMicrobe == null ? "Searching..." : $"With {TargetMicrobe.name}") : "No"));
+            AgentManager.GuiLabel(x, y, w, h, p, $"Mating: " + (DidMate ? "Already Mated" : IsAdult && !IsHungry ? TargetMicrobe == null ? "Searching for mate" : $"With {TargetMicrobe.name}" : "No"));
             
             return y;
         }
@@ -132,6 +158,20 @@ namespace A2.Agents
             base.Start();
             
             SetStateVisual(State);
+
+            _audioSource = GetComponent<AudioSource>();
+            
+            PlayAudio(spawnAudio);
+        }
+
+        private void PlayAudio(AudioClip clip)
+        {
+            try
+            {
+                _audioSource.clip = clip;
+                _audioSource.Play();
+            }
+            catch { }
         }
     }
 }

@@ -44,12 +44,6 @@ namespace A2.States
                 agent.MoveToLookAtTarget(new Vector3(position.x, 0, position.z));
                 return;
             }
-
-            if (Vector3.Distance(microbe.transform.position, microbe.TargetPickup.transform.position) <= MicrobeManager.MicrobeManagerSingleton.MicrobeInteractRadius)
-            {
-                agent.AddMessage("Collecting pickup.");
-                return;
-            }
             
             agent.AddMessage($"Moving to {microbe.TargetPickup.name}.");
             agent.MoveToLookAtTarget(microbe.TargetPickup.transform);
