@@ -2,16 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using A2.Managers;
+using A2.States;
 using UnityEngine;
 
 namespace A2.Agents
 {
     public class Microbe : TransformAgent
     {
+        [SerializeField]
+        private MeshRenderer stateVisualization;
+        
         public int Hunger { get; set; } = 10;
         
         public float LifeSpan { get; set; }
-        
+
         public float DetectionRange { get; set; }
         
         public float ElapsedLifespan { get; set; }
@@ -72,6 +76,31 @@ namespace A2.Agents
             StopAllCoroutines();
             StartCoroutine(RejectionReset());
         }
+
+        public void SetStateVisual(State state)
+        {
+            if (stateVisualization == null)
+            {
+                return;
+            }
+            
+            if (state as MicrobeSleepingState)
+            {
+                stateVisualization.material = MicrobeManager.MicrobeManagerSingleton.SleepingIndicatorMaterial;
+                return;
+            }
+            
+            if (state as MicrobeSeekingFoodState)
+            {
+                stateVisualization.material = MicrobeManager.MicrobeManagerSingleton.FoodIndicatorMaterial;
+                return;
+            }
+            
+            if (state as MicrobeSeekingMateState)
+            {
+                stateVisualization.material = MicrobeManager.MicrobeManagerSingleton.MateIndicatorMaterial;
+            }
+        }
         
         /// <summary>
         /// Override for custom detail rendering on the automatic GUI.
@@ -96,6 +125,13 @@ namespace A2.Agents
             AgentManager.GuiLabel(x, y, w, h, p, $"Mating: " + (IsAdult && !IsHungry ? "Mating | " + (TargetMicrobe == null ? "Searching..." : $"With {TargetMicrobe.name}") : "No"));
             
             return y;
+        }
+
+        protected override void Start()
+        {
+            base.Start();
+            
+            SetStateVisual(State);
         }
 
         protected override void OnDestroy()

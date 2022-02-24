@@ -43,6 +43,7 @@ namespace A2.States
                 if (microbe.Hunger <= MicrobeManager.MicrobeManagerSingleton.HungerThreshold)
                 {
                     microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSleepingState));
+                    microbe.SetStateVisual(microbe.State);
                 }
                 return;
             }

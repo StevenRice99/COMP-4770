@@ -159,6 +159,7 @@ MonoBehaviour:
   gizmos: 1
   selectedCamera: {fileID: 1258003438}
   microbePrefab: {fileID: 1567258149929102323, guid: b123d809f0c77554b9d8404a7e5f0874, type: 3}
+  floorMaterial: {fileID: 2100000, guid: e791b9002174a32479f595195851bbd6, type: 2}
   redMicrobeMaterial: {fileID: 2100000, guid: 3a41b7aa03ddf024fbc0c1ea0563750d, type: 2}
   orangeMicrobeMaterial: {fileID: 2100000, guid: ad1517e1a84462742ad0a39a139022b3, type: 2}
   yellowMicrobeMaterial: {fileID: 2100000, guid: f3826008cfa519a4b8ee5a95a8c05e85, type: 2}
@@ -166,6 +167,9 @@ MonoBehaviour:
   blueMicrobeMaterial: {fileID: 2100000, guid: 67b0eeef50c9fcf4a971927cb01ed4d3, type: 2}
   purpleMicrobeMaterial: {fileID: 2100000, guid: 09b7a05b7bb69b44088d44ffc3144858, type: 2}
   pinkMicrobeMaterial: {fileID: 2100000, guid: eb1631404aa29ba428b259a60206de98, type: 2}
+  sleepingIndicatorMaterial: {fileID: 2100000, guid: 1503c7027b5c30247ae340e2ffb3380b, type: 2}
+  foodIndicatorMaterial: {fileID: 2100000, guid: aa8e8bd4571316249991441dcbaeac6b, type: 2}
+  mateIndicatorMaterial: {fileID: 2100000, guid: 058fae64fcb330341ad146cc95dcde37, type: 2}
   hungerThreshold: 100
   startingHunger: 0
   hungerRestoredFromEating: 100

@@ -45,6 +45,7 @@ namespace A2.States
                 {
                     agent.AddMessage("Hungry, stopping search for mate as there were none.");
                     microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingFoodState));
+                    microbe.SetStateVisual(microbe.State);
                     return;
                 }
                 
@@ -66,6 +67,7 @@ namespace A2.States
                     agent.AddMessage($"Mating with {microbe.TargetMicrobe.name}.");
                     microbe.DidMate = true;
                     microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSleepingState));
+                    microbe.SetStateVisual(microbe.State);
                 }
                 return;
             }
@@ -121,6 +123,7 @@ namespace A2.States
                         ? $"Failed to have any offspring with {aiEvent.Sender.name}."
                         : $"Have {offspring} offspring with {aiEvent.Sender.name}.");
                     agent.State = AgentManager.Singleton.Lookup(typeof(MicrobeSleepingState));
+                    microbe.SetStateVisual(microbe.State);
                     return true;
                 }
                 case MicrobeManager.MicrobeEvents.Eaten:

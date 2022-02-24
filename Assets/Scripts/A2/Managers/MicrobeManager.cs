@@ -32,6 +32,9 @@ namespace A2.Managers
         private GameObject microbePrefab;
 
         [SerializeField]
+        private Material floorMaterial;
+
+        [SerializeField]
         private Material redMicrobeMaterial;
 
         [SerializeField]
@@ -51,6 +54,15 @@ namespace A2.Managers
 
         [SerializeField]
         private Material pinkMicrobeMaterial;
+
+        [SerializeField]
+        private Material sleepingIndicatorMaterial;
+
+        [SerializeField]
+        private Material foodIndicatorMaterial;
+
+        [SerializeField]
+        private Material mateIndicatorMaterial;
 
         [SerializeField]
         [Min(1)]
@@ -145,6 +157,12 @@ namespace A2.Managers
         public Material PurpleMicrobeMaterial => purpleMicrobeMaterial;
 
         public Material PinkMicrobeMaterial => pinkMicrobeMaterial;
+
+        public Material SleepingIndicatorMaterial => sleepingIndicatorMaterial;
+
+        public Material FoodIndicatorMaterial => foodIndicatorMaterial;
+
+        public Material MateIndicatorMaterial => mateIndicatorMaterial;
 
         public int HungerThreshold => hungerThreshold;
 
@@ -289,6 +307,7 @@ namespace A2.Managers
             floor.transform.position = new Vector3(0, -1, 0);
             floor.transform.localScale = new Vector3(floorRadius * 2, 1, floorRadius * 2);
             floor.name = "Floor";
+            floor.GetComponent<MeshRenderer>().material = floorMaterial;
 
             ResetAgents();
             

@@ -1,6 +1,5 @@
 using System.Linq;
 using A2.Agents;
-using A2.States;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -49,12 +48,13 @@ namespace A2
             {
                 Microbe microbe = microbes.OrderByDescending(m => m.ElapsedLifespan).ThenByDescending(m => m.LifeSpan).First();
                 _target = (microbe.Visuals == null ? microbe.transform : microbe.Visuals).position;
+
                 if (AgentManager.Singleton.selectedCamera == _camera && AgentManager.Singleton.SelectedAgent != microbe)
                 {
                     AgentManager.Singleton.SetSelectedAgent(microbe);
                 }
             }
-
+            
             // Allow for zooming in if this is the selected camera.
             if (AgentManager.Singleton.selectedCamera == _camera)
             {

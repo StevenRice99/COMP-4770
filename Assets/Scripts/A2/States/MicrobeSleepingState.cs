@@ -22,6 +22,7 @@ namespace A2.States
             {
                 agent.AddMessage("Hungry.");
                 microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingFoodState));
+                microbe.SetStateVisual(microbe.State);
                 return;
             }
 
@@ -29,6 +30,7 @@ namespace A2.States
             {
                 agent.AddMessage("Want to find a mate.");
                 microbe.State = AgentManager.Singleton.Lookup(typeof(MicrobeSeekingMateState));
+                microbe.SetStateVisual(microbe.State);
                 return;
             }
             
