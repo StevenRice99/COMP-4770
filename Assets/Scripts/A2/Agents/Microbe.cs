@@ -1,53 +1,94 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using A2.Managers;
+﻿using A2.Managers;
 using A2.Pickups;
 using A2.States;
 using UnityEngine;
 
 namespace A2.Agents
 {
+    /// <summary>
+    /// Microbe extends agent rather than being a separate component.
+    /// </summary>
     [RequireComponent(typeof(AudioSource))]
     public class Microbe : TransformAgent
     {
         [SerializeField]
+        [Tooltip("The mesh renderer for the mesh that changes color depending on what state the agent is in.")]
         private MeshRenderer stateVisualization;
 
         [SerializeField]
+        [Tooltip("Audio to play when spawning.")]
         private AudioClip spawnAudio;
 
         [SerializeField]
+        [Tooltip("Audio to play when eating another microbe.")]
         private AudioClip eatAudio;
 
         [SerializeField]
+        [Tooltip("Audio to play when mating.")]
         private AudioClip mateAudio;
 
         [SerializeField]
+        [Tooltip("Audio to play when picking up a pickup.")]
         private AudioClip pickupAudio;
         
+        /// <summary>
+        /// The hunger of this microbe.
+        /// </summary>
         public int Hunger { get; set; }
         
+        /// <summary>
+        /// How long this microbe will live for in seconds.
+        /// </summary>
         public float LifeSpan { get; set; }
 
+        /// <summary>
+        /// How far away this microbe can detect other microbes and pickups.
+        /// </summary>
         public float DetectionRange { get; set; }
         
+        /// <summary>
+        /// How much of this microbe's life in seconds has passed.
+        /// </summary>
         public float ElapsedLifespan { get; set; }
         
+        /// <summary>
+        /// The microbe that this microbe is moving towards to either eat or mate with.
+        /// </summary>
         public Microbe TargetMicrobe { get; set; }
         
+        /// <summary>
+        /// The pickup this microbe is moving towards.
+        /// </summary>
         public MicrobeBasePickup TargetPickup { get; set; }
         
+        /// <summary>
+        /// True if this microbe has already mated, false otherwise.
+        /// </summary>
         public bool DidMate { get; set; }
 
-        public bool IsHungry => Hunger >= 0;
+        /// <summary>
+        /// The microbe is hungry when its hunger level is above zero.
+        /// </summary>
+        public bool IsHungry => Hunger > 0;
 
+        /// <summary>
+        /// A microbe is considered an adult if it has reached the halfway point of its life.
+        /// </summary>
         public bool IsAdult => ElapsedLifespan >= LifeSpan / 2;
 
+        /// <summary>
+        /// The type (color) of this microbe.
+        /// </summary>
         private MicrobeManager.MicrobeType _microbeType;
 
+        /// <summary>
+        /// The audio source to play audio from.
+        /// </summary>
         private AudioSource _audioSource;
 
+        /// <summary>
+        /// The type (color) of this microbe.
+        /// </summary>
         public MicrobeManager.MicrobeType MicrobeType
         {
             get => _microbeType;
@@ -74,6 +115,10 @@ namespace A2.Agents
             }
         }
 
+        /// <summary>
+        /// Eat another microbe.
+        /// </summary>
+        /// <param name="eaten">The microbe to eat.</param>
         public void Eat(Agent eaten)
         {
             Hunger = Mathf.Max(MicrobeManager.MicrobeManagerSingleton.StartingHunger, Hunger - MicrobeManager.MicrobeManagerSingleton.HungerRestoredFromEating);
@@ -81,6 +126,9 @@ namespace A2.Agents
             AddMessage($"Ate {eaten.name}.");
         }
 
+        /// <summary>
+        /// Die.
+        /// </summary>
         public void Die()
         {
             AddMessage("Died.");
@@ -88,6 +136,10 @@ namespace A2.Agents
             Destroy(gameObject);
         }
 
+        /// <summary>
+        /// Set the state visuals for the microbe.
+        /// </summary>
+        /// <param name="state">The state the microbe is entering.</param>
         public void SetStateVisual(State state)
         {
             if (stateVisualization == null)
@@ -110,6 +162,7 @@ namespace A2.Agents
             if (state as MicrobeSeekingMateState)
             {
                 stateVisualization.material = MicrobeManager.MicrobeManagerSingleton.MateIndicatorMaterial;
+                return;
             }
             
             if (state as MicrobeSeekingPickupState)
@@ -118,11 +171,17 @@ namespace A2.Agents
             }
         }
 
+        /// <summary>
+        /// Play audio for mating.
+        /// </summary>
         public void PlayMateAudio()
         {
             PlayAudio(mateAudio);
         }
 
+        /// <summary>
+        /// Play audio for picking up a pickup.
+        /// </summary>
         public void PlayPickupAudio()
         {
             PlayAudio(pickupAudio);
@@ -164,6 +223,10 @@ namespace A2.Agents
             PlayAudio(spawnAudio);
         }
 
+        /// <summary>
+        /// Play an audio clip.
+        /// </summary>
+        /// <param name="clip">The audio clip to play.</param>
         private void PlayAudio(AudioClip clip)
         {
             try

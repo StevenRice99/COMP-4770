@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Object = UnityEngine.Object;
 
 /// <summary>
 /// Singleton to handle agents and GUI rendering. Must be exactly one of this or an extension of this present in every scene.
