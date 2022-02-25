@@ -39,7 +39,7 @@
   - Click the "Details" button to see:
     - A list of the microbes.
     - Further clicking buttons in this GUI will allow you to view messages for specific microbes and see their states, hunger, lifespan, etc.
-      - **Note that if the "Oldest Camera" is selected, you cannot select specific microbes as it will constantly reset itself back to viewing the details of the oldest microbe so you will need to switch to a different camera. See the next few lines on controls below.**
+      - **Note that if the "Oldest Camera" is selected, you cannot select specific microbes as it will constantly reset itself back to viewing the details of the oldest microbe so you will need to switch to a different camera. See the next few lines on "Controls" below.**
   - Click the "Controls" button to see:
     - Button to reset the scene.
     - Buttons to pause, resume, or step through the scene.
@@ -49,10 +49,11 @@
 ## A2 General Details
 
 - In my library, the equivalent features of Dr. Goodwin's StateMachine class has been built into the Agent class to merge the two but behaves essentially identically.
-  - This can be found in "Packages > Easy AI > Agent.cs".
+  - This can be found in "Packages > Easy AI > Runtime > Agent.cs".
 - In my library, the equivalent features of Dr. Goodwin's StateManager class has been built into the AgentManager class to merge the two but behaves essentially identically.
-  - This can be found in "Packages > Easy AI > AgentManager.cs".
+  - This can be found in "Packages > Easy AI > Runtime > AgentManager.cs".
 - The optional task of creating a camera that follows the oldest microbe and can zoom in and out has been completed.
+- The main difference between mine and Dr. Goodwin's library is how events are passed between agents. The AIEvent class located at "Packages > Easy AI > Runtime > AIEvent.cs" is a wrapper class for sending events with relevant data to other agents. It works by having a unique integer ID field which for this assignment is from an enumeration in the MicrobeManager class which is located at "Assets > Scripts > A2 > Managers > MicrobeManager.cs" that allows a receiving agent to identify what the message type is, the agent which sent the message, as well as an optional data object. All this allows for easily and efficiently passing data between agents which in the case of this assignment are the microbes.
 
 ## A2 Microbes
 
@@ -72,6 +73,7 @@
 - Microbes have a set lifetime which upon being reached they will die. If a microbe has reached or exceed half its lifetime it is declared an adult, otherwise, it is an infant. Only adults can mate.
 - Microbes increase in size as they age.
 - Microbes can only mate once, although a pickup can allow them to mate again.
+  - Microbes inherit from their parents meaning the microbe will have the color of one of its parents and its other attributes such as lifespan, speed, and detection range will be the average of its parents plus or minus a slight random variation.
 - Microbes display unique particles and play unique sounds when spawning, eating, mating, and picking up pickups.
 
 ## A2 States
