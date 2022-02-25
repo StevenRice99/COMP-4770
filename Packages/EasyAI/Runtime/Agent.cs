@@ -81,7 +81,7 @@ public abstract class Agent : MessageComponent
 
             if (state != null)
             {
-                state.Execute(this);
+                state.Enter(this);
             }
         }
     }

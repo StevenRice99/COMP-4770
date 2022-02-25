@@ -5,6 +5,9 @@ using UnityEngine.InputSystem;
 
 namespace A2
 {
+    /// <summary>
+    /// Camera to follow the oldest microbe.
+    /// </summary>
     public class OldestCamera : MonoBehaviour
     {
         [Min(0)]
@@ -42,7 +45,7 @@ namespace A2
         
         private void LateUpdate()
         {
-            // Get the agent to look towards.
+            // Get the microbe to look towards.
             Microbe[] microbes = AgentManager.Singleton.Agents.Cast<Microbe>().ToArray();
             if (microbes.Length > 0)
             {
