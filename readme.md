@@ -1,9 +1,15 @@
 # COMP 4770 - Artificial Intelligence for Games
 
 - [Overview](#overview "Overview")
+- [Assignment 2](#assignment-2 "Assignment 2")
+  - [A2 Getting Started](#a2-getting-started "A2 Getting Started")
+  - [A2 General Details](#a2-general-details "A2 General Details")
+  - [A2 Microbes](#a2-microbes "A2 Microbes")
+  - [A2 States](#a2-states "A2 States")
+  - [A2 Pickups](#a2-pickups "A2 Pickups")
 - [Assignment 1](#assignment-1 "Assignment 1")
-  - [Getting Started](#getting-started "Getting Started")
-  - [Requirements](#requirements "Requirements")
+  - [A1 Getting Started](#a1-getting-started "A1 Getting Started")
+  - [A1 Requirements](#a1-requirements "A1 Requirements")
 - [Details](#details "Details")
 
 # Overview
@@ -14,9 +20,83 @@
   - Samples for [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI") are also included under "Assets > Samples" although they are not directly related to assignment solutions.
   - Script templates under "Assets > ScriptTemplates" are also for [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI") which allow for creating specific component scripts by right clicking in the project explorer and going to "Create > Easy AI".
 
+# Assignment 2
+
+## A2 Getting Started
+
+- Under "Assets", go to "Scenes" and open "Assignment 2". The level will generate itself and spawn the cleaner agent when you click play.
+- All scripts for assignment one are located under "Assets > Scripts > A2" and the sub folders within.
+- The prefabs are all under "Assets > Prefabs > A2".
+- The general flow of the scene is as follow:
+  1. A round floor is generated. I choose a round floor to make it seem like a petri dish.
+  2. An initial population of microbes is spawned along with pickups.
+  3. From there, microbes interact solely based upon their states with the scene only spawning in more pickups as needed and more microbes if the population drops too low. The general flow that agents take from birth to death are as follows:
+     1. Start in a sleeping state as an infant.
+     2. If at any point the microbe becomes hungry, it will search for food.
+     3. If the microbe is an adult and is not hungry and it has yet to mate, it will search for a mate.
+     4. If the microbe is an adult and is not hungry and it has already mated, it will search for a pickup which depending on the result of the pickup could cause it to want to mate again.
+- The general controls for the scene are as follows:
+  - Click the "Details" button to see:
+    - A list of the microbes.
+    - Further clicking buttons in this GUI will allow you to view messages for specific microbes and see their states, hunger, lifespan, etc.
+      - **Note that if the "Oldest Camera" is selected, you cannot select specific microbes as it will constantly reset itself back to viewing the details of the oldest microbe so you will need to switch to a different camera. See the next few lines on controls below.**
+  - Click the "Controls" button to see:
+    - Button to reset the scene.
+    - Buttons to pause, resume, or step through the scene.
+    - Buttons to switch between cameras.
+- **I have a relatively strong computer so I've been able to get the microbe count pretty high without issues, however, if you are having performance issues, in the scene select "Microbe Manager" and reduce the "Min Microbes" and "Max Microbes" fields.**
+
+## A2 General Details
+
+- In my library, the equivalent features of Dr. Goodwin's StateMachine class has been built into the Agent class to merge the two but behaves essentially identically.
+  - This can be found in "Packages > Easy AI > Agent.cs".
+- In my library, the equivalent features of Dr. Goodwin's StateManager class has been built into the AgentManager class to merge the two but behaves essentially identically.
+  - This can be found in "Packages > Easy AI > AgentManager.cs".
+- The optional task of creating a camera that follows the oldest microbe and can zoom in and out has been completed.
+
+## A2 Microbes
+
+- I have increased the types of microbes up to seven being red, orange, yellow, green, blue, purple, and pink microbes.
+- Microbes can mate with and eat various colors as seen in the table below where an "M" means those microbes can mate and a blank space means those microbes can eat each other:
+
+|        | Red | Orange | Yellow | Green | Blue | Purple | Pink |
+|:------:|:---:|:------:|:------:|:-----:|:----:|:------:|:----:|
+|  Red   |  M  |   M    |        |       |      |        |  M   |
+| Orange |  M  |   M    |   M    |       |      |        |      |
+| Yellow |     |   M    |   M    |   M   |      |        |      |
+| Green  |     |        |   M    |   M   |  M   |        |      |
+|  Blue  |     |        |        |   M   |  M   |   M    |      |
+| Purple |     |        |        |       |  M   |   M    |  M   |
+|  Pink  |  M  |        |        |       |      |   M    |  M   |
+
+- Microbes have a set lifetime which upon being reached they will die. If a microbe has reached or exceed half its lifetime it is declared an adult, otherwise, it is an infant. Only adults can mate.
+- Microbes increase in size as they age.
+- Microbes can only mate once, although a pickup can allow them to mate again.
+- Microbes display unique particles and play unique sounds when spawning, eating, mating, and picking up pickups.
+
+## A2 States
+
+- States can be found in "Assets > Scripts > A2 > States".
+- As seen in the comments of Dr. Goodwin's code, it was suggested we experiment with removing the dead state which is what I have done. This state is not needed if instead the microbe is simply removed when it is killed instead of needed to switch states.
+- Further optimizations I made included merging the mating and reproducing states into one being the "MicrobeSeekingMateState".
+- An additional state I introduced was "MicrobeSeekingPickupState" which will search for pickups.
+- States are visually identifiable by the color of the "hats" on the microbes.
+  - Black means sleeping.
+  - Grey means searching for food.
+  - White means searching for a mate.
+  - Shiny white means searching for a pickup.
+
+## A2 Pickups
+
+- I have added four bonus pickups for microbes to search for and pickup. These are located in "Assets > Scripts > A2 > Pickups".
+1. FertilityPickup allows for the microbe to mate again.
+2. NeverHungryPickup sets the microbe's hunger to the lowest possible negative integer value which for all intents and purposes means the microbe will never be hungry in its lifetime again.
+3. OffspringPickup will spawn several offspring right away without needing a mate.
+4. RejuvenatePickup will cause the microbe to revert its age back to when it just became an adult, meaning in theory a microbe can get lucky and repeatedly pick these up to live forever.
+
 # Assignment 1
 
-## Getting Started
+## A1 Getting Started
 
 - Under "Assets", go to "Scenes" and open "Assignment 1". The level will generate itself and spawn the cleaner agent when you click play.
 - All scripts for assignment one are located under "Assets > Scripts > A1" and the sub folders within.
@@ -34,7 +114,7 @@
     - Buttons to pause, resume, or step through the scene.
     - Buttons to switch between cameras.
 
-## Requirements
+## A1 Requirements
 
 1. **Review the A1 project files (get A1-Agent branch from GitLab then add to Unity).**
 
@@ -121,7 +201,7 @@
 
 # Details
 
-- Created using Unity 2020.3.27f1.
+- Created using Unity 2020.3.30f1.
 - Created using [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI").
 - Project setup using the [Universal Render Pipeline](https://unity.com/srp/universal-render-pipeline "Universal Render Pipeline").
 - Project setup using Unity's [Input System](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.1/manual/index.html "Input System").
