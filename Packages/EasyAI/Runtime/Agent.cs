@@ -27,10 +27,6 @@ public abstract class Agent : MessageComponent
     [Min(0)]
     [Tooltip("How fast the agent's rotation can accelerate Set to zero for instantaneous acceleration.")]
     protected float lookAcceleration;
-
-    [Min(0)]
-    [Tooltip("The time in seconds between state updates.")]
-    public float stateUpdateInterval;
     
     [SerializeField]
     [Tooltip("The global state the agent is in. Initialize it with the global state to start it.")]
@@ -225,11 +221,6 @@ public abstract class Agent : MessageComponent
     /// The index of the currently selected mind.
     /// </summary>
     private int _selectedMindIndex;
-
-    /// <summary>
-    /// The timer for state updates.
-    /// </summary>
-    private float _stateElapsedTime;
     
     /// <summary>
     /// Display a green line from the agent's position to its move target and a blue line from the agent's position
@@ -481,20 +472,14 @@ public abstract class Agent : MessageComponent
     /// </summary>
     public void Perform()
     {
-        _stateElapsedTime += DeltaTime;
-        if (_stateElapsedTime >= stateUpdateInterval)
+        if (globalState != null)
         {
-            if (globalState != null)
-            {
-                globalState.Execute(this);
-            }
+            globalState.Execute(this);
+        }
 
-            if (state != null)
-            {
-                state.Execute(this);
-            }
-
-            _stateElapsedTime = 0;
+        if (state != null)
+        {
+            state.Execute(this);
         }
 
         // Can only sense, think, and act if there is a mind attached.

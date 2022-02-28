@@ -24,7 +24,7 @@ namespace A2.States
             }
 
             // Determine if the microbe's hunger should increase.
-            if (Random.value <= MicrobeManager.MicrobeManagerSingleton.hungerChance)
+            if (Random.value <= MicrobeManager.MicrobeManagerSingleton.hungerChance * agent.DeltaTime)
             {
                 microbe.Hunger++;
             }

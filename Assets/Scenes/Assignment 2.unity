@@ -196,9 +196,7 @@ MonoBehaviour:
   minMicrobeSize: 0.25
   maxMicrobeSize: 1
   minMicrobeDetectionRange: 5
-  hungerChance: 0.05
-  rejectionChance: 0.5
-  rejectionResetTime: 5
+  hungerChance: 10
 --- !u!4 &187274787
 Transform:
   m_ObjectHideFlags: 0
