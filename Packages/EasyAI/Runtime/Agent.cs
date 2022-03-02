@@ -19,13 +19,17 @@ public abstract class Agent : MessageComponent
 
     public class MoveData
     {
-        public MoveType MoveType { get; set; }
-
-        public Transform Transform { get; set; }
-
-        private Vector2 _position;
+        private readonly Vector2 _position;
         
         public Vector2 LastPosition { get; set; }
+        
+        public Vector2 MoveVector { get; set; } = Vector2.zero;
+        
+        public MoveType MoveType { get; }
+
+        public Transform Transform { get; }
+        
+        public bool IsTransformTarget { get; }
         
         public Vector2 Position
         {
@@ -38,7 +42,6 @@ public abstract class Agent : MessageComponent
 
                 Vector3 pos3 = Transform.position;
                 return new Vector2(pos3.x, pos3.z);
-
             }
         }
 
@@ -49,6 +52,7 @@ public abstract class Agent : MessageComponent
             Vector3 pos3 = transform.position;
             _position = new Vector2(pos3.x, pos3.z);
             LastPosition = _position;
+            IsTransformTarget = true;
         }
 
         public MoveData(MoveType moveType, Vector3 pos)
@@ -57,6 +61,7 @@ public abstract class Agent : MessageComponent
             Transform = null;
             _position = new Vector2(pos.x, pos.z);
             LastPosition = _position;
+            IsTransformTarget = false;
         }
 
         public MoveData(MoveType moveType, Vector2 position)
@@ -65,6 +70,7 @@ public abstract class Agent : MessageComponent
             Transform = null;
             _position = position;
             LastPosition = _position;
+            IsTransformTarget = false;
         }
     }
     
@@ -251,9 +257,14 @@ public abstract class Agent : MessageComponent
                 MoveType.Evade => Color.yellow,
                 _ => Color.magenta
             });
+            
             Vector3 position = transform.position;
             GL.Vertex(position);
             GL.Vertex(new Vector3(moveData.Position.x, position.y, moveData.Position.y));
+
+            GL.Color(Color.magenta);
+            GL.Vertex(position);
+            GL.Vertex(position + transform.rotation * (new Vector3(moveData.MoveVector.x, position.y, moveData.MoveVector.y).normalized * 2));
         }
 
         if (MoveVelocity != Vector2.zero)
@@ -706,7 +717,7 @@ public abstract class Agent : MessageComponent
             {
                 Vector2 target = MovesData[i].Position;
 
-                if (IsCompleteMove(MovesData[i].MoveType, position, target))
+                if (MovesData[i].IsTransformTarget && MovesData[i].Transform == null || IsCompleteMove(MovesData[i].MoveType, position, target))
                 {
                     MovesData.RemoveAt(i--);
                     continue;
@@ -715,21 +726,24 @@ public abstract class Agent : MessageComponent
                 switch (MovesData[i].MoveType)
                 {
                     case MoveType.Seek:
-                        movement += Steering.Seek(position, MoveVelocity, target, acceleration);
+                        
+                        MovesData[i].MoveVector = Steering.Seek(position, MoveVelocity, target, acceleration);
                         break;
                     case MoveType.Flee:
-                        movement += Steering.Flee(position, MoveVelocity, target, acceleration);
+                        MovesData[i].MoveVector = Steering.Flee(position, MoveVelocity, target, acceleration);
                         break;
                     case MoveType.Pursuit:
-                        movement += Steering.Pursuit(position, MoveVelocity, target, MovesData[i].LastPosition, acceleration, deltaTime);
+                        MovesData[i].MoveVector = Steering.Pursuit(position, MoveVelocity, target, MovesData[i].LastPosition, acceleration, deltaTime);
                         break;
                     case MoveType.Evade:
-                        movement += Steering.Evade(position, MoveVelocity, target, MovesData[i].LastPosition, acceleration, deltaTime);
+                        MovesData[i].MoveVector = Steering.Evade(position, MoveVelocity, target, MovesData[i].LastPosition, acceleration, deltaTime);
                         break;
                     case MoveType.Wander:
-                        movement += Steering.Wander(transform, target, 1, 1,1);
+                        MovesData[i].MoveVector = Steering.Wander(transform, target, 1, 1,1);
                         break;
                 }
+
+                movement += MovesData[i].MoveVector;
 
                 MovesData[i].LastPosition = target;
             }
