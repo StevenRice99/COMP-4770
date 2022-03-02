@@ -1213,8 +1213,8 @@ public class AgentManager : MonoBehaviour
             };
             string toFrom = moveData.MoveType == Agent.MoveType.Seek || moveData.MoveType == Agent.MoveType.Pursuit ? " towards"
                 : moveData.MoveType == Agent.MoveType.Flee || moveData.MoveType == Agent.MoveType.Flee ? " from" : string.Empty;
-            Vector3 pos3 = moveData.Tr != null ? moveData.Tr.position : Vector3.zero;
-            string pos = moveData.Tr != null ? $" ({pos3.x}, {pos3.z})" : $" ({moveData.Pos.x}, {moveData.Pos.y})";
+            Vector3 pos3 = moveData.Transform != null ? moveData.Transform.position : Vector3.zero;
+            string pos = moveData.Transform != null ? $" ({pos3.x}, {pos3.z})" : $" ({moveData.Position.x}, {moveData.Position.y})";
             y = NextItem(y, h, p);
             GuiLabel(x, y, w, h, p, $"{moveType}{toFrom}{pos}");
         }

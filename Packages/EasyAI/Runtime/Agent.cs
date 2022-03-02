@@ -19,35 +19,52 @@ public abstract class Agent : MessageComponent
 
     public class MoveData
     {
-        public MoveType MoveType { get; }
-        public Transform Tr { get; }
-        public Vector2 Pos { get; set; }
-        
-        public Vector2 LastPos { get; set; }
+        public MoveType MoveType { get; set; }
 
-        public MoveData(MoveType moveType, Transform tr)
+        public Transform Transform { get; set; }
+
+        private Vector2 _position;
+        
+        public Vector2 LastPosition { get; set; }
+        
+        public Vector2 Position
+        {
+            get
+            {
+                if (Transform == null)
+                {
+                    return _position;
+                }
+
+                Vector3 pos3 = Transform.position;
+                return new Vector2(pos3.x, pos3.z);
+
+            }
+        }
+
+        public MoveData(MoveType moveType, Transform transform)
         {
             MoveType = moveType;
-            Tr = tr;
-            Vector3 pos3 = tr.position;
-            Pos = new Vector2(pos3.x, pos3.z);
-            LastPos = Pos;
+            Transform = transform;
+            Vector3 pos3 = transform.position;
+            _position = new Vector2(pos3.x, pos3.z);
+            LastPosition = _position;
         }
 
         public MoveData(MoveType moveType, Vector3 pos)
         {
             MoveType = moveType;
-            Tr = null;
-            Pos = new Vector2(pos.x, pos.z);
-            LastPos = Pos;
+            Transform = null;
+            _position = new Vector2(pos.x, pos.z);
+            LastPosition = _position;
         }
 
-        public MoveData(MoveType moveType, Vector2 pos)
+        public MoveData(MoveType moveType, Vector2 position)
         {
             MoveType = moveType;
-            Tr = null;
-            Pos = pos;
-            LastPos = Pos;
+            Transform = null;
+            _position = position;
+            LastPosition = _position;
         }
     }
     
@@ -70,6 +87,11 @@ public abstract class Agent : MessageComponent
     [Min(0)]
     [Tooltip("How far an agent can be to a location its fleeing or evading from to declare it as reached?.")]
     public float fleeAcceptableDistance = 10f;
+
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("If the agent is not moving, ensure it comes to a complete stop when its velocity is less than this.")]
+    public float restVelocity = 0.1f;
         
     [SerializeField]
     [Min(0)]
@@ -278,7 +300,7 @@ public abstract class Agent : MessageComponent
 
     public void RemoveMoveData(Transform tr)
     {
-        MovesData = MovesData.Where(m => m.Tr != tr).ToList();
+        MovesData = MovesData.Where(m => m.Transform != tr).ToList();
     }
 
     public void RemoveMoveData(Vector3 pos)
@@ -288,7 +310,7 @@ public abstract class Agent : MessageComponent
 
     public void RemoveMoveData(Vector2 pos)
     {
-        MovesData = MovesData.Where(m => m.Pos != pos).ToList();
+        MovesData = MovesData.Where(m => m.Position != pos).ToList();
     }
 
     /// <summary>
@@ -659,13 +681,9 @@ public abstract class Agent : MessageComponent
             Vector2 position = new Vector2(positionVector3.x, positionVector3.z);
             for (int i = 0; i < MovesData.Count; i++)
             {
-                if (MovesData[i].Tr != null)
-                {
-                    Vector3 tr3 = MovesData[i].Tr.position;
-                    MovesData[i].Pos = new Vector2(tr3.x, tr3.z);
-                }
+                Vector2 target = MovesData[i].Position;
 
-                if (IsCompleteMove(MovesData[i].MoveType, position, MovesData[i].Pos))
+                if (IsCompleteMove(MovesData[i].MoveType, position, target))
                 {
                     MovesData.RemoveAt(i--);
                     continue;
@@ -674,29 +692,33 @@ public abstract class Agent : MessageComponent
                 switch (MovesData[i].MoveType)
                 {
                     case MoveType.Seek:
-                        movement += Steering.Seek(position, MoveVelocity, MovesData[i].Pos, acceleration);
+                        movement += Steering.Seek(position, MoveVelocity, target, acceleration);
                         break;
                     case MoveType.Flee:
-                        movement += Steering.Flee(position, MoveVelocity, MovesData[i].Pos, acceleration);
+                        movement += Steering.Flee(position, MoveVelocity, target, acceleration);
                         break;
                     case MoveType.Pursuit:
-                        movement += Steering.Pursuit(position, MoveVelocity, MovesData[i].Pos, MovesData[i].LastPos, acceleration, deltaTime);
+                        movement += Steering.Pursuit(position, MoveVelocity, target, MovesData[i].LastPosition, acceleration, deltaTime);
                         break;
                     case MoveType.Evade:
-                        movement += Steering.Evade(position, MoveVelocity, MovesData[i].Pos, MovesData[i].LastPos, acceleration, deltaTime);
+                        movement += Steering.Evade(position, MoveVelocity, target, MovesData[i].LastPosition, acceleration, deltaTime);
                         break;
                     case MoveType.Wander:
-                        movement += Steering.Wander(transform, MovesData[i].Pos, 1, 1,1);
+                        movement += Steering.Wander(transform, target, 1, 1,1);
                         break;
                 }
 
-                MovesData[i].LastPos = MovesData[i].Pos;
+                MovesData[i].LastPosition = target;
             }
         }
 
         if (movement == Vector2.zero)
         {
             MoveVelocity = Vector2.Lerp(MoveVelocity, Vector2.zero, acceleration * deltaTime);
+            if (MoveVelocity.magnitude < restVelocity)
+            {
+                MoveVelocity = Vector2.zero;
+            }
             return;
         }
 
