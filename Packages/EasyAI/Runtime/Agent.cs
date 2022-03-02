@@ -647,12 +647,13 @@ public abstract class Agent : MessageComponent
         // Look towards the target.
         Quaternion rotation = Visuals.rotation;
 
-        if (Quaternion.LookRotation(Vector3.RotateTowards(visuals.forward, target - visuals.position, float.MaxValue, 0)) == rotation)
+        target -= visuals.position;
+        if (Quaternion.LookRotation(Vector3.RotateTowards(visuals.forward, target, float.MaxValue, 0)) == rotation)
         {
             return;
         }
 
-        rotation = Quaternion.LookRotation(Vector3.RotateTowards(visuals.forward, target - visuals.position, lookSpeed * Time.deltaTime, 0.0f));
+        rotation = Quaternion.LookRotation(Vector3.RotateTowards(visuals.forward, target, lookSpeed * Time.deltaTime, 0.0f));
         Visuals.rotation = rotation;
     }
 
