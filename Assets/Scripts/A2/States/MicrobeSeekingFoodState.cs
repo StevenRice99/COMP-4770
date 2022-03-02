@@ -55,7 +55,7 @@ namespace A2.States
             
             // Otherwise move towards the microbe it is tracking.
             agent.AddMessage($"Hunting {microbe.TargetMicrobe.name}.");
-            agent.SetMoveData(Agent.MoveType.Seek, microbe.TargetMicrobe.transform);
+            agent.SetMoveData(Agent.MoveType.Pursuit, microbe.TargetMicrobe.transform);
         }
 
         /// <summary>

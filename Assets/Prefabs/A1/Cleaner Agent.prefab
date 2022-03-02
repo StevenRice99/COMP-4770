@@ -5213,9 +5213,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 10
-  lookSpeed: 5
   moveAcceleration: 10
-  lookAcceleration: 10
+  seekAcceptableDistance: 0.1
+  fleeAcceptableDistance: 10
+  lookSpeed: 5
   globalState: {fileID: 0}
   state: {fileID: 0}
 --- !u!114 &3411514612979016314

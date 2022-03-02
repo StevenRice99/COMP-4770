@@ -32,6 +32,21 @@ public class CharacterAgent : TransformAgent
     /// </summary>
     public override void Move()
     {
-        // TODO.
+        if (_characterController == null)
+        {
+            return;
+        }
+        
+        // Reset gravity if grounded.
+        if (_characterController.isGrounded)
+        {
+            _velocityY = 0;
+        }
+        
+        // Apply gravity.
+        _velocityY += Physics.gravity.y * Time.deltaTime;
+
+        CalculateMoveVelocity(Time.deltaTime);
+        _characterController.Move(new Vector3(MoveVelocity.x, _velocityY, MoveVelocity.y));
     }
 }

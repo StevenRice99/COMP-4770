@@ -327,7 +327,7 @@ namespace A2.Managers
                     Random.value <= 0.5f ? parentA.MicrobeType : parentB.MicrobeType,
                     position,
                     // Inherit the average speed of both parents offset by a slight random value.
-                    Mathf.Clamp((parentA.MoveSpeed + parentB.MoveSpeed) / 2 + Random.value - 0.5f, minMicrobeSpeed, maxMicrobeSpeed),
+                    Mathf.Clamp((parentA.moveSpeed + parentB.moveSpeed) / 2 + Random.value - 0.5f, minMicrobeSpeed, maxMicrobeSpeed),
                     // Inherit the average lifespan of both parents offset by a slight random value.
                     Mathf.Clamp((parentA.LifeSpan + parentB.LifeSpan) / 2 + Random.value - 0.5f, minMicrobeLifespan, maxMicrobeLifespan),
                     // Inherit the average detection range of both parents offset by a slight random value.

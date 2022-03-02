@@ -28,6 +28,12 @@ public class RigidbodyAgent : Agent
         
     public override void Move()
     {
-        // TODO.
+        if (_rigidbody == null)
+        {
+            return;
+        }
+        
+        CalculateMoveVelocity(Time.fixedDeltaTime);
+        _rigidbody.velocity = new Vector3(MoveVelocity.x, _rigidbody.velocity.y, MoveVelocity.y);
     }
 }

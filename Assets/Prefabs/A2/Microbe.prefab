@@ -46,10 +46,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 10
+  moveAcceleration: 10
+  seekAcceptableDistance: 0.1
+  fleeAcceptableDistance: 10
   lookSpeed: 5
-  moveAcceleration: 0
-  lookAcceleration: 0
-  stateUpdateInterval: 0
   globalState: {fileID: 11400000, guid: 1c5677af39d17c748bb3dbf33fc8c7cb, type: 2}
   state: {fileID: 11400000, guid: 0dbbbbfc37da2304bbd48180d5f98c02, type: 2}
   stateVisualization: {fileID: 6820371204410465446}

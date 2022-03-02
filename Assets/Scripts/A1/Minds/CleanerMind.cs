@@ -97,7 +97,7 @@ namespace A1.Minds
         /// <returns>The closest floor tile position to the cleaner agent.</returns>
         private Vector3 NearestPosition(IReadOnlyCollection<Vector3> positions)
         {
-            return positions.Count == 0 ? Vector3.zero : positions.OrderBy(p => Vector3.Distance(Agent.Position, p)).First();
+            return positions.Count == 0 ? Vector3.zero : positions.OrderBy(p => Vector3.Distance(Agent.transform.position, p)).First();
         }
 
         /// <summary>

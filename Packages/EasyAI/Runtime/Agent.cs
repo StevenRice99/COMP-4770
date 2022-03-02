@@ -29,7 +29,8 @@ public abstract class Agent : MessageComponent
         {
             MoveType = moveType;
             Tr = tr;
-            Pos = tr.position;
+            Vector3 pos3 = tr.position;
+            Pos = new Vector2(pos3.x, pos3.z);
             LastPos = Pos;
         }
 
@@ -53,27 +54,27 @@ public abstract class Agent : MessageComponent
     [SerializeField]
     [Min(0)]
     [Tooltip("How fast this agent can move in units per second.")]
-    protected float moveSpeed = 10;
+    public float moveSpeed = 10;
     
     [SerializeField]
     [Min(0)]
     [Tooltip("How fast this agent can increase in move speed in units per second.")]
-    protected float moveAcceleration = 10;
+    public float moveAcceleration = 10;
 
     [SerializeField]
     [Min(0)]
     [Tooltip("How close an agent can be to a location its seeking or pursuing to declare it as reached?.")]
-    protected float seekAcceptableDistance = 0.25f;
+    public float seekAcceptableDistance = 0.1f;
 
     [SerializeField]
     [Min(0)]
     [Tooltip("How far an agent can be to a location its fleeing or evading from to declare it as reached?.")]
-    protected float fleeAcceptableDistance = 10f;
+    public float fleeAcceptableDistance = 10f;
         
     [SerializeField]
     [Min(0)]
     [Tooltip("How fast this agent can look in degrees per second.")]
-    protected float lookSpeed = 5;
+    public float lookSpeed = 5;
 
     [SerializeField]
     [Tooltip("The global state the agent is in. Initialize it with the global state to start it.")]
@@ -135,16 +136,6 @@ public abstract class Agent : MessageComponent
     public State PreviousState { get; private set; }
 
     /// <summary>
-    /// Getter for the move speed.
-    /// </summary>
-    public float MoveSpeed => moveSpeed;
-
-    /// <summary>
-    /// Getter for the look speed.
-    /// </summary>
-    public float LookSpeed => lookSpeed;
-
-    /// <summary>
     /// The current move velocity if move acceleration is being used as a Vector3.
     /// </summary>
     public Vector3 MoveVelocity3 => new Vector3(MoveVelocity.x, 0, MoveVelocity.y);
@@ -177,7 +168,7 @@ public abstract class Agent : MessageComponent
     /// <summary>
     /// True if the agent moved in the last update call, false otherwise.
     /// </summary>
-    public bool DidMove { get; protected set; }
+    public bool DidMove { get; private set; }
 
     /// <summary>
     /// True if the agent looked in the last update call, false otherwise.
@@ -232,26 +223,6 @@ public abstract class Agent : MessageComponent
     public List<MoveData> MovesData { get; private set; } = new List<MoveData>();
 
     /// <summary>
-    /// The position of this agent.
-    /// </summary>
-    public Vector3 Position => transform.position;
-
-    /// <summary>
-    /// The rotation of this agent.
-    /// </summary>
-    public Quaternion Rotation => Visuals.rotation;
-
-    /// <summary>
-    /// The local position of this agent.
-    /// </summary>
-    public Vector3 LocalPosition => transform.localPosition;
-
-    /// <summary>
-    /// The local rotation of this agent.
-    /// </summary>
-    public Quaternion LocalRotation => Visuals.localRotation;
-
-    /// <summary>
     /// The index of the currently selected mind.
     /// </summary>
     private int _selectedMindIndex;
@@ -266,7 +237,7 @@ public abstract class Agent : MessageComponent
         if (LookingToTarget)
         {
             GL.Color(Color.blue);
-            GL.Vertex(Position);
+            GL.Vertex(transform.position);
             GL.Vertex(LookTarget);
         }
     }
@@ -285,11 +256,28 @@ public abstract class Agent : MessageComponent
 
     public void AddMoveData(MoveType moveType, Transform tr)
     {
+        if (IsCompleteMove(moveType, new Vector2(transform.position.x, transform.position.z), new Vector2(tr.position.x, tr.position.z)))
+        {
+            return;
+        }
         MovesData.Add(new MoveData(moveType, tr));
     }
 
     public void AddMoveData(MoveType moveType, Vector3 pos)
     {
+        if (IsCompleteMove(moveType, new Vector2(transform.position.x, transform.position.z), new Vector2(pos.x, pos.z)))
+        {
+            return;
+        }
+        MovesData.Add(new MoveData(moveType, pos));
+    }
+
+    public void AddMoveData(MoveType moveType, Vector2 pos)
+    {
+        if (IsCompleteMove(moveType, new Vector2(transform.position.x, transform.position.z), pos))
+        {
+            return;
+        }
         MovesData.Add(new MoveData(moveType, pos));
     }
 
@@ -310,7 +298,7 @@ public abstract class Agent : MessageComponent
 
     public void RemoveMoveData(Vector2 pos)
     {
-        MovesData = MovesData.Where(m => m.Pos != pos || m.Tr != null).ToList();
+        MovesData = MovesData.Where(m => m.Pos != pos).ToList();
     }
 
     /// <summary>
@@ -677,78 +665,72 @@ public abstract class Agent : MessageComponent
     /// <param name="deltaTime">The elapsed time step.</param>
     protected void CalculateMoveVelocity(float deltaTime)
     {
-        DidMove = false;
         Vector2 movement = Vector2.zero;
-        Vector3 positionVector3 = transform.position;
-        Vector2 position = new Vector2(positionVector3.x, positionVector3.z);
-        float acceleration = moveAcceleration > 0 ? moveAcceleration : int.MaxValue;
-        for (int i = 0; i < MovesData.Count; i++)
+
+        if (MovesData.Count > 0)
         {
-            if (MovesData[i].Tr != null)
+            Vector3 positionVector3 = transform.position;
+            Vector2 position = new Vector2(positionVector3.x, positionVector3.z);
+            float acceleration = moveAcceleration > 0 ? moveAcceleration : int.MaxValue;
+            for (int i = 0; i < MovesData.Count; i++)
             {
-                Vector3 tr3 = MovesData[i].Tr.position;
-                MovesData[i].Pos = new Vector2(tr3.x, tr3.z);
-            }
+                if (MovesData[i].Tr != null)
+                {
+                    Vector3 tr3 = MovesData[i].Tr.position;
+                    MovesData[i].Pos = new Vector2(tr3.x, tr3.z);
+                }
+
+                if (IsCompleteMove(MovesData[i].MoveType, position, MovesData[i].Pos))
+                {
+                    MovesData.RemoveAt(i--);
+                    continue;
+                }
             
-            if (position == MovesData[i].Pos || IsCompleteMove(position, i))
-            {
-                MovesData.RemoveAt(i--);
-                continue;
-            }
+                switch (MovesData[i].MoveType)
+                {
+                    case MoveType.Seek:
+                        movement += Steering.Seek(position, MoveVelocity, MovesData[i].Pos, acceleration);
+                        break;
+                    case MoveType.Flee:
+                        movement += Steering.Flee(position, MoveVelocity, MovesData[i].Pos, acceleration);
+                        break;
+                    case MoveType.Pursuit:
+                        movement += Steering.Pursuit(position, MoveVelocity, MovesData[i].Pos, MovesData[i].LastPos, acceleration, deltaTime);
+                        break;
+                    case MoveType.Evade:
+                        movement += Steering.Evade(position, MoveVelocity, MovesData[i].Pos, MovesData[i].LastPos, acceleration, deltaTime);
+                        break;
+                    case MoveType.Wander:
+                        movement += Steering.Wander(transform, MovesData[i].Pos, 1, 1,1);
+                        break;
+                }
 
-            Vector2 move = Vector2.zero;
-            switch (MovesData[i].MoveType)
-            {
-                case MoveType.Seek:
-                    move = Steering.Seek(position, MoveVelocity, MovesData[i].Pos, acceleration);
-                    break;
-                case MoveType.Flee:
-                    move = Steering.Flee(position, MoveVelocity, MovesData[i].Pos, acceleration);
-                    break;
-                case MoveType.Pursuit:
-                    move = Steering.Pursuit(position, MoveVelocity, MovesData[i].Pos, MovesData[i].LastPos, acceleration, deltaTime);
-                    break;
-                case MoveType.Evade:
-                    move = Steering.Evade(position, MoveVelocity, MovesData[i].Pos, MovesData[i].LastPos, acceleration, deltaTime);
-                    break;
-                case MoveType.Wander:
-                    move = Steering.Wander(transform, MovesData[i].Pos, 1, 1,1);
-                    break;
+                MovesData[i].LastPos = MovesData[i].Pos;
             }
-
-            if (move != Vector2.zero)
-            {
-                DidMove = true;
-            }
-            
-            movement += move;
-            if (position + move == MovesData[i].Pos || IsCompleteMove(position, i))
-            {
-                MovesData.RemoveAt(i--);
-                continue;
-            }
-
-            MovesData[i].LastPos = MovesData[i].Pos;
         }
 
-        MoveVelocity += movement * deltaTime;
-        
         if (movement == Vector2.zero)
         {
-            MoveVelocity = Vector2.zero;
+            DidMove = false;
+            MoveVelocity = Vector2.Lerp(MoveVelocity, Vector2.zero, moveAcceleration * deltaTime);
         }
-        else if (MoveVelocity.magnitude > moveSpeed)
+        else
         {
-            MoveVelocity = MoveVelocity.normalized * moveSpeed;
+            DidMove = true;
+            MoveVelocity += movement * deltaTime;
+            if (MoveVelocity.magnitude > moveSpeed)
+            {
+                MoveVelocity = MoveVelocity.normalized * moveSpeed;
+            }
         }
-        
+
         Debug.Log(MoveVelocity.magnitude);
     }
 
-    private bool IsCompleteMove(Vector2 position, int i)
+    private bool IsCompleteMove(MoveType moveType, Vector2 position, Vector2 target)
     {
-        return (MovesData[i].MoveType == MoveType.Seek || MovesData[i].MoveType == MoveType.Pursuit) && Vector2.Distance(position, MovesData[i].Pos) <= seekAcceptableDistance ||
-               (MovesData[i].MoveType == MoveType.Flee || MovesData[i].MoveType == MoveType.Evade) && Vector2.Distance(position, MovesData[i].Pos) >= fleeAcceptableDistance;
+        return (moveType == MoveType.Seek || moveType == MoveType.Pursuit) && Vector2.Distance(position, target) <= seekAcceptableDistance ||
+               (moveType == MoveType.Flee || moveType == MoveType.Evade) && Vector2.Distance(position, target) >= fleeAcceptableDistance;
     }
 
     /// <summary>
