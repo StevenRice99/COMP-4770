@@ -393,7 +393,7 @@ MonoBehaviour:
   floorSize: {x: 5, y: 5}
   floorScale: 3
   likelyToGetDirtyChance: 0.15
-  timeBetweenDirtGeneration: 5
+  timeBetweenDirtGeneration: 8
   chanceDirty: 0.05
   materialCleanNormal: {fileID: 2100000, guid: aa8e8bd4571316249991441dcbaeac6b, type: 2}
   materialCleanLikelyToGetDirty: {fileID: 2100000, guid: 44a0a939e3007bb4c813e5d5ddb6e00c, type: 2}
