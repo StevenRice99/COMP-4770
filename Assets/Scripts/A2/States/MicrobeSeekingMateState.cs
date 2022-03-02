@@ -55,7 +55,7 @@ namespace A2.States
             // If there are no microbes in detection range to mate with, roam.
             if (microbe.TargetMicrobe == null)
             {
-                agent.AddMessage("Cannot find a mate, roaming.");
+                agent.AddMessage("Cannot find a mate, wandering.");
                 if (agent.MovesData.Count > 0)
                 {
                     return;

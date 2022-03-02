@@ -571,7 +571,7 @@ namespace A2.Managers
             microbe.Hunger = startingHunger;
             microbe.LifeSpan = lifespan;
             microbe.DetectionRange = detectionRange;
-            microbe.AssignMoveSpeed(moveSpeed);
+            microbe.moveSpeed = moveSpeed;
 
             // Setup the microbe name.
             string n = microbeType switch

@@ -46,7 +46,7 @@ namespace A2.States
             // If there are no pickups in detection range, roam.
             if (microbe.TargetPickup == null)
             {
-                agent.AddMessage("Cannot find any pickups, roaming.");
+                agent.AddMessage("Cannot find any pickups, wandering.");
                 if (agent.MovesData.Count > 0)
                 {
                     return;

@@ -1209,7 +1209,7 @@ public class AgentManager : MonoBehaviour
                 Agent.MoveType.Flee => "Flee",
                 Agent.MoveType.Pursuit => "Pursuit",
                 Agent.MoveType.Evade => "Evade",
-                _ => "Wander"
+                _ => "Error"
             };
             string toFrom = moveData.MoveType == Agent.MoveType.Seek || moveData.MoveType == Agent.MoveType.Pursuit ? " towards"
                 : moveData.MoveType == Agent.MoveType.Flee || moveData.MoveType == Agent.MoveType.Flee ? " from" : string.Empty;

@@ -13,13 +13,14 @@ public abstract class Agent : MessageComponent
         Seek,
         Flee,
         Pursuit,
-        Evade,
-        Wander
+        Evade
     }
 
     public class MoveData
     {
         private readonly Vector2 _position;
+        
+        public float DeltaTime { get; set; }
         
         public Vector2 LastPosition { get; set; }
         
@@ -55,15 +56,6 @@ public abstract class Agent : MessageComponent
             IsTransformTarget = true;
         }
 
-        public MoveData(MoveType moveType, Vector3 pos)
-        {
-            MoveType = moveType;
-            Transform = null;
-            _position = new Vector2(pos.x, pos.z);
-            LastPosition = _position;
-            IsTransformTarget = false;
-        }
-
         public MoveData(MoveType moveType, Vector2 position)
         {
             MoveType = moveType;
@@ -74,32 +66,38 @@ public abstract class Agent : MessageComponent
         }
     }
     
-    [SerializeField]
     [Min(0)]
     [Tooltip("How fast this agent can move in units per second.")]
     public float moveSpeed = 10;
     
-    [SerializeField]
     [Min(0)]
     [Tooltip("How fast this agent can increase in move speed in units per second.")]
     public float moveAcceleration = 10;
 
-    [SerializeField]
     [Min(0)]
     [Tooltip("How close an agent can be to a location its seeking or pursuing to declare it as reached?.")]
     public float seekAcceptableDistance = 0.1f;
 
-    [SerializeField]
     [Min(0)]
     [Tooltip("How far an agent can be to a location its fleeing or evading from to declare it as reached?.")]
     public float fleeAcceptableDistance = 10f;
 
-    [SerializeField]
     [Min(0)]
     [Tooltip("If the agent is not moving, ensure it comes to a complete stop when its velocity is less than this.")]
     public float restVelocity = 0.1f;
-        
-    [SerializeField]
+
+    [Min(0)]
+    [Tooltip("The radius of the wander circle when wandering.")]
+    public float wanderRadius = 1;
+
+    [Min(0)]
+    [Tooltip("The distance the wander circle is ahead of the agent when wandering.")]
+    public float wanderDistance = 1;
+
+    [Min(0)]
+    [Tooltip("The maximum amount of random displacement that can be added to the agent when wandering.")]
+    public float wanderJitter = 1;
+    
     [Min(0)]
     [Tooltip("How fast this agent can look in degrees per second.")]
     public float lookSpeed = 5;
@@ -239,6 +237,11 @@ public abstract class Agent : MessageComponent
     /// The index of the currently selected mind.
     /// </summary>
     private int _selectedMindIndex;
+
+    /// <summary>
+    /// Helper to transform wander coordinates from local to world.
+    /// </summary>
+    private Transform _wanderGuide;
     
     /// <summary>
     /// Display a green line from the agent's position to its move target and a blue line from the agent's position
@@ -252,17 +255,14 @@ public abstract class Agent : MessageComponent
             GL.Color(moveData.MoveType switch
             {
                 MoveType.Seek => Color.blue,
-                MoveType.Flee => Color.red,
                 MoveType.Pursuit => Color.cyan,
-                MoveType.Evade => Color.yellow,
+                MoveType.Flee => Color.red,
+                MoveType.Evade => new Color(1f, 0.65f, 0f),
                 _ => Color.magenta
             });
             
             Vector3 position = transform.position;
-            GL.Vertex(position);
-            GL.Vertex(new Vector3(moveData.Position.x, position.y, moveData.Position.y));
 
-            GL.Color(Color.magenta);
             GL.Vertex(position);
             GL.Vertex(position + transform.rotation * (new Vector3(moveData.MoveVector.x, position.y, moveData.MoveVector.y).normalized * 2));
         }
@@ -277,7 +277,7 @@ public abstract class Agent : MessageComponent
         
         if (LookingToTarget)
         {
-            GL.Color(Color.green);
+            GL.Color(Color.yellow);
             GL.Vertex(transform.position);
             GL.Vertex(LookTarget);
         }
@@ -297,28 +297,28 @@ public abstract class Agent : MessageComponent
 
     public void AddMoveData(MoveType moveType, Transform tr)
     {
-        if (IsCompleteMove(moveType, new Vector2(transform.position.x, transform.position.z), new Vector2(tr.position.x, tr.position.z)))
+        if (MovesData.Exists(m => m.MoveType == moveType && m.Transform == tr) || IsCompleteMove(moveType, new Vector2(transform.position.x, transform.position.z), new Vector2(tr.position.x, tr.position.z)))
         {
             return;
         }
+
+        RemoveMoveData(tr);
         MovesData.Add(new MoveData(moveType, tr));
     }
 
     public void AddMoveData(MoveType moveType, Vector3 pos)
     {
-        if (IsCompleteMove(moveType, new Vector2(transform.position.x, transform.position.z), new Vector2(pos.x, pos.z)))
-        {
-            return;
-        }
-        MovesData.Add(new MoveData(moveType, pos));
+        AddMoveData(moveType, new Vector2(pos.x, pos.z));
     }
 
     public void AddMoveData(MoveType moveType, Vector2 pos)
     {
-        if (IsCompleteMove(moveType, new Vector2(transform.position.x, transform.position.z), pos))
+        if (MovesData.Exists(m => m.MoveType == moveType && m.Transform == null && m.Position == pos) || IsCompleteMove(moveType, new Vector2(transform.position.x, transform.position.z), pos))
         {
             return;
         }
+        
+        RemoveMoveData(pos);
         MovesData.Add(new MoveData(moveType, pos));
     }
 
@@ -339,7 +339,7 @@ public abstract class Agent : MessageComponent
 
     public void RemoveMoveData(Vector2 pos)
     {
-        MovesData = MovesData.Where(m => m.Position != pos).ToList();
+        MovesData = MovesData.Where(m => m.Transform == null && m.Position != pos).ToList();
     }
 
     /// <summary>
@@ -378,24 +378,6 @@ public abstract class Agent : MessageComponent
         }
 
         return requireAll ? all : one;
-    }
-
-    /// <summary>
-    /// Assign the movement speed of the agent.
-    /// </summary>
-    /// <param name="speed">The movement speed.</param>
-    public void AssignMoveSpeed(float speed)
-    {
-        moveSpeed = Math.Abs(speed);
-    }
-
-    /// <summary>
-    /// Assign the look speed of the agent.
-    /// </summary>
-    /// <param name="speed">The look speed.</param>
-    public void AssignLookSpeed(float speed)
-    {
-        lookSpeed = Math.Abs(speed);
     }
 
     /// <summary>
@@ -556,7 +538,15 @@ public abstract class Agent : MessageComponent
     {
         // Register this agent with the manager.
         AgentManager.Singleton.AddAgent(this);
-            
+
+        if (_wanderGuide == null)
+        {
+            GameObject go = new GameObject("Wander Guide");
+            _wanderGuide = go.transform;
+            _wanderGuide.parent = transform;
+            _wanderGuide.localPosition = Vector3.zero;
+        }
+        
         // Find all minds.
         List<Mind> minds = GetComponents<Mind>().ToList();
         minds.AddRange(GetComponentsInChildren<Mind>());
@@ -587,7 +577,7 @@ public abstract class Agent : MessageComponent
         {
             actuator.Agent = this;
         }
-            
+        
         // Find all attached sensors.
         List<Sensor> sensors = GetComponents<Sensor>().ToList();
         sensors.AddRange(GetComponentsInChildren<Sensor>());
@@ -617,7 +607,7 @@ public abstract class Agent : MessageComponent
             Visuals = children[0];
         }
     }
-        
+    
     /// <summary>
     /// Implement movement behaviour.
     /// </summary>
@@ -722,6 +712,8 @@ public abstract class Agent : MessageComponent
                     MovesData.RemoveAt(i--);
                     continue;
                 }
+
+                MovesData[i].DeltaTime += deltaTime;
             
                 switch (MovesData[i].MoveType)
                 {
@@ -733,19 +725,17 @@ public abstract class Agent : MessageComponent
                         MovesData[i].MoveVector = Steering.Flee(position, MoveVelocity, target, acceleration);
                         break;
                     case MoveType.Pursuit:
-                        MovesData[i].MoveVector = Steering.Pursuit(position, MoveVelocity, target, MovesData[i].LastPosition, acceleration, deltaTime);
+                        MovesData[i].MoveVector = Steering.Pursuit(position, MoveVelocity, target, MovesData[i].LastPosition, acceleration, MovesData[i].DeltaTime);
                         break;
                     case MoveType.Evade:
-                        MovesData[i].MoveVector = Steering.Evade(position, MoveVelocity, target, MovesData[i].LastPosition, acceleration, deltaTime);
-                        break;
-                    case MoveType.Wander:
-                        MovesData[i].MoveVector = Steering.Wander(transform, target, 1, 1,1);
+                        MovesData[i].MoveVector = Steering.Evade(position, MoveVelocity, target, MovesData[i].LastPosition, acceleration, MovesData[i].DeltaTime);
                         break;
                 }
 
                 movement += MovesData[i].MoveVector;
 
                 MovesData[i].LastPosition = target;
+                MovesData[i].DeltaTime = 0;
             }
         }
 
