@@ -41,36 +41,50 @@ namespace A2.States
                 return;
             }
 
-            // If the microbe is not hungry but it is not yet an adult, ensure the microbe is sleeping.
-            if (!microbe.IsAdult)
+            // If the microbe is an adult, look for either a made or a pickup.
+            if (microbe.IsAdult)
             {
-                if (microbe.State.GetType() == typeof(MicrobeSleepingState))
+                // If the microbe is an adult and has not yet mated, set the microbe to seek a mate.
+                if (!microbe.DidMate)
+                {
+                    if (microbe.State.GetType() == typeof(MicrobeSeekingMateState))
+                    {
+                        return;
+                    }
+                    microbe.State = AgentManager.Lookup(typeof(MicrobeSeekingMateState));
+                    microbe.SetStateVisual(microbe.State);
+                    return;
+                }
+
+                // Lastly, if the microbe is not hungry, is an adult, and has mated, set the microbe to look for pickups.
+                if (microbe.State.GetType() == typeof(MicrobeSeekingPickupState))
                 {
                     return;
                 }
-                microbe.State = AgentManager.Lookup(typeof(MicrobeSleepingState));
+                
+                microbe.State = AgentManager.Lookup(typeof(MicrobeSeekingPickupState));
                 microbe.SetStateVisual(microbe.State);
                 return;
             }
 
-            // If the microbe is an adult and has not yet mated, set the microbe to seek a mate.
-            if (!microbe.DidMate)
+            // If the microbe is being hunted, evade it.
+            if (microbe.PursuerMicrobe != null)
             {
-                if (microbe.State.GetType() == typeof(MicrobeSeekingMateState))
+                if (microbe.State.GetType() == typeof(MicrobeEvadeState))
                 {
                     return;
                 }
-                microbe.State = AgentManager.Lookup(typeof(MicrobeSeekingMateState));
+                microbe.State = AgentManager.Lookup(typeof(MicrobeEvadeState));
                 microbe.SetStateVisual(microbe.State);
                 return;
             }
-
-            // Lastly, if the microbe is not hungry, is an adult, and has mated, set the microbe to look for pickups.
-            if (microbe.State.GetType() == typeof(MicrobeSeekingPickupState))
+            
+            // Otherwise the microbe goes to sleep.
+            if (microbe.State.GetType() == typeof(MicrobeSleepingState))
             {
                 return;
             }
-            microbe.State = AgentManager.Lookup(typeof(MicrobeSeekingPickupState));
+            microbe.State = AgentManager.Lookup(typeof(MicrobeSleepingState));
             microbe.SetStateVisual(microbe.State);
         }
         
@@ -82,16 +96,40 @@ namespace A2.States
         /// <returns>True if it was an eaten message, false otherwise.</returns>
         public override bool HandleEvent(Agent agent, AIEvent aiEvent)
         {
-            // If the message was anything other than an eaten message, return false;
-            if (aiEvent.EventId != (int) MicrobeManager.MicrobeEvents.Eaten || !(agent is Microbe microbe) || !(aiEvent.Sender is Microbe sender))
+            // Cast the event ID to the microbe events which have been defined for easy identification.
+            switch ((MicrobeManager.MicrobeEvents) aiEvent.EventId)
             {
-                return false;
-            }
+                // If the message is that this microbe is now being hunted.
+                case MicrobeManager.MicrobeEvents.Hunted:
+                {
+                    if (!(agent is Microbe microbe) || !(aiEvent.Sender is Microbe sender))
+                    {
+                        return false;
+                    }
+                    
+                    // Update that the microbe is being hunted.
+                    microbe.PursuerMicrobe = sender;
+                    return true;
+                }
+                // If the message is that this microbe has been eaten.
+                case MicrobeManager.MicrobeEvents.Eaten:
+                {
+                    if (!(agent is Microbe microbe) || !(aiEvent.Sender is Microbe sender))
+                    {
+                        return false;
+                    }
             
-            // Have the sender microbe eat the receiving microbe.
-            sender.Eat(microbe);
-            microbe.Die();
-            return true;
+                    // Have the sender microbe eat the receiving microbe.
+                    sender.Eat(microbe);
+                    microbe.Die();
+                    return true;
+                }
+                // Otherwise do nothing.
+                case MicrobeManager.MicrobeEvents.Impress:
+                case MicrobeManager.MicrobeEvents.Mate:
+                default:
+                    return false;
+            }
         }
     }
 }

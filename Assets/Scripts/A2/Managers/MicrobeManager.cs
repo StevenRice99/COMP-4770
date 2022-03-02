@@ -33,7 +33,8 @@ namespace A2.Managers
         {
             Eaten = 0,
             Impress,
-            Mate
+            Mate,
+            Hunted
         }
         
         /// <summary>

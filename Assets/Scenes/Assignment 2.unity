@@ -183,8 +183,8 @@ MonoBehaviour:
   maxHunger: 200
   hungerRestoredFromEating: 100
   floorRadius: 30
-  minMicrobes: 30
-  maxMicrobes: 100
+  minMicrobes: 20
+  maxMicrobes: 60
   activePickups: 5
   randomSpawnChance: 0
   minMicrobeSpeed: 5

@@ -24,6 +24,7 @@ namespace A2.States
         public override void Execute(Agent agent)
         {
             agent.AddMessage("Sleeping.");
+            agent.ClearMoveData();
         }
 
         /// <summary>

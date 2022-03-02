@@ -47,7 +47,7 @@ namespace A2.States
             if (microbe.TargetPickup == null)
             {
                 agent.AddMessage("Cannot find any pickups, roaming.");
-                if (agent.DidMove)
+                if (agent.MovesData.Count > 0)
                 {
                     return;
                 }

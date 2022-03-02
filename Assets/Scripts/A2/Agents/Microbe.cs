@@ -57,6 +57,11 @@ namespace A2.Agents
         public Microbe TargetMicrobe { get; set; }
         
         /// <summary>
+        /// The microbe that is hunting this microbe.
+        /// </summary>
+        public Microbe PursuerMicrobe { get; set; }
+        
+        /// <summary>
         /// The pickup this microbe is moving towards.
         /// </summary>
         public MicrobeBasePickup TargetPickup { get; set; }

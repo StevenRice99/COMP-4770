@@ -56,7 +56,7 @@ namespace A2.States
             if (microbe.TargetMicrobe == null)
             {
                 agent.AddMessage("Cannot find a mate, roaming.");
-                if (agent.DidMove)
+                if (agent.MovesData.Count > 0)
                 {
                     return;
                 }
@@ -148,6 +148,7 @@ namespace A2.States
                 }
                 // Otherwise do nothing.
                 case MicrobeManager.MicrobeEvents.Eaten:
+                case MicrobeManager.MicrobeEvents.Hunted:
                 default:
                     return false;
             }

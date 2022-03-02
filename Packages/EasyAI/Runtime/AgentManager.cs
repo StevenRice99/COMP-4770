@@ -1138,7 +1138,7 @@ public class AgentManager : MonoBehaviour
         }
             
         y = NextItem(y, h, p);
-        int length = 7;
+        int length = 7 + SelectedAgent.MovesData.Count;
         if (Agents.Count > 1)
         {
             length++;
@@ -1200,8 +1200,25 @@ public class AgentManager : MonoBehaviour
             y = NextItem(y, h, p);
         }
         
-        //GuiLabel(x, y, w, h, p, $"Position: {SelectedAgent.Position} | " + (SelectedAgent.MovingToTarget ? $"Moving to {SelectedAgent.MoveTarget} at {SelectedAgent.MoveVelocity} units/second." : "Not moving."));
-        //y = NextItem(y, h, p);
+        GuiLabel(x, y, w, h, p, $"Position: {SelectedAgent.transform.position} | Velocity: {SelectedAgent.MoveVelocity.magnitude}");
+        foreach (Agent.MoveData moveData in SelectedAgent.MovesData)
+        {
+            string moveType = moveData.MoveType switch
+            {
+                Agent.MoveType.Seek => "Seek",
+                Agent.MoveType.Flee => "Flee",
+                Agent.MoveType.Pursuit => "Pursuit",
+                Agent.MoveType.Evade => "Evade",
+                _ => "Wander"
+            };
+            string toFrom = moveData.MoveType == Agent.MoveType.Seek || moveData.MoveType == Agent.MoveType.Pursuit ? " towards"
+                : moveData.MoveType == Agent.MoveType.Flee || moveData.MoveType == Agent.MoveType.Flee ? " from" : string.Empty;
+            Vector3 pos3 = moveData.Tr != null ? moveData.Tr.position : Vector3.zero;
+            string pos = moveData.Tr != null ? $" ({pos3.x}, {pos3.z})" : $" ({moveData.Pos.x}, {moveData.Pos.y})";
+            y = NextItem(y, h, p);
+            GuiLabel(x, y, w, h, p, $"{moveType}{toFrom}{pos}");
+        }
+        y = NextItem(y, h, p);
         GuiLabel(x, y, w, h, p, $"Rotation: {SelectedAgent.transform.rotation.eulerAngles.y} | " + (SelectedAgent.LookingToTarget ? $"Looking to {SelectedAgent.LookTarget} at {SelectedAgent.LookVelocity} degrees/second." : "Not looking."));
 
         // Display any custom details implemented for the agent.

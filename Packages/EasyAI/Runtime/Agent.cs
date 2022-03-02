@@ -164,16 +164,6 @@ public abstract class Agent : MessageComponent
     /// True if the agent is trying to look to a target, false otherwise.
     /// </summary>
     public bool LookingToTarget { get; private set; }
-        
-    /// <summary>
-    /// True if the agent moved in the last update call, false otherwise.
-    /// </summary>
-    public bool DidMove { get; private set; }
-
-    /// <summary>
-    /// True if the agent looked in the last update call, false otherwise.
-    /// </summary>
-    public bool DidLook { get; private set; }
 
     /// <summary>
     /// The performance measure of the agent.
@@ -592,7 +582,6 @@ public abstract class Agent : MessageComponent
         if (!LookingToTarget)
         {
             LookVelocity = 0;
-            DidLook = false;
             return;
         }
             
@@ -604,7 +593,6 @@ public abstract class Agent : MessageComponent
         if (visuals.position == target)
         {
             LookVelocity = 0;
-            DidLook = false;
             return;
         }
 
@@ -613,7 +601,6 @@ public abstract class Agent : MessageComponent
 
         if (Quaternion.LookRotation(Vector3.RotateTowards(visuals.forward, target - visuals.position, float.MaxValue, 0)) == rotation)
         {
-            DidLook = false;
             LookVelocity = 0;
             return;
         }
@@ -623,8 +610,6 @@ public abstract class Agent : MessageComponent
 
         rotation = Quaternion.LookRotation(Vector3.RotateTowards(visuals.forward, target - visuals.position, LookVelocity * Time.deltaTime, 0.0f));
         Visuals.rotation = rotation;
-        DidLook = true;
-        AddMessage($"Looked towards {LookTarget}.");
     }
 
     protected virtual void Start()
@@ -666,12 +651,12 @@ public abstract class Agent : MessageComponent
     protected void CalculateMoveVelocity(float deltaTime)
     {
         Vector2 movement = Vector2.zero;
+        float acceleration = moveAcceleration > 0 ? moveAcceleration : int.MaxValue;
 
         if (MovesData.Count > 0)
         {
             Vector3 positionVector3 = transform.position;
             Vector2 position = new Vector2(positionVector3.x, positionVector3.z);
-            float acceleration = moveAcceleration > 0 ? moveAcceleration : int.MaxValue;
             for (int i = 0; i < MovesData.Count; i++)
             {
                 if (MovesData[i].Tr != null)
@@ -711,20 +696,15 @@ public abstract class Agent : MessageComponent
 
         if (movement == Vector2.zero)
         {
-            DidMove = false;
-            MoveVelocity = Vector2.Lerp(MoveVelocity, Vector2.zero, moveAcceleration * deltaTime);
-        }
-        else
-        {
-            DidMove = true;
-            MoveVelocity += movement * deltaTime;
-            if (MoveVelocity.magnitude > moveSpeed)
-            {
-                MoveVelocity = MoveVelocity.normalized * moveSpeed;
-            }
+            MoveVelocity = Vector2.Lerp(MoveVelocity, Vector2.zero, acceleration * deltaTime);
+            return;
         }
 
-        Debug.Log(MoveVelocity.magnitude);
+        MoveVelocity += movement * deltaTime;
+        if (MoveVelocity.magnitude > moveSpeed)
+        {
+            MoveVelocity = MoveVelocity.normalized * moveSpeed;
+        }
     }
 
     private bool IsCompleteMove(MoveType moveType, Vector2 position, Vector2 target)

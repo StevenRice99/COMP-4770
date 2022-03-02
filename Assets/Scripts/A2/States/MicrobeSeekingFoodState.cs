@@ -19,6 +19,10 @@ namespace A2.States
             agent.AddMessage("Starting to search for food.");
         }
 
+        /// <summary>
+        /// Called when an agent is in this state.
+        /// </summary>
+        /// <param name="agent">The agent.</param>
         public override void Execute(Agent agent)
         {
             if (!(agent is Microbe microbe))
@@ -36,7 +40,7 @@ namespace A2.States
             if (microbe.TargetMicrobe == null)
             {
                 agent.AddMessage("Cannot find any food, roaming.");
-                if (agent.DidMove)
+                if (agent.MovesData.Count > 0)
                 {
                     return;
                 }
@@ -56,6 +60,7 @@ namespace A2.States
             // Otherwise move towards the microbe it is tracking.
             agent.AddMessage($"Hunting {microbe.TargetMicrobe.name}.");
             agent.SetMoveData(Agent.MoveType.Pursuit, microbe.TargetMicrobe.transform);
+            agent.FireEvent(microbe.TargetMicrobe, (int) MicrobeManager.MicrobeEvents.Hunted);
         }
 
         /// <summary>
