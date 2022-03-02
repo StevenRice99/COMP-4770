@@ -166,11 +166,6 @@ public abstract class Agent : MessageComponent
     /// The current move velocity if move acceleration is being used.
     /// </summary>
     public Vector2 MoveVelocity { get; protected set; }
-
-    /// <summary>
-    /// The current look velocity if look acceleration is being used.
-    /// </summary>
-    public float LookVelocity { get; protected set; }
         
     /// <summary>
     /// The time passed since the last time the agent's mind made decisions. Use this instead of Time.DeltaTime.
@@ -463,7 +458,6 @@ public abstract class Agent : MessageComponent
     public void StopLookAtTarget()
     {
         LookingToTarget = false;
-        LookVelocity = 0;
     }
 
     /// <summary>
@@ -623,21 +617,30 @@ public abstract class Agent : MessageComponent
     /// </summary>
     public void Look()
     {
-        // If the agent should not be looking simply return.
+        Transform visuals = Visuals;
+
+        Vector3 target;
+        
+        // If the agent has no otherwise set point to look, look in the direction it is moving.
         if (!LookingToTarget)
         {
-            LookVelocity = 0;
-            return;
+            if (MoveVelocity == Vector2.zero)
+            {
+                return;
+            }
+            
+            Transform t = transform;
+            target = t.position + t.rotation * MoveVelocity3.normalized;
         }
-            
-        // We only want to rotate along the Y axis so update the target rotation to be at the same Y level.
-        Transform visuals = Visuals;
-        Vector3 target = new Vector3(LookTarget.x, visuals.position.y, LookTarget.z);
-            
+        else
+        {
+            // We only want to rotate along the Y axis so update the target rotation to be at the same Y level.
+            target = new Vector3(LookTarget.x, visuals.position.y, LookTarget.z);
+        }
+
         // If the position to look at is the current position, simply return.
         if (visuals.position == target)
         {
-            LookVelocity = 0;
             return;
         }
 
@@ -646,14 +649,10 @@ public abstract class Agent : MessageComponent
 
         if (Quaternion.LookRotation(Vector3.RotateTowards(visuals.forward, target - visuals.position, float.MaxValue, 0)) == rotation)
         {
-            LookVelocity = 0;
             return;
         }
 
-        // Calculate how fast we can look this frame.
-        LookVelocity = lookSpeed;
-
-        rotation = Quaternion.LookRotation(Vector3.RotateTowards(visuals.forward, target - visuals.position, LookVelocity * Time.deltaTime, 0.0f));
+        rotation = Quaternion.LookRotation(Vector3.RotateTowards(visuals.forward, target - visuals.position, lookSpeed * Time.deltaTime, 0.0f));
         Visuals.rotation = rotation;
     }
 
