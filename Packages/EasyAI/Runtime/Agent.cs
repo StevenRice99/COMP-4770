@@ -246,9 +246,32 @@ public abstract class Agent : MessageComponent
     /// </summary>
     public override void DisplayGizmos()
     {
+        foreach (MoveData moveData in MovesData)
+        {
+            GL.Color(moveData.MoveType switch
+            {
+                MoveType.Seek => Color.blue,
+                MoveType.Flee => Color.red,
+                MoveType.Pursuit => Color.cyan,
+                MoveType.Evade => Color.yellow,
+                _ => Color.magenta
+            });
+            Vector3 position = transform.position;
+            GL.Vertex(position);
+            GL.Vertex(new Vector3(moveData.Position.x, position.y, moveData.Position.y));
+        }
+
+        if (MoveVelocity != Vector2.zero)
+        {
+            GL.Color(Color.green);
+            Vector3 position = transform.position;
+            GL.Vertex(position);
+            GL.Vertex(position + transform.rotation * (MoveVelocity3.normalized * 2));
+        }
+        
         if (LookingToTarget)
         {
-            GL.Color(Color.blue);
+            GL.Color(Color.green);
             GL.Vertex(transform.position);
             GL.Vertex(LookTarget);
         }
