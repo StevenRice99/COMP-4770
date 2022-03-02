@@ -28,7 +28,7 @@ namespace A1.Sensors
             // Create the percept with the dirt level of the closest floor.
             DirtyPercept percept = new DirtyPercept
             {
-                Floor = floors.OrderBy(f => Vector3.Distance(Position, f.transform.position)).First()
+                Floor = floors.OrderBy(f => Vector3.Distance(Agent.Position, f.transform.position)).First()
             };
             
             AddMessage(percept.IsDirty ? "Current floor tile is dirty." : "Current floor tile is not dirty.");

@@ -42,7 +42,7 @@ namespace A2.States
                 }
 
                 Vector3 position = Random.insideUnitSphere * MicrobeManager.MicrobeManagerSingleton.FloorRadius;
-                agent.MoveToLookAtTarget(new Vector3(position.x, 0, position.z));
+                agent.SetMoveData(Agent.MoveType.Seek, new Vector3(position.x, 0, position.z));
                 return;
             }
 
@@ -55,7 +55,7 @@ namespace A2.States
             
             // Otherwise move towards the microbe it is tracking.
             agent.AddMessage($"Hunting {microbe.TargetMicrobe.name}.");
-            agent.MoveToLookAtTarget(microbe.TargetMicrobe.transform);
+            agent.SetMoveData(Agent.MoveType.Seek, microbe.TargetMicrobe.transform);
         }
 
         /// <summary>

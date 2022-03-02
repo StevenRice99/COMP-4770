@@ -51,7 +51,7 @@ namespace A1.Actuators
             }
 
             // Increment how long the floor has been getting cleaned for.
-            timeSpentCleaning += DeltaTime;
+            timeSpentCleaning += Agent.DeltaTime;
 
             // If the tile has not been cleaned long enough, return false as it has not finished getting cleaned.
             if (timeSpentCleaning < timeToClean)

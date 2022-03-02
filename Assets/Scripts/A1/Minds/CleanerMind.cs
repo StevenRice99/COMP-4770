@@ -24,12 +24,12 @@ namespace A1.Minds
             {
                 // Stop movement and start cleaning the current floor tile.
                 AddMessage("Cleaning current floor tile.");
-                StopMoveToTarget();
+                Agent.ClearMoveData();
                 return new Action[] { new CleanAction { Floor = floorToClean } };
             }
 
             // Otherwise determine where to move which will be the closest floor with the highest dirt level or the weighted midpoint.
-            MoveToLookAtTarget(DetermineLocationToMove(percepts));
+            Agent.SetMoveData(Agent.MoveType.Seek,DetermineLocationToMove(percepts));
             return null;
         }
 

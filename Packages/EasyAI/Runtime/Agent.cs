@@ -8,26 +8,73 @@ using UnityEngine;
 /// </summary>
 public abstract class Agent : MessageComponent
 {
+    public enum MoveType : byte
+    {
+        Seek,
+        Flee,
+        Pursuit,
+        Evade,
+        Wander
+    }
+
+    public class MoveData
+    {
+        public MoveType MoveType { get; }
+        public Transform Tr { get; }
+        public Vector2 Pos { get; set; }
+        
+        public Vector2 LastPos { get; set; }
+
+        public MoveData(MoveType moveType, Transform tr)
+        {
+            MoveType = moveType;
+            Tr = tr;
+            Pos = tr.position;
+            LastPos = Pos;
+        }
+
+        public MoveData(MoveType moveType, Vector3 pos)
+        {
+            MoveType = moveType;
+            Tr = null;
+            Pos = new Vector2(pos.x, pos.z);
+            LastPos = Pos;
+        }
+
+        public MoveData(MoveType moveType, Vector2 pos)
+        {
+            MoveType = moveType;
+            Tr = null;
+            Pos = pos;
+            LastPos = Pos;
+        }
+    }
+    
     [SerializeField]
     [Min(0)]
     [Tooltip("How fast this agent can move in units per second.")]
     protected float moveSpeed = 10;
+    
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("How fast this agent can increase in move speed in units per second.")]
+    protected float moveAcceleration = 10;
+
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("How close an agent can be to a location its seeking or pursuing to declare it as reached?.")]
+    protected float seekAcceptableDistance = 0.25f;
+
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("How far an agent can be to a location its fleeing or evading from to declare it as reached?.")]
+    protected float fleeAcceptableDistance = 10f;
         
     [SerializeField]
     [Min(0)]
     [Tooltip("How fast this agent can look in degrees per second.")]
     protected float lookSpeed = 5;
 
-    [SerializeField]
-    [Min(0)]
-    [Tooltip("How fast the agent's movement can accelerate. Set to zero for instantaneous acceleration.")]
-    protected float moveAcceleration;
-
-    [SerializeField]
-    [Min(0)]
-    [Tooltip("How fast the agent's rotation can accelerate Set to zero for instantaneous acceleration.")]
-    protected float lookAcceleration;
-    
     [SerializeField]
     [Tooltip("The global state the agent is in. Initialize it with the global state to start it.")]
     private State globalState;
@@ -98,19 +145,14 @@ public abstract class Agent : MessageComponent
     public float LookSpeed => lookSpeed;
 
     /// <summary>
-    /// Getter for the move acceleration.
+    /// The current move velocity if move acceleration is being used as a Vector3.
     /// </summary>
-    public float MoveAcceleration => moveAcceleration;
-
-    /// <summary>
-    /// Getter for the look acceleration.
-    /// </summary>
-    public float LookAcceleration => lookAcceleration;
+    public Vector3 MoveVelocity3 => new Vector3(MoveVelocity.x, 0, MoveVelocity.y);
 
     /// <summary>
     /// The current move velocity if move acceleration is being used.
     /// </summary>
-    public float MoveVelocity { get; protected set; }
+    public Vector2 MoveVelocity { get; protected set; }
 
     /// <summary>
     /// The current look velocity if look acceleration is being used.
@@ -121,21 +163,11 @@ public abstract class Agent : MessageComponent
     /// The time passed since the last time the agent's mind made decisions. Use this instead of Time.DeltaTime.
     /// </summary>
     public float DeltaTime { get; set; }
-        
-    /// <summary>
-    /// The target the agent is currently trying to move towards.
-    /// </summary>
-    public Vector3 MoveTarget { get; private set; }
 
     /// <summary>
     /// The target the agent is currently trying to look towards.
     /// </summary>
     public Vector3 LookTarget { get; private set; }
-
-    /// <summary>
-    /// True if the agent is trying to move to a target, false otherwise.
-    /// </summary>
-    public bool MovingToTarget { get; private set; }
 
     /// <summary>
     /// True if the agent is trying to look to a target, false otherwise.
@@ -161,7 +193,7 @@ public abstract class Agent : MessageComponent
     /// Get the currently selected mind of the agent.
     /// </summary>
     public Mind SelectedMind => Minds != null && Minds.Length > 0 ? Minds[_selectedMindIndex] : null;
-        
+    
     /// <summary>
     /// The mind of this agent.
     /// </summary>
@@ -197,6 +229,8 @@ public abstract class Agent : MessageComponent
     /// </summary>
     public PerformanceMeasure PerformanceMeasure { get; private set; }
 
+    public List<MoveData> MovesData { get; private set; } = new List<MoveData>();
+
     /// <summary>
     /// The position of this agent.
     /// </summary>
@@ -229,19 +263,54 @@ public abstract class Agent : MessageComponent
     /// </summary>
     public override void DisplayGizmos()
     {
-        if (MovingToTarget)
-        {
-            GL.Color(Color.green);
-            GL.Vertex(Position);
-            GL.Vertex(MoveTarget);
-        }
-
-        if (LookingToTarget && (!MovingToTarget || MoveTarget != LookTarget))
+        if (LookingToTarget)
         {
             GL.Color(Color.blue);
             GL.Vertex(Position);
             GL.Vertex(LookTarget);
         }
+    }
+
+    public void SetMoveData(MoveType moveType, Transform tr)
+    {
+        MovesData.Clear();
+        AddMoveData(moveType, tr);
+    }
+
+    public void SetMoveData(MoveType moveType, Vector3 pos)
+    {
+        MovesData.Clear();
+        AddMoveData(moveType, pos);
+    }
+
+    public void AddMoveData(MoveType moveType, Transform tr)
+    {
+        MovesData.Add(new MoveData(moveType, tr));
+    }
+
+    public void AddMoveData(MoveType moveType, Vector3 pos)
+    {
+        MovesData.Add(new MoveData(moveType, pos));
+    }
+
+    public void ClearMoveData()
+    {
+        MovesData.Clear();
+    }
+
+    public void RemoveMoveData(Transform tr)
+    {
+        MovesData = MovesData.Where(m => m.Tr != tr).ToList();
+    }
+
+    public void RemoveMoveData(Vector3 pos)
+    {
+        RemoveMoveData(new Vector2(pos.x, pos.z));
+    }
+
+    public void RemoveMoveData(Vector2 pos)
+    {
+        MovesData = MovesData.Where(m => m.Pos != pos || m.Tr != null).ToList();
     }
 
     /// <summary>
@@ -333,48 +402,6 @@ public abstract class Agent : MessageComponent
     }
 
     /// <summary>
-    /// Resume movement towards the move target currently assigned to the agent.
-    /// </summary>
-    public void MoveToTarget()
-    {
-        MovingToTarget = MoveTarget != transform.position;
-    }
-
-    /// <summary>
-    /// Set a target position for the agent to move towards.
-    /// </summary>
-    /// <param name="target">The target position to move to.</param>
-    public void MoveToTarget(Vector3 target)
-    {
-        MoveTarget = target;
-        MoveToTarget();
-    }
-
-    /// <summary>
-    /// Set a target transform for the agent to move towards.
-    /// </summary>
-    /// <param name="target">The target transform to move to.</param>
-    public void MoveToTarget(Transform target)
-    {
-        if (target == null)
-        {
-            StopMoveToTarget();
-            return;
-        }
-
-        MoveToTarget(target.position);
-    }
-
-    /// <summary>
-    /// Have the agent stop moving towards its move target.
-    /// </summary>
-    public void StopMoveToTarget()
-    {
-        MovingToTarget = false;
-        MoveVelocity = 0;
-    }
-
-    /// <summary>
     /// Resume looking towards the look target currently assigned to the agent.
     /// </summary>
     public void LookAtTarget()
@@ -414,49 +441,6 @@ public abstract class Agent : MessageComponent
     {
         LookingToTarget = false;
         LookVelocity = 0;
-    }
-
-    /// <summary>
-    /// Resume moving towards the move target currently assigned and looking towards the look target currently assigned to the agent.
-    /// </summary>
-    public void MoveToLookAtTarget()
-    {
-        MoveToTarget();
-        LookAtTarget();
-    }
-
-    /// <summary>
-    /// Set a target position for the agent to move and look towards.
-    /// </summary>
-    /// <param name="target">The target position to move and look to.</param>
-    public void MoveToLookAtTarget(Vector3 target)
-    {
-        MoveToTarget(target);
-        LookAtTarget(target);
-    }
-
-    /// <summary>
-    /// Set a target transform for the agent to move and look towards.
-    /// </summary>
-    /// <param name="target">The target transform to move and look to.</param>
-    public void MoveToLookAtTarget(Transform target)
-    {
-        if (target == null)
-        {
-            StopMoveToLookAtTarget();
-            return;
-        }
-            
-        MoveToLookAtTarget(target.position);
-    }
-        
-    /// <summary>
-    /// Have the agent stop moving towards its move target and looking towards its look target.
-    /// </summary>
-    public void StopMoveToLookAtTarget()
-    {
-        StopMoveToTarget();
-        StopLookAtTarget();
     }
 
     /// <summary>
@@ -647,7 +631,7 @@ public abstract class Agent : MessageComponent
         }
 
         // Calculate how fast we can look this frame.
-        LookVelocity = lookAcceleration <= 0 ? lookSpeed : Mathf.Clamp(LookVelocity + lookAcceleration * Time.deltaTime, 0, lookSpeed);
+        LookVelocity = lookSpeed;
 
         rotation = Quaternion.LookRotation(Vector3.RotateTowards(visuals.forward, target - visuals.position, LookVelocity * Time.deltaTime, 0.0f));
         Visuals.rotation = rotation;
@@ -693,13 +677,78 @@ public abstract class Agent : MessageComponent
     /// <param name="deltaTime">The elapsed time step.</param>
     protected void CalculateMoveVelocity(float deltaTime)
     {
-        if (moveAcceleration <= 0)
+        DidMove = false;
+        Vector2 movement = Vector2.zero;
+        Vector3 positionVector3 = transform.position;
+        Vector2 position = new Vector2(positionVector3.x, positionVector3.z);
+        float acceleration = moveAcceleration > 0 ? moveAcceleration : int.MaxValue;
+        for (int i = 0; i < MovesData.Count; i++)
         {
-            MoveVelocity = moveSpeed;
-            return;
+            if (MovesData[i].Tr != null)
+            {
+                Vector3 tr3 = MovesData[i].Tr.position;
+                MovesData[i].Pos = new Vector2(tr3.x, tr3.z);
+            }
+            
+            if (position == MovesData[i].Pos || IsCompleteMove(position, i))
+            {
+                MovesData.RemoveAt(i--);
+                continue;
+            }
+
+            Vector2 move = Vector2.zero;
+            switch (MovesData[i].MoveType)
+            {
+                case MoveType.Seek:
+                    move = Steering.Seek(position, MoveVelocity, MovesData[i].Pos, acceleration);
+                    break;
+                case MoveType.Flee:
+                    move = Steering.Flee(position, MoveVelocity, MovesData[i].Pos, acceleration);
+                    break;
+                case MoveType.Pursuit:
+                    move = Steering.Pursuit(position, MoveVelocity, MovesData[i].Pos, MovesData[i].LastPos, acceleration, deltaTime);
+                    break;
+                case MoveType.Evade:
+                    move = Steering.Evade(position, MoveVelocity, MovesData[i].Pos, MovesData[i].LastPos, acceleration, deltaTime);
+                    break;
+                case MoveType.Wander:
+                    move = Steering.Wander(transform, MovesData[i].Pos, 1, 1,1);
+                    break;
+            }
+
+            if (move != Vector2.zero)
+            {
+                DidMove = true;
+            }
+            
+            movement += move;
+            if (position + move == MovesData[i].Pos || IsCompleteMove(position, i))
+            {
+                MovesData.RemoveAt(i--);
+                continue;
+            }
+
+            MovesData[i].LastPos = MovesData[i].Pos;
         }
 
-        MoveVelocity = Mathf.Clamp(MoveVelocity + moveAcceleration * deltaTime, 0, moveSpeed);
+        MoveVelocity += movement * deltaTime;
+        
+        if (movement == Vector2.zero)
+        {
+            MoveVelocity = Vector2.zero;
+        }
+        else if (MoveVelocity.magnitude > moveSpeed)
+        {
+            MoveVelocity = MoveVelocity.normalized * moveSpeed;
+        }
+        
+        Debug.Log(MoveVelocity.magnitude);
+    }
+
+    private bool IsCompleteMove(Vector2 position, int i)
+    {
+        return (MovesData[i].MoveType == MoveType.Seek || MovesData[i].MoveType == MoveType.Pursuit) && Vector2.Distance(position, MovesData[i].Pos) <= seekAcceptableDistance ||
+               (MovesData[i].MoveType == MoveType.Flee || MovesData[i].MoveType == MoveType.Evade) && Vector2.Distance(position, MovesData[i].Pos) >= fleeAcceptableDistance;
     }
 
     /// <summary>
