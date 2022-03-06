@@ -30,6 +30,9 @@ public static class Steering
         float lookAheadTime = toPursuer.magnitude / (speed + Vector2.Distance(pursuer, pursuerLastPosition) * deltaTime);
         return Flee(position, velocity, pursuer + (pursuer - pursuerLastPosition) / deltaTime * lookAheadTime, speed);
     }
-    
-    // aRandom = Random.value - Random.value;
+
+    public static float Wander(float currentAngle, float maxWanderTurn)
+    {
+        return currentAngle + (Random.value - Random.value) * maxWanderTurn;
+    }
 }

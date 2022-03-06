@@ -5216,6 +5216,7 @@ MonoBehaviour:
   moveAcceleration: 10
   seekAcceptableDistance: 0.1
   fleeAcceptableDistance: 10
+  restVelocity: 0.1
   lookSpeed: 5
   globalState: {fileID: 0}
   state: {fileID: 0}

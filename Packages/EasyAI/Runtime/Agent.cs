@@ -85,22 +85,14 @@ public abstract class Agent : MessageComponent
     [Min(0)]
     [Tooltip("If the agent is not moving, ensure it comes to a complete stop when its velocity is less than this.")]
     public float restVelocity = 0.1f;
-
-    [Min(0)]
-    [Tooltip("The radius of the wander circle when wandering.")]
-    public float wanderRadius = 1;
-
-    [Min(0)]
-    [Tooltip("The distance the wander circle is ahead of the agent when wandering.")]
-    public float wanderDistance = 1;
-
-    [Min(0)]
-    [Tooltip("The maximum amount of random displacement that can be added to the agent when wandering.")]
-    public float wanderJitter = 1;
     
     [Min(0)]
     [Tooltip("How fast this agent can look in degrees per second.")]
     public float lookSpeed = 5;
+
+    [Min(0)]
+    [Tooltip("How many degrees at max this agent could shift when wandering.")]
+    public float maxWanderTurn = 50;
 
     [SerializeField]
     [Tooltip("The global state the agent is in. Initialize it with the global state to start it.")]
@@ -155,6 +147,11 @@ public abstract class Agent : MessageComponent
             }
         }
     }
+    
+    /// <summary>
+    /// Whether this agent should wander when it has no other movement data types.
+    /// </summary>
+    public bool Wander { get; set; }
 
     /// <summary>
     /// The previous state the agent was in.
@@ -239,9 +236,14 @@ public abstract class Agent : MessageComponent
     private int _selectedMindIndex;
 
     /// <summary>
-    /// Helper to transform wander coordinates from local to world.
+    /// Helper transform for storing the wander guide.
     /// </summary>
-    private Transform _wanderGuide;
+    private Transform _wanderRoot;
+
+    /// <summary>
+    /// Helper transform for storing the wander forward.
+    /// </summary>
+    private Transform _wanderForward;
     
     /// <summary>
     /// Display a green line from the agent's position to its move target and a blue line from the agent's position
@@ -538,14 +540,16 @@ public abstract class Agent : MessageComponent
     {
         // Register this agent with the manager.
         AgentManager.Singleton.AddAgent(this);
-
-        if (_wanderGuide == null)
-        {
-            GameObject go = new GameObject("Wander Guide");
-            _wanderGuide = go.transform;
-            _wanderGuide.parent = transform;
-            _wanderGuide.localPosition = Vector3.zero;
-        }
+        
+        // Setup the wander guide.
+        GameObject go = new GameObject("Wander Root");
+        _wanderRoot = go.transform;
+        _wanderRoot.parent = transform;
+        _wanderRoot.localPosition = Vector3.zero;
+        go = new GameObject("Wander Forward");
+        _wanderForward = go.transform;
+        _wanderForward.parent = _wanderRoot;
+        _wanderForward.localPosition = new Vector3(0, 0, 1);
         
         // Find all minds.
         List<Mind> minds = GetComponents<Mind>().ToList();
@@ -561,10 +565,6 @@ public abstract class Agent : MessageComponent
         if (PerformanceMeasure == null)
         {
             PerformanceMeasure = GetComponentInChildren<PerformanceMeasure>();
-            if (PerformanceMeasure == null)
-            {
-                PerformanceMeasure = FindObjectsOfType<PerformanceMeasure>().FirstOrDefault(m => m.Agent == null);
-            }
         }
 
         ConfigurePerformanceMeasure();
@@ -593,7 +593,7 @@ public abstract class Agent : MessageComponent
         Transform[] children = GetComponentsInChildren<Transform>();
         if (children.Length == 0)
         {
-            GameObject go = new GameObject("Visuals");
+            go = new GameObject("Visuals");
             Visuals = go.transform;
             go.transform.parent = transform;
             go.transform.localPosition = Vector3.zero;
@@ -632,6 +632,7 @@ public abstract class Agent : MessageComponent
             
             Transform t = transform;
             target = t.position + t.rotation * MoveVelocity3.normalized;
+            target = new Vector3(target.x, visuals.position.y, target.z);
         }
         else
         {
@@ -661,6 +662,16 @@ public abstract class Agent : MessageComponent
     protected virtual void Start()
     {
         Setup();
+        
+        if (globalState != null)
+        {
+            globalState.Enter(this);
+        }
+
+        if (state != null)
+        {
+            state.Enter(this);
+        }
     }
 
     protected virtual void OnEnable()
@@ -697,12 +708,13 @@ public abstract class Agent : MessageComponent
     protected void CalculateMoveVelocity(float deltaTime)
     {
         Vector2 movement = Vector2.zero;
-        float acceleration = moveAcceleration > 0 ? moveAcceleration : int.MaxValue;
+        float acceleration = moveAcceleration > 0 ? moveAcceleration : float.MaxValue;
+        Vector3 positionVector3 = transform.position;
+        Vector2 position = new Vector2(positionVector3.x, positionVector3.z);
 
         if (MovesData.Count > 0)
         {
-            Vector3 positionVector3 = transform.position;
-            Vector2 position = new Vector2(positionVector3.x, positionVector3.z);
+            _wanderRoot.transform.localRotation = Visuals.rotation;
             for (int i = 0; i < MovesData.Count; i++)
             {
                 Vector2 target = MovesData[i].Position;
@@ -718,7 +730,6 @@ public abstract class Agent : MessageComponent
                 switch (MovesData[i].MoveType)
                 {
                     case MoveType.Seek:
-                        
                         MovesData[i].MoveVector = Steering.Seek(position, MoveVelocity, target, acceleration);
                         break;
                     case MoveType.Flee:
@@ -738,7 +749,14 @@ public abstract class Agent : MessageComponent
                 MovesData[i].DeltaTime = 0;
             }
         }
-
+        else if (Wander)
+        {
+            _wanderRoot.transform.localRotation = Quaternion.Euler(0, Steering.Wander(_wanderRoot.transform.rotation.eulerAngles.y, maxWanderTurn), 0);
+            Vector3 wander3 = _wanderForward.position;
+            movement += Steering.Seek(position, MoveVelocity, new Vector2(wander3.x, wander3.z), acceleration);
+        }
+        
+        MoveVelocity += movement * deltaTime;
         if (movement == Vector2.zero)
         {
             MoveVelocity = Vector2.Lerp(MoveVelocity, Vector2.zero, acceleration * deltaTime);
@@ -749,7 +767,6 @@ public abstract class Agent : MessageComponent
             return;
         }
 
-        MoveVelocity += movement * deltaTime;
         if (MoveVelocity.magnitude > moveSpeed)
         {
             MoveVelocity = MoveVelocity.normalized * moveSpeed;

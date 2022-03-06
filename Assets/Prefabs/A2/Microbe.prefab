@@ -50,10 +50,8 @@ MonoBehaviour:
   seekAcceptableDistance: 0.1
   fleeAcceptableDistance: 10
   restVelocity: 0.1
-  wanderRadius: 1
-  wanderDistance: 1
-  wanderJitter: 1
   lookSpeed: 5
+  maxWanderTurn: 30
   globalState: {fileID: 11400000, guid: 1c5677af39d17c748bb3dbf33fc8c7cb, type: 2}
   state: {fileID: 11400000, guid: 0dbbbbfc37da2304bbd48180d5f98c02, type: 2}
   stateVisualization: {fileID: 6820371204410465446}

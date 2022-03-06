@@ -3,10 +3,10 @@
 namespace A2.States
 {
     /// <summary>
-    /// Sleeping state for the microbe, doesn't have any actions and only logs messages.
+    /// Wandering state for the microbe, doesn't have any actions and only logs messages.
     /// </summary>
-    [CreateAssetMenu(menuName = "A2/States/Microbe Sleeping State")]
-    public class MicrobeSleepingState : State
+    [CreateAssetMenu(menuName = "A2/States/Microbe Wandering State")]
+    public class MicrobeWanderingState : State
     {
         /// <summary>
         /// Called when an agent first enters this state.
@@ -14,7 +14,9 @@ namespace A2.States
         /// <param name="agent">The agent.</param>
         public override void Enter(Agent agent)
         {
-            agent.AddMessage("Going to sleep.");
+            agent.AddMessage("Nothing to do, starting to wander.");
+            agent.ClearMoveData();
+            agent.Wander = true;
         }
 
         /// <summary>
@@ -23,8 +25,7 @@ namespace A2.States
         /// <param name="agent">The agent.</param>
         public override void Execute(Agent agent)
         {
-            agent.AddMessage("Sleeping.");
-            agent.ClearMoveData();
+            agent.AddMessage("Wandering.");
         }
 
         /// <summary>
@@ -33,7 +34,8 @@ namespace A2.States
         /// <param name="agent">The agent.</param>
         public override void Exit(Agent agent)
         {
-            agent.AddMessage("Waking up.");
+            agent.AddMessage("Got something to do, stopping wandering.");
+            agent.Wander = false;
         }
     }
 }

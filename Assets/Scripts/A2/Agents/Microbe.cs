@@ -152,7 +152,7 @@ namespace A2.Agents
                 return;
             }
             
-            if (state as MicrobeSleepingState)
+            if (state as MicrobeWanderingState)
             {
                 stateVisualization.material = MicrobeManager.MicrobeManagerSingleton.SleepingIndicatorMaterial;
                 return;
@@ -226,6 +226,8 @@ namespace A2.Agents
             _audioSource = GetComponent<AudioSource>();
             
             PlayAudio(spawnAudio);
+
+            Visuals.rotation = Quaternion.Euler(new Vector3(0, Random.Range(0f, 360f), 0));
         }
 
         /// <summary>
