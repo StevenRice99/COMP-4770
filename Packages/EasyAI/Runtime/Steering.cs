@@ -35,4 +35,9 @@ public static class Steering
     {
         return currentAngle + (Random.value - Random.value) * maxWanderTurn;
     }
+
+    public static Quaternion Face(Vector3 position, Vector3 forward, Vector3 target, float lookSpeed, float deltaTime)
+    {
+        return Quaternion.LookRotation(Vector3.RotateTowards(forward, target - position, lookSpeed * deltaTime, 0.0f));
+    }
 }

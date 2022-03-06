@@ -646,17 +646,8 @@ public abstract class Agent : MessageComponent
             return;
         }
 
-        // Look towards the target.
-        Quaternion rotation = Visuals.rotation;
-
-        target -= visuals.position;
-        if (Quaternion.LookRotation(Vector3.RotateTowards(visuals.forward, target, float.MaxValue, 0)) == rotation)
-        {
-            return;
-        }
-
-        rotation = Quaternion.LookRotation(Vector3.RotateTowards(visuals.forward, target, lookSpeed * Time.deltaTime, 0.0f));
-        Visuals.rotation = rotation;
+        // Face towards the target.
+        Visuals.rotation = Steering.Face(visuals.position, visuals.forward, target, lookSpeed, Time.deltaTime);
     }
 
     protected virtual void Start()
