@@ -5218,6 +5218,7 @@ MonoBehaviour:
   fleeAcceptableDistance: 10
   restVelocity: 0.1
   lookSpeed: 5
+  maxWanderTurn: 30
   globalState: {fileID: 0}
   state: {fileID: 0}
 --- !u!114 &3411514612979016314

@@ -8,6 +8,9 @@ using UnityEngine;
 /// </summary>
 public abstract class Agent : MessageComponent
 {
+    /// <summary>
+    /// The various move types available for agents.
+    /// </summary>
     public enum MoveType : byte
     {
         Seek,
@@ -16,22 +19,49 @@ public abstract class Agent : MessageComponent
         Evade
     }
 
+    /// <summary>
+    /// Class to store all targets the agent is moving in relation to.
+    /// </summary>
     public class MoveData
     {
+        /// <summary>
+        /// Store the position which is only used if the transform is null.
+        /// </summary>
         private readonly Vector2 _position;
         
+        /// <summary>
+        /// How much time has elapsed since the last time this was called for predictive move types.
+        /// </summary>
         public float DeltaTime { get; set; }
         
+        /// <summary>
+        /// The last position this was in since 
+        /// </summary>
         public Vector2 LastPosition { get; set; }
         
+        /// <summary>
+        /// The movement vector for visualizing move data.
+        /// </summary>
         public Vector2 MoveVector { get; set; } = Vector2.zero;
         
+        /// <summary>
+        /// The move type so proper behaviours can be performed.
+        /// </summary>
         public MoveType MoveType { get; }
 
+        /// <summary>
+        /// The transform to move in relation to.
+        /// </summary>
         public Transform Transform { get; }
         
+        /// <summary>
+        /// True if this move data was setup with a transform so if at any point the transform is destroyed this is removed as well.
+        /// </summary>
         public bool IsTransformTarget { get; }
         
+        /// <summary>
+        /// Get the position of the transform if it has one otherwise the position it was set to have.
+        /// </summary>
         public Vector2 Position
         {
             get
@@ -46,6 +76,11 @@ public abstract class Agent : MessageComponent
             }
         }
 
+        /// <summary>
+        /// Create a move data for a transform.
+        /// </summary>
+        /// <param name="moveType">The move type.</param>
+        /// <param name="transform">The transform.</param>
         public MoveData(MoveType moveType, Transform transform)
         {
             MoveType = moveType;
@@ -56,8 +91,22 @@ public abstract class Agent : MessageComponent
             IsTransformTarget = true;
         }
 
+        /// <summary>
+        /// Create a move data for a position.
+        /// </summary>
+        /// <param name="moveType">The move type.</param>
+        /// <param name="position">The position.</param>
         public MoveData(MoveType moveType, Vector2 position)
         {
+            // Since pursuit and evade are for moving objects and this is only with a static position,
+            // switch pursuit to seek and evade to flee.
+            moveType = moveType switch
+            {
+                MoveType.Pursuit => MoveType.Seek,
+                MoveType.Evade => MoveType.Flee,
+                _ => moveType
+            };
+
             MoveType = moveType;
             Transform = null;
             _position = position;
@@ -92,7 +141,7 @@ public abstract class Agent : MessageComponent
 
     [Min(0)]
     [Tooltip("How many degrees at max this agent could shift when wandering.")]
-    public float maxWanderTurn = 50;
+    public float maxWanderTurn = 30;
 
     [SerializeField]
     [Tooltip("The global state the agent is in. Initialize it with the global state to start it.")]
@@ -246,57 +295,89 @@ public abstract class Agent : MessageComponent
     private Transform _wanderForward;
     
     /// <summary>
-    /// Display a green line from the agent's position to its move target and a blue line from the agent's position
-    /// to its look target. If the look target is the same as the move target, the blue line will not be drawn as
-    /// otherwise they would overlap.
+    /// Display lines to highlight agent movement.
     /// </summary>
     public override void DisplayGizmos()
     {
+        Vector3 position = transform.position;
+        
+        // Display the movement vectors of all move types.
         foreach (MoveData moveData in MovesData)
         {
+            // Assign different colors for different behaviours:
+            // Blue for seek, cyan for pursuit, red for flee, and orange for evade.
             GL.Color(moveData.MoveType switch
             {
                 MoveType.Seek => Color.blue,
                 MoveType.Pursuit => Color.cyan,
                 MoveType.Flee => Color.red,
-                MoveType.Evade => new Color(1f, 0.65f, 0f),
-                _ => Color.magenta
+                _ => new Color(1f, 0.65f, 0f),
             });
             
-            Vector3 position = transform.position;
-
+            // Draw a line from the agent's position showing the force of this movement.
             GL.Vertex(position);
             GL.Vertex(position + transform.rotation * (new Vector3(moveData.MoveVector.x, position.y, moveData.MoveVector.y).normalized * 2));
+            
+            // Draw another line from the agent's position to where the agent is seeking/pursuing/fleeing/evading to/from.
+            GL.Vertex(position);
+            GL.Vertex(new Vector3(moveData.Position.x, position.y, moveData.Position.y));
         }
 
+        // If the agent is moving, draw a green line indicating the direction it is currently moving in.
         if (MoveVelocity != Vector2.zero)
         {
             GL.Color(Color.green);
-            Vector3 position = transform.position;
             GL.Vertex(position);
             GL.Vertex(position + transform.rotation * (MoveVelocity3.normalized * 2));
         }
         
+        // If the agent is looking towards a particular target (not just based on where it is moving), draw a line towards the target.
         if (LookingToTarget)
         {
             GL.Color(Color.yellow);
-            GL.Vertex(transform.position);
+            GL.Vertex(position);
             GL.Vertex(LookTarget);
         }
     }
 
+    /// <summary>
+    /// Set a transform to move based upon.
+    /// </summary>
+    /// <param name="moveType">The move type.</param>
+    /// <param name="tr">The transform.</param>
     public void SetMoveData(MoveType moveType, Transform tr)
     {
         MovesData.Clear();
         AddMoveData(moveType, tr);
     }
 
+    /// <summary>
+    /// Set a position to move based upon.
+    /// </summary>
+    /// <param name="moveType">The move type.</param>
+    /// <param name="pos">The position.</param>
     public void SetMoveData(MoveType moveType, Vector3 pos)
     {
         MovesData.Clear();
         AddMoveData(moveType, pos);
     }
 
+    /// <summary>
+    /// Set a position to move based upon.
+    /// </summary>
+    /// <param name="moveType">The move type.</param>
+    /// <param name="pos">The position.</param>
+    public void SetMoveData(MoveType moveType, Vector2 pos)
+    {
+        MovesData.Clear();
+        AddMoveData(moveType, pos);
+    }
+    
+    /// <summary>
+    /// Add a transform to move based upon.
+    /// </summary>
+    /// <param name="moveType">The move type.</param>
+    /// <param name="tr">The transform.</param>
     public void AddMoveData(MoveType moveType, Transform tr)
     {
         if (MovesData.Exists(m => m.MoveType == moveType && m.Transform == tr) || IsCompleteMove(moveType, new Vector2(transform.position.x, transform.position.z), new Vector2(tr.position.x, tr.position.z)))
@@ -308,11 +389,21 @@ public abstract class Agent : MessageComponent
         MovesData.Add(new MoveData(moveType, tr));
     }
 
+    /// <summary>
+    /// Add a position to move based upon.
+    /// </summary>
+    /// <param name="moveType">The move type.</param>
+    /// <param name="pos">The position.</param>
     public void AddMoveData(MoveType moveType, Vector3 pos)
     {
         AddMoveData(moveType, new Vector2(pos.x, pos.z));
     }
 
+    /// <summary>
+    /// Add a position to move based upon.
+    /// </summary>
+    /// <param name="moveType">The move type.</param>
+    /// <param name="pos">The position.</param>
     public void AddMoveData(MoveType moveType, Vector2 pos)
     {
         if (MovesData.Exists(m => m.MoveType == moveType && m.Transform == null && m.Position == pos) || IsCompleteMove(moveType, new Vector2(transform.position.x, transform.position.z), pos))
@@ -324,21 +415,36 @@ public abstract class Agent : MessageComponent
         MovesData.Add(new MoveData(moveType, pos));
     }
 
+    /// <summary>
+    /// Clear all move data.
+    /// </summary>
     public void ClearMoveData()
     {
         MovesData.Clear();
     }
 
+    /// <summary>
+    /// Remove move data for a transform.
+    /// </summary>
+    /// <param name="tr">The transform.</param>
     public void RemoveMoveData(Transform tr)
     {
         MovesData = MovesData.Where(m => m.Transform != tr).ToList();
     }
 
+    /// <summary>
+    /// Remove move data for a position.
+    /// </summary>
+    /// <param name="pos">The position.</param>
     public void RemoveMoveData(Vector3 pos)
     {
         RemoveMoveData(new Vector2(pos.x, pos.z));
     }
 
+    /// <summary>
+    /// Remove move data for a position.
+    /// </summary>
+    /// <param name="pos">The position.</param>
     public void RemoveMoveData(Vector2 pos)
     {
         MovesData = MovesData.Where(m => m.Transform == null && m.Position != pos).ToList();
@@ -618,8 +724,6 @@ public abstract class Agent : MessageComponent
     /// </summary>
     public void Look()
     {
-        Transform visuals = Visuals;
-
         Vector3 target;
         
         // If the agent has no otherwise set point to look, look in the direction it is moving.
@@ -632,28 +736,30 @@ public abstract class Agent : MessageComponent
             
             Transform t = transform;
             target = t.position + t.rotation * MoveVelocity3.normalized;
-            target = new Vector3(target.x, visuals.position.y, target.z);
+            target = new Vector3(target.x, Visuals.position.y, target.z);
         }
         else
         {
             // We only want to rotate along the Y axis so update the target rotation to be at the same Y level.
-            target = new Vector3(LookTarget.x, visuals.position.y, LookTarget.z);
+            target = new Vector3(LookTarget.x, Visuals.position.y, LookTarget.z);
         }
 
         // If the position to look at is the current position, simply return.
-        if (visuals.position == target)
+        if (Visuals.position == target)
         {
             return;
         }
 
         // Face towards the target.
-        Visuals.rotation = Steering.Face(visuals.position, visuals.forward, target, lookSpeed, Time.deltaTime);
+        Visuals.rotation = Steering.Face(Visuals.position, Visuals.forward, target, lookSpeed, Time.deltaTime);
     }
 
     protected virtual void Start()
     {
+        // Setup the agent.
         Setup();
         
+        // Enter its global and normal states if they are set.
         if (globalState != null)
         {
             globalState.Enter(this);
@@ -693,77 +799,106 @@ public abstract class Agent : MessageComponent
     }
 
     /// <summary>
-    /// Calculate how fast to move.
+    /// Calculate movement for the agent.
     /// </summary>
     /// <param name="deltaTime">The elapsed time step.</param>
     protected void CalculateMoveVelocity(float deltaTime)
     {
+        // Initialize the movement for this time step.
         Vector2 movement = Vector2.zero;
+        
+        // If not using acceleration, have everything move as quick as possible to be clamped later.
         float acceleration = moveAcceleration > 0 ? moveAcceleration : float.MaxValue;
+        
+        // Convert the position into a Vector2 for use with steering methods.
         Vector3 positionVector3 = transform.position;
         Vector2 position = new Vector2(positionVector3.x, positionVector3.z);
 
+        // If there is move data, perform it.
         if (MovesData.Count > 0)
         {
+            // Align the wander guide with the rotation so it will be properly aligned if switched to wandering.
             _wanderRoot.transform.localRotation = Visuals.rotation;
+            
+            // Look through every move data.
             for (int i = 0; i < MovesData.Count; i++)
             {
+                // Get the position to move to/from.
                 Vector2 target = MovesData[i].Position;
 
+                // If this was a transform movement and the transform is now gone or the move has been satisfied, remove it.
                 if (MovesData[i].IsTransformTarget && MovesData[i].Transform == null || IsCompleteMove(MovesData[i].MoveType, position, target))
                 {
                     MovesData.RemoveAt(i--);
                     continue;
                 }
 
+                // Increase the elapsed time for the move data.
                 MovesData[i].DeltaTime += deltaTime;
-            
-                switch (MovesData[i].MoveType)
-                {
-                    case MoveType.Seek:
-                        MovesData[i].MoveVector = Steering.Seek(position, MoveVelocity, target, acceleration);
-                        break;
-                    case MoveType.Flee:
-                        MovesData[i].MoveVector = Steering.Flee(position, MoveVelocity, target, acceleration);
-                        break;
-                    case MoveType.Pursuit:
-                        MovesData[i].MoveVector = Steering.Pursuit(position, MoveVelocity, target, MovesData[i].LastPosition, acceleration, MovesData[i].DeltaTime);
-                        break;
-                    case MoveType.Evade:
-                        MovesData[i].MoveVector = Steering.Evade(position, MoveVelocity, target, MovesData[i].LastPosition, acceleration, MovesData[i].DeltaTime);
-                        break;
-                }
 
+                // Update the movement vector of the data based on its given move type.
+                MovesData[i].MoveVector = MovesData[i].MoveType switch
+                {
+                    MoveType.Seek => Steering.Seek(position, MoveVelocity, target, acceleration),
+                    MoveType.Flee => Steering.Flee(position, MoveVelocity, target, acceleration),
+                    MoveType.Pursuit => Steering.Pursuit(position, MoveVelocity, target, MovesData[i].LastPosition, acceleration, MovesData[i].DeltaTime),
+                    MoveType.Evade => Steering.Evade(position, MoveVelocity, target, MovesData[i].LastPosition, acceleration, MovesData[i].DeltaTime),
+                    _ => MovesData[i].MoveVector
+                };
+
+                // Add the newly calculated movement data to the movement vector for this time step.
                 movement += MovesData[i].MoveVector;
 
+                // Update the last position so the next time step could calculated predictive movement.
                 MovesData[i].LastPosition = target;
+                
+                // Zero the elapsed time since the action was completed for this move data.
                 MovesData[i].DeltaTime = 0;
             }
         }
+        // Otherwise if there is no movement data and the agent should wander, have the agent randomly wander.
         else if (Wander)
         {
+            // Get the desired angle to rotate by for the random wander sway.
             _wanderRoot.transform.localRotation = Quaternion.Euler(0, Steering.Wander(_wanderRoot.transform.rotation.eulerAngles.y, maxWanderTurn), 0);
+            
+            // Then simply seek towards the given wander guide position.
             Vector3 wander3 = _wanderForward.position;
             movement += Steering.Seek(position, MoveVelocity, new Vector2(wander3.x, wander3.z), acceleration);
         }
         
-        MoveVelocity += movement * deltaTime;
+        // If there was no movement, bring the agent to a stop.
         if (movement == Vector2.zero)
         {
+            // Can only slow down at the rate of acceleration but this will instantly stop if there is no acceleration.
             MoveVelocity = Vector2.Lerp(MoveVelocity, Vector2.zero, acceleration * deltaTime);
+            
+            // After reaching below a velocity threshold, set directly to zero.
             if (MoveVelocity.magnitude < restVelocity)
             {
                 MoveVelocity = Vector2.zero;
             }
+            
             return;
         }
+        
+        // Add the new velocity to the agent's velocity.
+        MoveVelocity += movement * deltaTime;
 
+        // If the agent's velocity is too fast, normalize it and then set it back to the max speed.
         if (MoveVelocity.magnitude > moveSpeed)
         {
             MoveVelocity = MoveVelocity.normalized * moveSpeed;
         }
     }
 
+    /// <summary>
+    /// Determine if a move data is complete.
+    /// </summary>
+    /// <param name="moveType">The move type.</param>
+    /// <param name="position">The agent position.</param>
+    /// <param name="target">The move data target position.</param>
+    /// <returns>True if the distance between the agent and the target is within or beyond their acceptable distance for completion.</returns>
     private bool IsCompleteMove(MoveType moveType, Vector2 position, Vector2 target)
     {
         return (moveType == MoveType.Seek || moveType == MoveType.Pursuit) && Vector2.Distance(position, target) <= seekAcceptableDistance ||

@@ -1164,6 +1164,11 @@ public class AgentManager : MonoBehaviour
             length--;
         }
 
+        if (SelectedAgent.Wander && SelectedAgent.MovesData.Count == 0)
+        {
+            length++;
+        }
+
         // Display all agent details.
         GuiBox(x, y, w, h, p, length);
         if (Agents.Count > 1)
@@ -1218,6 +1223,13 @@ public class AgentManager : MonoBehaviour
             y = NextItem(y, h, p);
             GuiLabel(x, y, w, h, p, $"{moveType}{toFrom}{pos}");
         }
+
+        if (SelectedAgent.Wander && SelectedAgent.MovesData.Count == 0)
+        {
+            y = NextItem(y, h, p);
+            GuiLabel(x, y, w, h, p, "Wandering.");
+        }
+        
         y = NextItem(y, h, p);
         GuiLabel(x, y, w, h, p, $"Rotation: {SelectedAgent.transform.rotation.eulerAngles.y} | " + (SelectedAgent.LookingToTarget ? $"Looking to {SelectedAgent.LookTarget} at {SelectedAgent.lookSpeed} degrees/second." : "Not looking."));
 

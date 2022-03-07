@@ -52,8 +52,8 @@ namespace A2.States
                     return;
                 }
 
-                Vector3 position = Random.insideUnitSphere * MicrobeManager.MicrobeManagerSingleton.FloorRadius;
-                agent.SetMoveData(Agent.MoveType.Seek, new Vector3(position.x, 0, position.z));
+                agent.ClearMoveData();
+                agent.Wander = true;
                 return;
             }
             
