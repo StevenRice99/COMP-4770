@@ -1231,7 +1231,7 @@ public class AgentManager : MonoBehaviour
         }
         
         y = NextItem(y, h, p);
-        GuiLabel(x, y, w, h, p, $"Rotation: {SelectedAgent.transform.rotation.eulerAngles.y} | " + (SelectedAgent.LookingToTarget ? $"Looking to {SelectedAgent.LookTarget} at {SelectedAgent.lookSpeed} degrees/second." : "Not looking."));
+        GuiLabel(x, y, w, h, p, $"Rotation: {SelectedAgent.Visuals.rotation.eulerAngles.y} Degrees" + (SelectedAgent.LookingToTarget ? $" | Looking to {SelectedAgent.LookTarget} at {SelectedAgent.lookSpeed} degrees/second." : string.Empty));
 
         // Display any custom details implemented for the agent.
         y = SelectedAgent.DisplayDetails(x, y, w, h, p);
