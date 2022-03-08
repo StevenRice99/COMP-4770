@@ -12,6 +12,8 @@ public class RigidbodyAgent : Agent
 
     protected override void Start()
     {
+        base.Start();
+        
         // Get the rigidbody.
         _rigidbody = GetComponent<Rigidbody>();
         if (_rigidbody == null)
@@ -19,11 +21,17 @@ public class RigidbodyAgent : Agent
             _rigidbody = gameObject.AddComponent<Rigidbody>();
         }
 
-        // Since rotation is all done with the root visuals transform, freeze rigidbody rotation.
-        if (_rigidbody != null)
+        if (_rigidbody == null)
         {
-            _rigidbody.freezeRotation = true;
+            return;
         }
+
+        // Since rotation is all done with the root visuals transform, freeze rigidbody rotation.
+        _rigidbody.freezeRotation = true;
+        _rigidbody.drag = 0;
+        _rigidbody.angularDrag = 0;
+        _rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
+        _rigidbody.isKinematic = false;
     }
         
     public override void Move()

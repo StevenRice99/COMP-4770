@@ -14,12 +14,11 @@ namespace A1.Minds
         /// <summary>
         /// Decide whether the current floor tile needs to be cleaned, to move towards a dirty floor time, or to prepare for tiles to become dirty.
         /// </summary>
-        /// <param name="percepts">The percepts which the agent's sensors sensed.</param>
         /// <returns>A CleanAction if the current floor tile should be cleaned, null otherwise.</returns>
-        public override Action[] Think(Percept[] percepts)
+        public override Action[] Think()
         {
             // Determine if the current floor tile needs to be cleaned.
-            Floor floorToClean = CanClean(percepts);
+            Floor floorToClean = CanClean(Agent.Percepts);
             if (floorToClean != null)
             {
                 // Stop movement and start cleaning the current floor tile.
@@ -29,7 +28,7 @@ namespace A1.Minds
             }
 
             // Otherwise determine where to move which will be the closest floor with the highest dirt level or the weighted midpoint.
-            Agent.SetMoveData(Agent.MoveType.Seek,DetermineLocationToMove(percepts));
+            Agent.SetMoveData(Agent.MoveType.Seek,DetermineLocationToMove(Agent.Percepts));
             return null;
         }
 

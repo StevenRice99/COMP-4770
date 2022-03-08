@@ -8,9 +8,11 @@ public abstract class Mind : IntelligenceComponent
     /// <summary>
     /// Implement to decide what actions the agent's actuators will perform based on the percepts it sensed.
     /// </summary>
-    /// <param name="percepts">The percepts which the agent's sensors sensed.</param>
     /// <returns>The actions the agent's actuators will perform.</returns>
-    public abstract Action[] Think(Percept[] percepts);
+    public virtual Action[] Think()
+    {
+        return null;
+    }
 
     /// <summary>
     /// Add a message to this component.

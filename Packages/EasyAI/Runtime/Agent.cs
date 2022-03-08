@@ -123,12 +123,10 @@ public abstract class Agent : MessageComponent
     [Tooltip("How fast this agent can increase in move speed in units per second.")]
     public float moveAcceleration = 10;
 
-    [Min(0)]
-    [Tooltip("How close an agent can be to a location its seeking or pursuing to declare it as reached?.")]
+    [Tooltip("How close an agent can be to a location its seeking or pursuing to declare it as reached?. Set negative for none.")]
     public float seekAcceptableDistance = 0.1f;
 
-    [Min(0)]
-    [Tooltip("How far an agent can be to a location its fleeing or evading from to declare it as reached?.")]
+    [Tooltip("How far an agent can be to a location its fleeing or evading from to declare it as reached?. Set negative for none.")]
     public float fleeAcceptableDistance = 10f;
 
     [Min(0)]
@@ -591,7 +589,7 @@ public abstract class Agent : MessageComponent
             Sense();
                 
             // Have the mind make decisions on what actions to take.
-            Action[] decisions = Minds[_selectedMindIndex].Think(Percepts);
+            Action[] decisions = Minds[_selectedMindIndex].Think();
             
             // If new decisions were made, update the actions to be them.
             if (decisions != null)
@@ -901,8 +899,8 @@ public abstract class Agent : MessageComponent
     /// <returns>True if the distance between the agent and the target is within or beyond their acceptable distance for completion.</returns>
     private bool IsCompleteMove(MoveType moveType, Vector2 position, Vector2 target)
     {
-        return (moveType == MoveType.Seek || moveType == MoveType.Pursuit) && Vector2.Distance(position, target) <= seekAcceptableDistance ||
-               (moveType == MoveType.Flee || moveType == MoveType.Evade) && Vector2.Distance(position, target) >= fleeAcceptableDistance;
+        return (moveType == MoveType.Seek || moveType == MoveType.Pursuit) && seekAcceptableDistance >= 0 && Vector2.Distance(position, target) <= seekAcceptableDistance ||
+               (moveType == MoveType.Flee || moveType == MoveType.Evade) && fleeAcceptableDistance >= 0 && Vector2.Distance(position, target) >= fleeAcceptableDistance;
     }
 
     /// <summary>
@@ -936,12 +934,8 @@ public abstract class Agent : MessageComponent
             perceptsRead.Add(percept);
             sensed++;
         }
-
-        if (sensed == 0)
-        {
-            AddMessage("Did not perceive anything.");
-        }
-        else if (sensed > 1)
+        
+        if (sensed > 1)
         {
             AddMessage($"Perceived {sensed} percepts.");
         }
@@ -956,7 +950,6 @@ public abstract class Agent : MessageComponent
     {
         if (Actions == null || Actions.Length == 0)
         {
-            AddMessage("Did not perform any actions.");
             return;
         }
             
