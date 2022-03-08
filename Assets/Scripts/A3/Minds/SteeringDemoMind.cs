@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 namespace A3.Minds
@@ -6,19 +7,26 @@ namespace A3.Minds
     {
         [SerializeField]
         private Transform[] targets;
+
+        [SerializeField]
+        [Min(0)]
+        private float cornerRange = 450;
         
         public override float DisplayDetails(float x, float y, float w, float h, float p)
         {
-            y = AgentManager.NextItem(y, h, p);
-            if (AgentManager.GuiButton(x, y, w, h, "Stop Agents"))
+            if (AgentManager.Singleton.Agents.Count > 1)
             {
-                foreach (Agent agent in AgentManager.Singleton.Agents)
+                y = AgentManager.NextItem(y, h, p);
+                if (AgentManager.GuiButton(x, y, w, h, "Stop Agents"))
                 {
-                    agent.Wander = false;
-                    agent.ClearMoveData();
+                    foreach (Agent agent in AgentManager.Singleton.Agents)
+                    {
+                        agent.Wander = false;
+                        agent.ClearMoveData();
+                    }
                 }
             }
-            
+
             y = AgentManager.NextItem(y, h, p);
             if (AgentManager.GuiButton(x, y, w, h, $"Stop {Agent.name}"))
             {
@@ -32,42 +40,32 @@ namespace A3.Minds
                 Agent.Wander = true;
                 Agent.ClearMoveData();
             }
-            
-            y = AgentManager.NextItem(y, h, p);
-            if (AgentManager.GuiButton(x, y, w, h, "Origin"))
+
+            foreach (Agent other in AgentManager.Singleton.Agents.Where(other => other != Agent))
             {
-                Agent.Wander = false;
-                Agent.SetMoveData(Agent.MoveType.Seek, new Vector2(0, 0));
+                y = AgentManager.NextItem(y, h, p);
+                if (AgentManager.GuiButton(x, y, w, h, $"Seek {other.name} and have {other.name} Flee"))
+                {
+                    Agent.Wander = false;
+                    Agent.SetMoveData(Agent.MoveType.Seek, other.transform);
+
+                    other.Wander = false;
+                    other.SetMoveData(Agent.MoveType.Flee, Agent.transform);
+                }
+                    
+                y = AgentManager.NextItem(y, h, p);
+                if (AgentManager.GuiButton(x, y, w, h, $"Pursue {other.name} and have {other.name} Evade"))
+                {
+                    Agent.Wander = false;
+                    Agent.SetMoveData(Agent.MoveType.Pursuit, other.transform);
+
+                    other.Wander = false;
+                    other.SetMoveData(Agent.MoveType.Evade, Agent.transform);
+                }
             }
 
             foreach (Transform target in targets)
             {
-                Agent other = target.GetComponent<Agent>();
-                if (other != null)
-                {
-                    y = AgentManager.NextItem(y, h, p);
-                    if (AgentManager.GuiButton(x, y, w, h, $"Seek {target.name} and have {target.name} Flee"))
-                    {
-                        Agent.Wander = false;
-                        Agent.SetMoveData(Agent.MoveType.Seek, target);
-
-                        other.Wander = false;
-                        other.SetMoveData(Agent.MoveType.Flee, Agent.transform);
-                    }
-                    
-                    y = AgentManager.NextItem(y, h, p);
-                    if (AgentManager.GuiButton(x, y, w, h, $"Pursue {target.name} and have {target.name} Evade"))
-                    {
-                        Agent.Wander = false;
-                        Agent.SetMoveData(Agent.MoveType.Pursuit, target);
-
-                        other.Wander = false;
-                        other.SetMoveData(Agent.MoveType.Evade, Agent.transform);
-                    }
-                    
-                    continue;
-                }
-
                 y = AgentManager.NextItem(y, h, p);
                 if (AgentManager.GuiButton(x, y, w, h, $"Seek {target.name}"))
                 {
@@ -95,6 +93,41 @@ namespace A3.Minds
                     Agent.Wander = false;
                     Agent.SetMoveData(Agent.MoveType.Evade, target);
                 }
+            }
+            
+            y = AgentManager.NextItem(y, h, p);
+            if (AgentManager.GuiButton(x, y, w, h, "Seek (0, 0)"))
+            {
+                Agent.Wander = false;
+                Agent.SetMoveData(Agent.MoveType.Seek, new Vector2(0, 0));
+            }
+            
+            y = AgentManager.NextItem(y, h, p);
+            if (AgentManager.GuiButton(x, y, w, h, $"Seek to ({cornerRange}, {cornerRange})"))
+            {
+                Agent.Wander = false;
+                Agent.SetMoveData(Agent.MoveType.Seek, new Vector2(cornerRange, cornerRange));
+            }
+            
+            y = AgentManager.NextItem(y, h, p);
+            if (AgentManager.GuiButton(x, y, w, h, $"Seek to ({cornerRange}, -{cornerRange})"))
+            {
+                Agent.Wander = false;
+                Agent.SetMoveData(Agent.MoveType.Seek, new Vector2(cornerRange, -cornerRange));
+            }
+            
+            y = AgentManager.NextItem(y, h, p);
+            if (AgentManager.GuiButton(x, y, w, h, $"Seek to (-{cornerRange}, -{cornerRange})"))
+            {
+                Agent.Wander = false;
+                Agent.SetMoveData(Agent.MoveType.Seek, new Vector2(-cornerRange, -cornerRange));
+            }
+            
+            y = AgentManager.NextItem(y, h, p);
+            if (AgentManager.GuiButton(x, y, w, h, $"Seek to (-{cornerRange}, {cornerRange})"))
+            {
+                Agent.Wander = false;
+                Agent.SetMoveData(Agent.MoveType.Seek, new Vector2(-cornerRange, cornerRange));
             }
 
             return y;
