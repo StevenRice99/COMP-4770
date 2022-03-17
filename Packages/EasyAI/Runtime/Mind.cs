@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-
-/// <summary>
+﻿/// <summary>
 /// The mind which will decide on what actions an agent's actuators will perform based on the percepts it sensed.
 /// </summary>
 public abstract class Mind : IntelligenceComponent

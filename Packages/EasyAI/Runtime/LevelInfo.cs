@@ -14,7 +14,8 @@ public class LevelInfo : MonoBehaviour
     private enum GenerationType : byte
     {
         None,
-        Grid
+        Grid,
+        CornerGraph
     }
     
     private struct Connection
@@ -49,6 +50,9 @@ public class LevelInfo : MonoBehaviour
     private int2 nodesPerStep = new int2(4, 4);
 
     [SerializeField]
+    private int2 cornerNodeSteps = new int2(3, 3);
+
+    [SerializeField]
     [Min(0)]
     private float nodeHeightOffset = 1;
 
@@ -58,15 +62,15 @@ public class LevelInfo : MonoBehaviour
     [SerializeField]
     private LayerMask groundLayers;
 
-    private char[,] data;
+    private char[,] _data;
 
-    private int RangeX => (pos1.x - pos2.x) * nodesPerStep.x;
+    private int RangeX => (pos1.x - pos2.x) * nodesPerStep.x + 1;
     
-    private int RangeZ => (pos1.y - pos2.y) * nodesPerStep.y;
+    private int RangeZ => (pos1.y - pos2.y) * nodesPerStep.y + 1;
 
-    private readonly List<Vector3> nodes = new List<Vector3>();
+    private readonly List<Vector3> _nodes = new List<Vector3>();
 
-    private readonly List<Connection> connections = new List<Connection>();
+    private readonly List<Connection> _connections = new List<Connection>();
 
     private void Start()
     {
@@ -95,7 +99,7 @@ public class LevelInfo : MonoBehaviour
         
         // CONNECTIONS
         Gizmos.color = Color.green;
-        foreach (Connection connection in connections)
+        foreach (Connection connection in _connections)
         {
             Gizmos.DrawLine(connection.A, connection.B);
         }
@@ -123,13 +127,13 @@ public class LevelInfo : MonoBehaviour
             (pos1.y, pos2.y) = (pos2.y, pos1.y);
         }
 
-        data = new char[RangeX, RangeZ];
+        _data = new char[RangeX, RangeZ];
         
         for (int i = 0; i < RangeX; i++)
         {
             for (int j = 0; j < RangeZ; j++)
             {
-                data[i, j] = ScanOpen(i, j) ? Open : Closed;
+                _data[i, j] = ScanOpen(i, j) ? Open : Closed;
             }
         }
     }
@@ -143,40 +147,11 @@ public class LevelInfo : MonoBehaviour
             case GenerationType.Grid:
                 GenerateGrid();
                 break;
+            case GenerationType.CornerGraph:
+                break;
         }
 
         ConnectNodes();
-    }
-
-    private void ConnectNodes()
-    {
-        for (int i = 0; i < nodes.Count; i++)
-        {
-            for (int j = 0; j < nodes.Count; j++)
-            {
-                if (i == j)
-                {
-                    continue;
-                }
-
-                if (connections.Any(c => c.A == nodes[i] && c.B == nodes[j] || c.A == nodes[j] && c.B == nodes[i]))
-                {
-                    continue;
-                }
-
-                if (nodeDistance > 0 && Vector3.Distance(nodes[i], nodes[j]) > nodeDistance)
-                {
-                    continue;
-                }
-
-                if (Physics.Raycast(nodes[i], nodes[i] - nodes[j], out RaycastHit _, Mathf.Infinity))
-                {
-                    continue;
-                }
-                
-                connections.Add(new Connection(nodes[i], nodes[j]));
-            }
-        }
     }
 
     private void GenerateGrid()
@@ -191,19 +166,52 @@ public class LevelInfo : MonoBehaviour
                 }
             }
         }
+
+        nodeDistance = Mathf.Max(1f / nodesPerStep.x, 1f / nodesPerStep.y);
+    }
+
+    private void GenerateCornerGraph()
+    {
+        
+    }
+
+    private void ConnectNodes()
+    {
+        for (int i = 0; i < _nodes.Count; i++)
+        {
+            for (int j = 0; j < _nodes.Count; j++)
+            {
+                if (i == j)
+                {
+                    continue;
+                }
+
+                float d = Vector3.Distance(_nodes[i], _nodes[j]);
+                if (nodeDistance > 0 && d > nodeDistance)
+                {
+                    continue;
+                }
+
+                if (Physics.Raycast(_nodes[i], _nodes[i] - _nodes[j], out RaycastHit _, d))
+                {
+                    continue;
+                }
+
+                if (_connections.Any(c => c.A == _nodes[i] && c.B == _nodes[j] || c.A == _nodes[j] && c.B == _nodes[i]))
+                {
+                    continue;
+                }
+                
+                _connections.Add(new Connection(_nodes[i], _nodes[j]));
+            }
+        }
     }
 
     private float2 GetRealPosition(int i, int j)
     {
-        /*
-        int baseX = i / nodesPerStep.x;
-        int baseZ = j / nodesPerStep.y;
-        float multiX = (float) i / nodesPerStep.x - baseX;
-        float multiZ = (float) i / nodesPerStep.y - baseZ;
-        float2 pos = new float2(pos2.x + baseX + 1f / nodesPerStep.x * multiX, pos2.y + baseZ + 1f / nodesPerStep.y * multiZ);
-        Debug.Log($"Index = ({i} , {j}) | Base = ({baseX}, {baseZ}) | Position = ({pos.x}, {pos.y})");
-        return pos;
-        */
+        Debug.Log(new float2(pos2.x + i * 1f / nodesPerStep.x, pos2.y + j * 1f / nodesPerStep.y));
+
+        return new float2(pos2.x + i * 1f / nodesPerStep.x, pos2.y + j * 1f / nodesPerStep.y);
     }
 
     private bool ScanOpen(int i, int j)
@@ -219,12 +227,12 @@ public class LevelInfo : MonoBehaviour
 
     private bool IsOpen(int i, int j)
     {
-        if (data == null)
+        if (_data == null)
         {
             return false;
         }
 
-        return data[i, j] != Closed;
+        return _data[i, j] != Closed;
     }
 
     public void AddNode(int i, int j)
@@ -239,15 +247,15 @@ public class LevelInfo : MonoBehaviour
         y += nodeHeightOffset;
         
         Vector3 v = new Vector3(pos.x, y, pos.y);
-        if (!nodes.Contains(v))
+        if (!_nodes.Contains(v))
         {
-            nodes.Add(v);
+            _nodes.Add(v);
         }
     }
 
     public override string ToString()
     {
-        if (data == null)
+        if (_data == null)
         {
             return "No data.";
         }
@@ -257,7 +265,7 @@ public class LevelInfo : MonoBehaviour
         {
             for (int j = 0; j < RangeZ; j++)
             {
-                s += data[i, j];
+                s += _data[i, j];
             }
 
             if (i != RangeX - 1)
