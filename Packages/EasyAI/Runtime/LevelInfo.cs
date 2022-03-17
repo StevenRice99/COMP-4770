@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Unity.Mathematics;
@@ -49,10 +48,12 @@ public class LevelInfo : MonoBehaviour
     private float distance;
 
     [SerializeField]
-    private int2 nodesPerStep = new int2(4, 4);
+    [Min(1)]
+    private int nodesPerStep = 1;
 
     [SerializeField]
-    private int2 cornerNodeSteps = new int2(3, 3);
+    [Min(0)]
+    private int cornerNodeSteps;
 
     [SerializeField]
     [Min(0)]
@@ -66,9 +67,9 @@ public class LevelInfo : MonoBehaviour
 
     private char[,] _data;
 
-    private int RangeX => (pos1.x - pos2.x) * nodesPerStep.x + 1;
+    private int RangeX => (pos1.x - pos2.x) * nodesPerStep + 1;
     
-    private int RangeZ => (pos1.y - pos2.y) * nodesPerStep.y + 1;
+    private int RangeZ => (pos1.y - pos2.y) * nodesPerStep + 1;
 
     private readonly List<Vector3> _nodes = new List<Vector3>();
 
@@ -170,14 +171,14 @@ public class LevelInfo : MonoBehaviour
             }
         }
 
-        nodeDistance = Mathf.Max(1f / nodesPerStep.x, 1f / nodesPerStep.y);
+        nodeDistance = 1f / nodesPerStep;
     }
 
     private void GenerateCornerGraph()
     {
-        for (int i = cornerNodeSteps.x * 2; i < RangeX - cornerNodeSteps.x * 2; i++)
+        for (int i = cornerNodeSteps * 2; i < RangeX - cornerNodeSteps * 2; i++)
         {
-            for (int j = cornerNodeSteps.y * 2; j < RangeZ - cornerNodeSteps.y * 2; j++)
+            for (int j = cornerNodeSteps * 2; j < RangeZ - cornerNodeSteps * 2; j++)
             {
                 if (_data[i, j] != Closed)
                 {
@@ -188,9 +189,9 @@ public class LevelInfo : MonoBehaviour
                 if (_data[i + 1, j] != Closed && _data[i, j + 1] != Closed)
                 {
                     bool good = true;
-                    for (int x = i + 1; x <= i + 1 + cornerNodeSteps.x * 2; x++)
+                    for (int x = i + 1; x <= i + 1 + cornerNodeSteps * 2; x++)
                     {
-                        for (int z = j + 1; z <= j + 1 + cornerNodeSteps.y * 2; z++)
+                        for (int z = j + 1; z <= j + 1 + cornerNodeSteps * 2; z++)
                         {
                             if (_data[x, z] != Closed)
                             {
@@ -209,8 +210,8 @@ public class LevelInfo : MonoBehaviour
 
                     if (good)
                     {
-                        int posX = i + 1 + cornerNodeSteps.x;
-                        int posY = j + 1 + cornerNodeSteps.y;
+                        int posX = i + 1 + cornerNodeSteps;
+                        int posY = j + 1 + cornerNodeSteps;
                         _data[posX, posY] = Node;
                         AddNode(posX, posY);
                     }
@@ -220,9 +221,9 @@ public class LevelInfo : MonoBehaviour
                 if (_data[i + 1, j] != Closed && _data[i, j - 1] != Closed)
                 {
                     bool good = true;
-                    for (int x = i + 1; x <= i + 1 + cornerNodeSteps.x * 2; x++)
+                    for (int x = i + 1; x <= i + 1 + cornerNodeSteps * 2; x++)
                     {
-                        for (int z = j - 1; z >= j - 1 - cornerNodeSteps.y * 2; z--)
+                        for (int z = j - 1; z >= j - 1 - cornerNodeSteps * 2; z--)
                         {
                             if (_data[x, z] != Closed)
                             {
@@ -241,8 +242,8 @@ public class LevelInfo : MonoBehaviour
 
                     if (good)
                     {
-                        int posX = i + 1 + cornerNodeSteps.x;
-                        int posY = j - 1 - cornerNodeSteps.y;
+                        int posX = i + 1 + cornerNodeSteps;
+                        int posY = j - 1 - cornerNodeSteps;
                         _data[posX, posY] = Node;
                         AddNode(posX, posY);
                     }
@@ -252,9 +253,9 @@ public class LevelInfo : MonoBehaviour
                 if (_data[i - 1, j] != Closed && _data[i, j + 1] != Closed)
                 {
                     bool good = true;
-                    for (int x = i - 1; x >= i - 1 - cornerNodeSteps.x * 2; x--)
+                    for (int x = i - 1; x >= i - 1 - cornerNodeSteps * 2; x--)
                     {
-                        for (int z = j + 1; z <= j + 1 + cornerNodeSteps.y * 2; z++)
+                        for (int z = j + 1; z <= j + 1 + cornerNodeSteps * 2; z++)
                         {
                             if (_data[x, z] != Closed)
                             {
@@ -273,8 +274,8 @@ public class LevelInfo : MonoBehaviour
 
                     if (good)
                     {
-                        int posX = i - 1 - cornerNodeSteps.x;
-                        int posY = j + 1 + cornerNodeSteps.y;
+                        int posX = i - 1 - cornerNodeSteps;
+                        int posY = j + 1 + cornerNodeSteps;
                         _data[posX, posY] = Node;
                         AddNode(posX, posY);
                     }
@@ -284,9 +285,9 @@ public class LevelInfo : MonoBehaviour
                 if (_data[i - 1, j] != Closed && _data[i, j - 1] != Closed)
                 {
                     bool good = true;
-                    for (int x = i - 1; x >= i - 1 - cornerNodeSteps.x * 2; x--)
+                    for (int x = i - 1; x >= i - 1 - cornerNodeSteps * 2; x--)
                     {
-                        for (int z = j - 1; z >= j - 1 - cornerNodeSteps.y * 2; z--)
+                        for (int z = j - 1; z >= j - 1 - cornerNodeSteps * 2; z--)
                         {
                             if (_data[x, z] != Closed)
                             {
@@ -305,8 +306,8 @@ public class LevelInfo : MonoBehaviour
 
                     if (good)
                     {
-                        int posX = i - 1 - cornerNodeSteps.x;
-                        int posY = j - 1 - cornerNodeSteps.y;
+                        int posX = i - 1 - cornerNodeSteps;
+                        int posY = j - 1 - cornerNodeSteps;
                         _data[posX, posY] = Node;
                         AddNode(posX, posY);
                     }
@@ -349,7 +350,7 @@ public class LevelInfo : MonoBehaviour
 
     private float2 GetRealPosition(int i, int j)
     {
-        return new float2(pos2.x + i * 1f / nodesPerStep.x, pos2.y + j * 1f / nodesPerStep.y);
+        return new float2(pos2.x + i * 1f / nodesPerStep, pos2.y + j * 1f / nodesPerStep);
     }
 
     private bool ScanOpen(int i, int j)

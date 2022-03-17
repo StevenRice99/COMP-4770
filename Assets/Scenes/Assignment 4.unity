@@ -948,12 +948,8 @@ MonoBehaviour:
     y: -5
   height: 10
   distance: 11
-  nodesPerStep:
-    x: 4
-    y: 4
-  cornerNodeSteps:
-    x: 3
-    y: 3
+  nodesPerStep: 4
+  cornerNodeSteps: 3
   nodeHeightOffset: 0.1
   nodeDistance: 0
   groundLayers:
