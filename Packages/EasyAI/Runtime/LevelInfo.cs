@@ -10,6 +10,8 @@ public class LevelInfo : MonoBehaviour
     private const char Open = ' ';
 
     private const char Closed = '#';
+
+    private const char Node = '*';
     
     private enum GenerationType : byte
     {
@@ -77,7 +79,7 @@ public class LevelInfo : MonoBehaviour
         Perform();
     }
 
-    private void OnDrawGizmosSelected()
+    private void OnDrawGizmos()
     {
         // VERTICAL
         Gizmos.DrawLine(new Vector3(pos1.x, height, pos1.y), new Vector3(pos1.x, height - distance, pos1.y));
@@ -148,6 +150,7 @@ public class LevelInfo : MonoBehaviour
                 GenerateGrid();
                 break;
             case GenerationType.CornerGraph:
+                GenerateCornerGraph();
                 break;
         }
 
@@ -172,7 +175,144 @@ public class LevelInfo : MonoBehaviour
 
     private void GenerateCornerGraph()
     {
-        
+        for (int i = cornerNodeSteps.x * 2; i < RangeX - cornerNodeSteps.x * 2; i++)
+        {
+            for (int j = cornerNodeSteps.y * 2; j < RangeZ - cornerNodeSteps.y * 2; j++)
+            {
+                if (_data[i, j] != Closed)
+                {
+                    continue;
+                }
+                
+                // ++
+                if (_data[i + 1, j] != Closed && _data[i, j + 1] != Closed)
+                {
+                    bool good = true;
+                    for (int x = i + 1; x <= i + 1 + cornerNodeSteps.x * 2; x++)
+                    {
+                        for (int z = j + 1; z <= j + 1 + cornerNodeSteps.y * 2; z++)
+                        {
+                            if (_data[x, z] != Closed)
+                            {
+                                continue;
+                            }
+
+                            good = false;
+                            break;
+                        }
+
+                        if (!good)
+                        {
+                            break;
+                        }
+                    }
+
+                    if (good)
+                    {
+                        int posX = i + 1 + cornerNodeSteps.x;
+                        int posY = j + 1 + cornerNodeSteps.y;
+                        _data[posX, posY] = Node;
+                        AddNode(posX, posY);
+                    }
+                }
+                
+                // +-
+                if (_data[i + 1, j] != Closed && _data[i, j - 1] != Closed)
+                {
+                    bool good = true;
+                    for (int x = i + 1; x <= i + 1 + cornerNodeSteps.x * 2; x++)
+                    {
+                        for (int z = j - 1; z >= j - 1 - cornerNodeSteps.y * 2; z--)
+                        {
+                            if (_data[x, z] != Closed)
+                            {
+                                continue;
+                            }
+
+                            good = false;
+                            break;
+                        }
+
+                        if (!good)
+                        {
+                            break;
+                        }
+                    }
+
+                    if (good)
+                    {
+                        int posX = i + 1 + cornerNodeSteps.x;
+                        int posY = j - 1 - cornerNodeSteps.y;
+                        _data[posX, posY] = Node;
+                        AddNode(posX, posY);
+                    }
+                }
+                
+                // -+
+                if (_data[i - 1, j] != Closed && _data[i, j + 1] != Closed)
+                {
+                    bool good = true;
+                    for (int x = i - 1; x >= i - 1 - cornerNodeSteps.x * 2; x--)
+                    {
+                        for (int z = j + 1; z <= j + 1 + cornerNodeSteps.y * 2; z++)
+                        {
+                            if (_data[x, z] != Closed)
+                            {
+                                continue;
+                            }
+
+                            good = false;
+                            break;
+                        }
+
+                        if (!good)
+                        {
+                            break;
+                        }
+                    }
+
+                    if (good)
+                    {
+                        int posX = i - 1 - cornerNodeSteps.x;
+                        int posY = j + 1 + cornerNodeSteps.y;
+                        _data[posX, posY] = Node;
+                        AddNode(posX, posY);
+                    }
+                }
+                
+                // --
+                if (_data[i - 1, j] != Closed && _data[i, j - 1] != Closed)
+                {
+                    bool good = true;
+                    for (int x = i - 1; x >= i - 1 - cornerNodeSteps.x * 2; x--)
+                    {
+                        for (int z = j - 1; z >= j - 1 - cornerNodeSteps.y * 2; z--)
+                        {
+                            if (_data[x, z] != Closed)
+                            {
+                                continue;
+                            }
+
+                            good = false;
+                            break;
+                        }
+
+                        if (!good)
+                        {
+                            break;
+                        }
+                    }
+
+                    if (good)
+                    {
+                        int posX = i - 1 - cornerNodeSteps.x;
+                        int posY = j - 1 - cornerNodeSteps.y;
+                        _data[posX, posY] = Node;
+                        AddNode(posX, posY);
+                    }
+                }
+            }
+        }
     }
 
     private void ConnectNodes()
@@ -192,7 +332,7 @@ public class LevelInfo : MonoBehaviour
                     continue;
                 }
 
-                if (Physics.Raycast(_nodes[i], _nodes[i] - _nodes[j], out RaycastHit _, d))
+                if (Physics.Linecast(_nodes[i], _nodes[j]))
                 {
                     continue;
                 }
@@ -209,8 +349,6 @@ public class LevelInfo : MonoBehaviour
 
     private float2 GetRealPosition(int i, int j)
     {
-        Debug.Log(new float2(pos2.x + i * 1f / nodesPerStep.x, pos2.y + j * 1f / nodesPerStep.y));
-
         return new float2(pos2.x + i * 1f / nodesPerStep.x, pos2.y + j * 1f / nodesPerStep.y);
     }
 
