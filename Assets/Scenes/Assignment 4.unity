@@ -265,6 +265,7 @@ MonoBehaviour:
   detailsWidth: 500
   controlsWidth: 120
   gizmos: 1
+  navigation: 1
   selectedCamera: {fileID: 0}
 --- !u!4 &460686381
 Transform:
@@ -920,7 +921,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2139949937}
   - component: {fileID: 2139949936}
-  - component: {fileID: 2139949939}
   - component: {fileID: 2139949938}
   m_Layer: 0
   m_Name: Level
@@ -982,15 +982,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nodeDistance: 0
   cornerNodeSteps: 3
---- !u!114 &2139949939
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2139949935}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f742fb1c1b2c4584b272e8885134b027, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
