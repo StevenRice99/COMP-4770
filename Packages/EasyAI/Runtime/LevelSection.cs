@@ -4,7 +4,7 @@ using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
 
-public class LevelInfo : NodeBase
+public class LevelSection : NodeBase
 {
     public const char Open = ' ';
 
@@ -25,17 +25,17 @@ public class LevelInfo : NodeBase
     }
     
     [SerializeField]
-    private int2 pos1;
+    private int2 pos1 = new int2(5, 5);
         
     [SerializeField]
-    private int2 pos2;
+    private int2 pos2 = new int2(-5, -5);
 
     [SerializeField]
-    private float height;
+    private float height = 10;
 
     [SerializeField]
     [Min(float.Epsilon)]
-    private float distance;
+    private float distance = 11;
 
     [SerializeField]
     [Min(1)]
@@ -43,7 +43,7 @@ public class LevelInfo : NodeBase
 
     [SerializeField]
     [Min(0)]
-    private float nodeHeightOffset = 1;
+    private float nodeHeightOffset = 0.1f;
 
     [SerializeField]
     private LayerMask groundLayers;
@@ -60,7 +60,7 @@ public class LevelInfo : NodeBase
 
     private readonly List<Connection> _connections = new List<Connection>();
 
-    private float _nodeDistance = 0;
+    private float _nodeDistance;
 
     private void Start()
     {
@@ -122,6 +122,7 @@ public class LevelInfo : NodeBase
         NodeGenerator generator = generators.FirstOrDefault(g => g.enabled);
         if (generator != null)
         {
+            generator.Setup();
             _nodeDistance = generator.SetNodeDistance();
             generator.Generate();
 
