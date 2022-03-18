@@ -27,122 +27,95 @@ public class CornerGraphGenerator : NodeGenerator
                     continue;
                 }
                 
-                // ++
-                if (NodeArea.IsOpen(x + 1, z) && NodeArea.IsOpen(x, z + 1))
+                UpperUpper(x, z);
+                UpperLower(x, z);
+                LowerUpper(x, z);
+                LowerLower(x, z);
+            }
+        }
+    }
+
+    private void UpperUpper(int x, int z)
+    {
+        if (!NodeArea.IsOpen(x + 1, z) || !NodeArea.IsOpen(x, z + 1))
+        {
+            return;
+        }
+        
+        for (int x1 = x + 1; x1 <= x + 1 + cornerNodeSteps * 2; x1++)
+        {
+            for (int z1 = z + 1; z1 <= z + 1 + cornerNodeSteps * 2; z1++)
+            {
+                if (!NodeArea.IsOpen(x1, z1))
                 {
-                    bool good = true;
-                    for (int x1 = x + 1; x1 <= x + 1 + cornerNodeSteps * 2; x1++)
-                    {
-                        for (int z1 = z + 1; z1 <= z + 1 + cornerNodeSteps * 2; z1++)
-                        {
-                            if (NodeArea.IsOpen(x1, z1))
-                            {
-                                continue;
-                            }
-
-                            good = false;
-                            break;
-                        }
-
-                        if (!good)
-                        {
-                            break;
-                        }
-                    }
-
-                    if (good)
-                    {
-                        NodeArea.AddNode(x + 1 + cornerNodeSteps, z + 1 + cornerNodeSteps);
-                    }
-                }
-                
-                // +-
-                if (NodeArea.IsOpen(x + 1, z) && NodeArea.IsOpen(x, z - 1))
-                {
-                    bool good = true;
-                    for (int x1 = x + 1; x1 <= x + 1 + cornerNodeSteps * 2; x1++)
-                    {
-                        for (int z1 = z - 1; z1 >= z - 1 - cornerNodeSteps * 2; z1--)
-                        {
-                            if (NodeArea.IsOpen(x1, z1))
-                            {
-                                continue;
-                            }
-
-                            good = false;
-                            break;
-                        }
-
-                        if (!good)
-                        {
-                            break;
-                        }
-                    }
-
-                    if (good)
-                    {
-                        NodeArea.AddNode(x + 1 + cornerNodeSteps, z - 1 - cornerNodeSteps);
-                    }
-                }
-                
-                // -+
-                if (NodeArea.IsOpen(x - 1, z) && NodeArea.IsOpen(x, z + 1))
-                {
-                    bool good = true;
-                    for (int x1 = x - 1; x1 >= x - 1 - cornerNodeSteps * 2; x1--)
-                    {
-                        for (int z1 = z + 1; z1 <= z + 1 + cornerNodeSteps * 2; z1++)
-                        {
-                            if (NodeArea.IsOpen(x1, z1))
-                            {
-                                continue;
-                            }
-
-                            good = false;
-                            break;
-                        }
-
-                        if (!good)
-                        {
-                            break;
-                        }
-                    }
-
-                    if (good)
-                    {
-                        NodeArea.AddNode(x - 1 - cornerNodeSteps, z + 1 + cornerNodeSteps);
-                    }
-                }
-                
-                // --
-                if (NodeArea.IsOpen(x - 1, z) && NodeArea.IsOpen(x, z - 1))
-                {
-                    bool good = true;
-                    for (int x1 = x - 1; x1 >= x - 1 - cornerNodeSteps * 2; x1--)
-                    {
-                        for (int z1 = z - 1; z1 >= z - 1 - cornerNodeSteps * 2; z1--)
-                        {
-                            if (NodeArea.IsOpen(x1, z1))
-                            {
-                                continue;
-                            }
-
-                            good = false;
-                            break;
-                        }
-
-                        if (!good)
-                        {
-                            break;
-                        }
-                    }
-
-                    if (good)
-                    {
-                        NodeArea.AddNode(x - 1 - cornerNodeSteps, z - 1 - cornerNodeSteps);
-                    }
+                    return;
                 }
             }
         }
+
+        NodeArea.AddNode(x + 1 + cornerNodeSteps, z + 1 + cornerNodeSteps);
+    }
+
+    private void UpperLower(int x, int z)
+    {
+        if (!NodeArea.IsOpen(x + 1, z) || !NodeArea.IsOpen(x, z - 1))
+        {
+            return;
+        }
+
+        for (int x1 = x + 1; x1 <= x + 1 + cornerNodeSteps * 2; x1++)
+        {
+            for (int z1 = z - 1; z1 >= z - 1 - cornerNodeSteps * 2; z1--)
+            {
+                if (!NodeArea.IsOpen(x1, z1))
+                {
+                    return;
+                }
+            }
+        }
+
+        NodeArea.AddNode(x + 1 + cornerNodeSteps, z - 1 - cornerNodeSteps);
+    }
+
+    private void LowerUpper(int x, int z)
+    {
+        if (!NodeArea.IsOpen(x - 1, z) || !NodeArea.IsOpen(x, z + 1))
+        {
+            return;
+        }
+        
+        for (int x1 = x - 1; x1 >= x - 1 - cornerNodeSteps * 2; x1--)
+        {
+            for (int z1 = z + 1; z1 <= z + 1 + cornerNodeSteps * 2; z1++)
+            {
+                if (!NodeArea.IsOpen(x1, z1))
+                {
+                    return;
+                }
+            }
+        }
+
+        NodeArea.AddNode(x - 1 - cornerNodeSteps, z + 1 + cornerNodeSteps);
+    }
+
+    private void LowerLower(int x, int z)
+    {
+        if (!NodeArea.IsOpen(x - 1, z) || !NodeArea.IsOpen(x, z - 1))
+        {
+            return;
+        }
+        
+        for (int x1 = x - 1; x1 >= x - 1 - cornerNodeSteps * 2; x1--)
+        {
+            for (int z1 = z - 1; z1 >= z - 1 - cornerNodeSteps * 2; z1--)
+            {
+                if (!NodeArea.IsOpen(x1, z1))
+                {
+                    return;
+                }
+            }
+        }
+
+        NodeArea.AddNode(x - 1 - cornerNodeSteps, z - 1 - cornerNodeSteps);
     }
 }
