@@ -45,7 +45,7 @@ public class NodeArea : NodeBase
     [SerializeField]
     [Min(1)]
     [Tooltip(
-        "How many nodes to place for every unit of world space. Example values:\n." +
+        "How many nodes to place for every unit of world space. Example values:\n" +
         "1 - Node per every 1 unit.\n" +
         "2 - Node per every 0.5 units.\n" +
         "4 - Node per every 0.25 units."
