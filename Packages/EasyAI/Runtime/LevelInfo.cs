@@ -4,25 +4,18 @@ using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
 
-public class LevelInfo : MonoBehaviour
+public class LevelInfo : NodeBase
 {
-    private const char Open = ' ';
+    public const char Open = ' ';
 
-    private const char Closed = '#';
+    public const char Closed = '#';
 
-    private const char Node = '*';
-    
-    private enum GenerationType : byte
-    {
-        None,
-        Grid,
-        CornerGraph
-    }
+    public const char Node = '*';
     
     private struct Connection
     {
-        public Vector3 A;
-        public Vector3 B;
+        public readonly Vector3 A;
+        public readonly Vector3 B;
 
         public Connection(Vector3 a, Vector3 b)
         {
@@ -30,9 +23,6 @@ public class LevelInfo : MonoBehaviour
             B = b;
         }
     }
-
-    [SerializeField]
-    private GenerationType type;
     
     [SerializeField]
     private int2 pos1;
@@ -53,27 +43,24 @@ public class LevelInfo : MonoBehaviour
 
     [SerializeField]
     [Min(0)]
-    private int cornerNodeSteps;
-
-    [SerializeField]
-    [Min(0)]
     private float nodeHeightOffset = 1;
-
-    [SerializeField]
-    private float nodeDistance;
 
     [SerializeField]
     private LayerMask groundLayers;
 
-    private char[,] _data;
+    public char[,] Data { get; set; }
 
-    private int RangeX => (pos1.x - pos2.x) * nodesPerStep + 1;
+    public int RangeX => (pos1.x - pos2.x) * nodesPerStep + 1;
     
-    private int RangeZ => (pos1.y - pos2.y) * nodesPerStep + 1;
+    public int RangeZ => (pos1.y - pos2.y) * nodesPerStep + 1;
+
+    public int NodesPerStep => nodesPerStep;
 
     private readonly List<Vector3> _nodes = new List<Vector3>();
 
     private readonly List<Connection> _connections = new List<Connection>();
+
+    private float _nodeDistance = 0;
 
     private void Start()
     {
@@ -110,16 +97,6 @@ public class LevelInfo : MonoBehaviour
 
     private void Perform()
     {
-        Read();
-        Generate();
-        
-        StreamWriter writer = new StreamWriter("MapData.txt", false);
-        writer.Write(ToString());
-        writer.Close();
-    }
-
-    private void Read()
-    {
         if (pos2.x > pos1.x)
         {
             (pos1.x, pos2.x) = (pos2.x, pos1.x);
@@ -130,222 +107,64 @@ public class LevelInfo : MonoBehaviour
             (pos1.y, pos2.y) = (pos2.y, pos1.y);
         }
 
-        _data = new char[RangeX, RangeZ];
+        Data = new char[RangeX, RangeZ];
         
         for (int i = 0; i < RangeX; i++)
         {
             for (int j = 0; j < RangeZ; j++)
             {
-                _data[i, j] = ScanOpen(i, j) ? Open : Closed;
+                Data[i, j] = ScanOpen(i, j) ? Open : Closed;
             }
         }
-    }
-
-    private void Generate()
-    {
-        switch (type)
+        
+        List<NodeGenerator> generators = GetComponents<NodeGenerator>().ToList();
+        generators.AddRange(GetComponentsInChildren<NodeGenerator>());
+        NodeGenerator generator = generators.FirstOrDefault(g => g.enabled);
+        if (generator != null)
         {
-            case GenerationType.None:
-                return;
-            case GenerationType.Grid:
-                GenerateGrid();
-                break;
-            case GenerationType.CornerGraph:
-                GenerateCornerGraph();
-                break;
-        }
+            _nodeDistance = generator.SetNodeDistance();
+            generator.Generate();
 
-        ConnectNodes();
-    }
-
-    private void GenerateGrid()
-    {
-        for (int i = 0; i < RangeX; i++)
-        {
-            for (int j = 0; j < RangeZ; j++)
+            for (int i = 0; i < _nodes.Count; i++)
             {
-                if (IsOpen(i, j))
+                for (int j = 0; j < _nodes.Count; j++)
                 {
-                    AddNode(i, j);
+                    if (i == j)
+                    {
+                        continue;
+                    }
+
+                    float d = Vector3.Distance(_nodes[i], _nodes[j]);
+                    if (_nodeDistance > 0 && d > _nodeDistance)
+                    {
+                        continue;
+                    }
+
+                    if (Physics.Linecast(_nodes[i], _nodes[j]))
+                    {
+                        continue;
+                    }
+
+                    if (_connections.Any(c => c.A == _nodes[i] && c.B == _nodes[j] || c.A == _nodes[j] && c.B == _nodes[i]))
+                    {
+                        continue;
+                    }
+                
+                    _connections.Add(new Connection(_nodes[i], _nodes[j]));
                 }
             }
         }
 
-        nodeDistance = 1f / nodesPerStep;
-    }
-
-    private void GenerateCornerGraph()
-    {
-        for (int i = cornerNodeSteps * 2; i < RangeX - cornerNodeSteps * 2; i++)
+        foreach (NodeGenerator g in generators)
         {
-            for (int j = cornerNodeSteps * 2; j < RangeZ - cornerNodeSteps * 2; j++)
-            {
-                if (_data[i, j] != Closed)
-                {
-                    continue;
-                }
-                
-                // ++
-                if (_data[i + 1, j] != Closed && _data[i, j + 1] != Closed)
-                {
-                    bool good = true;
-                    for (int x = i + 1; x <= i + 1 + cornerNodeSteps * 2; x++)
-                    {
-                        for (int z = j + 1; z <= j + 1 + cornerNodeSteps * 2; z++)
-                        {
-                            if (_data[x, z] != Closed)
-                            {
-                                continue;
-                            }
-
-                            good = false;
-                            break;
-                        }
-
-                        if (!good)
-                        {
-                            break;
-                        }
-                    }
-
-                    if (good)
-                    {
-                        int posX = i + 1 + cornerNodeSteps;
-                        int posY = j + 1 + cornerNodeSteps;
-                        _data[posX, posY] = Node;
-                        AddNode(posX, posY);
-                    }
-                }
-                
-                // +-
-                if (_data[i + 1, j] != Closed && _data[i, j - 1] != Closed)
-                {
-                    bool good = true;
-                    for (int x = i + 1; x <= i + 1 + cornerNodeSteps * 2; x++)
-                    {
-                        for (int z = j - 1; z >= j - 1 - cornerNodeSteps * 2; z--)
-                        {
-                            if (_data[x, z] != Closed)
-                            {
-                                continue;
-                            }
-
-                            good = false;
-                            break;
-                        }
-
-                        if (!good)
-                        {
-                            break;
-                        }
-                    }
-
-                    if (good)
-                    {
-                        int posX = i + 1 + cornerNodeSteps;
-                        int posY = j - 1 - cornerNodeSteps;
-                        _data[posX, posY] = Node;
-                        AddNode(posX, posY);
-                    }
-                }
-                
-                // -+
-                if (_data[i - 1, j] != Closed && _data[i, j + 1] != Closed)
-                {
-                    bool good = true;
-                    for (int x = i - 1; x >= i - 1 - cornerNodeSteps * 2; x--)
-                    {
-                        for (int z = j + 1; z <= j + 1 + cornerNodeSteps * 2; z++)
-                        {
-                            if (_data[x, z] != Closed)
-                            {
-                                continue;
-                            }
-
-                            good = false;
-                            break;
-                        }
-
-                        if (!good)
-                        {
-                            break;
-                        }
-                    }
-
-                    if (good)
-                    {
-                        int posX = i - 1 - cornerNodeSteps;
-                        int posY = j + 1 + cornerNodeSteps;
-                        _data[posX, posY] = Node;
-                        AddNode(posX, posY);
-                    }
-                }
-                
-                // --
-                if (_data[i - 1, j] != Closed && _data[i, j - 1] != Closed)
-                {
-                    bool good = true;
-                    for (int x = i - 1; x >= i - 1 - cornerNodeSteps * 2; x--)
-                    {
-                        for (int z = j - 1; z >= j - 1 - cornerNodeSteps * 2; z--)
-                        {
-                            if (_data[x, z] != Closed)
-                            {
-                                continue;
-                            }
-
-                            good = false;
-                            break;
-                        }
-
-                        if (!good)
-                        {
-                            break;
-                        }
-                    }
-
-                    if (good)
-                    {
-                        int posX = i - 1 - cornerNodeSteps;
-                        int posY = j - 1 - cornerNodeSteps;
-                        _data[posX, posY] = Node;
-                        AddNode(posX, posY);
-                    }
-                }
-            }
+            g.Finish();
         }
-    }
-
-    private void ConnectNodes()
-    {
-        for (int i = 0; i < _nodes.Count; i++)
-        {
-            for (int j = 0; j < _nodes.Count; j++)
-            {
-                if (i == j)
-                {
-                    continue;
-                }
-
-                float d = Vector3.Distance(_nodes[i], _nodes[j]);
-                if (nodeDistance > 0 && d > nodeDistance)
-                {
-                    continue;
-                }
-
-                if (Physics.Linecast(_nodes[i], _nodes[j]))
-                {
-                    continue;
-                }
-
-                if (_connections.Any(c => c.A == _nodes[i] && c.B == _nodes[j] || c.A == _nodes[j] && c.B == _nodes[i]))
-                {
-                    continue;
-                }
-                
-                _connections.Add(new Connection(_nodes[i], _nodes[j]));
-            }
-        }
+        
+        StreamWriter writer = new StreamWriter("MapData.txt", false);
+        writer.Write(ToString());
+        writer.Close();
+        
+        //Finish();
     }
 
     private float2 GetRealPosition(int i, int j)
@@ -364,14 +183,14 @@ public class LevelInfo : MonoBehaviour
         return false;
     }
 
-    private bool IsOpen(int i, int j)
+    public bool IsOpen(int i, int j)
     {
-        if (_data == null)
+        if (Data == null)
         {
             return false;
         }
 
-        return _data[i, j] != Closed;
+        return Data[i, j] != Closed;
     }
 
     public void AddNode(int i, int j)
@@ -394,7 +213,7 @@ public class LevelInfo : MonoBehaviour
 
     public override string ToString()
     {
-        if (_data == null)
+        if (Data == null)
         {
             return "No data.";
         }
@@ -404,7 +223,7 @@ public class LevelInfo : MonoBehaviour
         {
             for (int j = 0; j < RangeZ; j++)
             {
-                s += _data[i, j];
+                s += Data[i, j];
             }
 
             if (i != RangeX - 1)

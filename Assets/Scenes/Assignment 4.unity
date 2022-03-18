@@ -920,6 +920,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2139949937}
   - component: {fileID: 2139949936}
+  - component: {fileID: 2139949939}
+  - component: {fileID: 2139949938}
   m_Layer: 0
   m_Name: Level
   m_TagString: Untagged
@@ -939,7 +941,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 159bfd9a85fd43cd829700c1b6e5e75d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  type: 2
   pos1:
     x: 5
     y: 5
@@ -949,9 +950,7 @@ MonoBehaviour:
   height: 10
   distance: 11
   nodesPerStep: 4
-  cornerNodeSteps: 3
   nodeHeightOffset: 0.1
-  nodeDistance: 0
   groundLayers:
     serializedVersion: 2
     m_Bits: 8
@@ -969,3 +968,29 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2139949938
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2139949935}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f34aef3661e4fc596e362090c5bca1c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nodeDistance: 0
+  cornerNodeSteps: 3
+--- !u!114 &2139949939
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2139949935}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f742fb1c1b2c4584b272e8885134b027, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
