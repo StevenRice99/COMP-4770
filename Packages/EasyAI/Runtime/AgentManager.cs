@@ -37,6 +37,19 @@ public class AgentManager : MonoBehaviour
     }
     
     /// <summary>
+    /// Determine what navigation lines are drawn.
+    /// Off - No lines are drawn.
+    /// All - Every line for every connection is drawn.
+    /// Active - Only lines for connections being used by agents are drawn.
+    /// </summary>
+    public enum NavigationState : byte
+    {
+        Off,
+        All,
+        Active
+    }
+    
+    /// <summary>
     /// What GUI State to display.
     /// Main - Displays a list of all agents and global messages. Never in this state if there is only one agent in the scene.
     /// Agent - Displays the selected agent. Displayed in place of "Main" if there is only one agent in the scene.
@@ -100,7 +113,16 @@ public class AgentManager : MonoBehaviour
         "All - Every line from every agent, sensor, and actuator is drawn.\n" +
         "Selected - If an agent is selected, only it and its sensors and actuators are drawn. If an individual sensor or actuator is selected, only it is drawn."
     )]
-    private GizmosState gizmos;
+    private GizmosState gizmos = GizmosState.All;
+    
+    [SerializeField]
+    [Tooltip(
+        "Determine what navigation lines are drawn.\n" +
+        "Off - No lines are drawn.\n" +
+        "All - Every line for every connection is drawn.\n" +
+        "Active - Only lines for connections being used by agents are drawn."
+    )]
+    private NavigationState navigation = NavigationState.All;
 
     [SerializeField]
     [Tooltip("The currently selected camera. Set this to start with that camera active. Leaving empty will default to the first camera by alphabetic order.")]
@@ -632,6 +654,20 @@ public class AgentManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Change to the next navigation state.
+    /// </summary>
+    public void ChangeNavigationState()
+    {
+        if (navigation == NavigationState.Active)
+        {
+            navigation = NavigationState.Off;
+            return;
+        }
+
+        navigation++;
+    }
+
+    /// <summary>
     /// Change the gizmos state.
     /// </summary>
     /// <param name="state">The state to change to.</param>
@@ -698,6 +734,19 @@ public class AgentManager : MonoBehaviour
         foreach (LevelSection levelSection in FindObjectsOfType<LevelSection>())
         {
             levelSection.Generate();
+        }
+
+        foreach (NodeBase nodeBase in FindObjectsOfType<NodeBase>())
+        {
+            nodeBase.Finish();
+        }
+
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            if (!connections.Any(c => c.A == nodes[i] || c.B == nodes[i]))
+            {
+                nodes.RemoveAt(i--);
+            }
         }
         
         FindCameras();
@@ -921,6 +970,16 @@ public class AgentManager : MonoBehaviour
         GL.MultMatrix(transform.localToWorldMatrix);
         GL.Begin(GL.LINES);
 
+        if (navigation == NavigationState.All)
+        {
+            foreach (LevelSection.Connection connection in connections)
+            {
+                GL.Color(Color.green);
+                GL.Vertex(connection.A);
+                GL.Vertex(connection.B);
+            }
+        }
+
         // Render either all or the selected agent/component.
         if (gizmos == GizmosState.All)
         {
@@ -948,16 +1007,6 @@ public class AgentManager : MonoBehaviour
             
         GL.End();
         GL.PopMatrix();
-    }
-    
-    private void OnDrawGizmos()
-    {
-        // CONNECTIONS
-        Gizmos.color = Color.green;
-        foreach (LevelSection.Connection connection in connections)
-        {
-            Gizmos.DrawLine(connection.A, connection.B);
-        }
     }
 
     /// <summary>
@@ -1508,6 +1557,21 @@ public class AgentManager : MonoBehaviour
             }))
         {
             ChangeGizmosState();
+        }
+
+        if (connections.Count > 0)
+        {
+            // Button to change navigation mode.
+            y = NextItem(y, h, p);
+            if (GuiButton(x, y, w, h, navigation switch
+                {
+                    NavigationState.Off => "Navigation: Off",
+                    NavigationState.Active => "Navigation: Active",
+                    _ => "Navigation: All"
+                }))
+            {
+                ChangeNavigationState();
+            }
         }
 
         if (Cameras.Length > 1)

@@ -59,21 +59,21 @@ public class LevelSection : NodeBase
 
     private float _nodeDistance;
 
-    private void OnDrawGizmos()
+    private void OnDrawGizmosSelected()
     {
-        // VERTICAL
+        // Vertical lines.
         Gizmos.DrawLine(new Vector3(pos1.x, height, pos1.y), new Vector3(pos1.x, height - distance, pos1.y));
         Gizmos.DrawLine(new Vector3(pos1.x, height, pos2.y), new Vector3(pos1.x, height - distance, pos2.y));
         Gizmos.DrawLine(new Vector3(pos2.x, height, pos1.y), new Vector3(pos2.x, height - distance, pos1.y));
         Gizmos.DrawLine(new Vector3(pos2.x, height, pos2.y), new Vector3(pos2.x, height - distance, pos2.y));
         
-        // TOP
+        // Top horizontal lines.
         Gizmos.DrawLine(new Vector3(pos1.x, height, pos1.y), new Vector3(pos1.x, height, pos2.y));
         Gizmos.DrawLine(new Vector3(pos1.x, height, pos1.y), new Vector3(pos2.x, height, pos1.y));
         Gizmos.DrawLine(new Vector3(pos2.x, height, pos2.y), new Vector3(pos1.x, height, pos2.y));
         Gizmos.DrawLine(new Vector3(pos2.x, height, pos2.y), new Vector3(pos2.x, height, pos1.y));
         
-        // BOTTOM
+        // Bottom horizontal lines.
         Gizmos.DrawLine(new Vector3(pos1.x, height - distance, pos1.y), new Vector3(pos1.x, height - distance, pos2.y));
         Gizmos.DrawLine(new Vector3(pos1.x, height - distance, pos1.y), new Vector3(pos2.x, height - distance, pos1.y));
         Gizmos.DrawLine(new Vector3(pos2.x, height - distance, pos2.y), new Vector3(pos1.x, height - distance, pos2.y));
@@ -107,7 +107,7 @@ public class LevelSection : NodeBase
         NodeGenerator generator = generators.FirstOrDefault(g => g.enabled);
         if (generator != null)
         {
-            generator.Setup();
+            generator.LevelSection = this;
             _nodeDistance = generator.SetNodeDistance();
             generator.Generate();
 

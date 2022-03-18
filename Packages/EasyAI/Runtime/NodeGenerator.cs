@@ -1,20 +1,6 @@
 ﻿public abstract class NodeGenerator : NodeBase
 {
-    protected LevelSection levelSection;
-
-    private void Start()
-    {
-        Setup();
-    }
-
-    public void Setup()
-    {
-        levelSection = GetComponent<LevelSection>();
-        if (levelSection == null)
-        {
-            Finish();
-        }
-    }
+    public LevelSection LevelSection { get; set; }
 
     public abstract void Generate();
 

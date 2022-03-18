@@ -2,18 +2,18 @@
 {
     public override float SetNodeDistance()
     {
-        return 1f / levelSection.NodesPerStep;
+        return 1f / LevelSection.NodesPerStep;
     }
 
     public override void Generate()
     {
-        for (int i = 0; i < levelSection.RangeX; i++)
+        for (int i = 0; i < LevelSection.RangeX; i++)
         {
-            for (int j = 0; j < levelSection.RangeZ; j++)
+            for (int j = 0; j < LevelSection.RangeZ; j++)
             {
-                if (levelSection.IsOpen(i, j))
+                if (LevelSection.IsOpen(i, j))
                 {
-                    levelSection.AddNode(i, j);
+                    LevelSection.AddNode(i, j);
                 }
             }
         }
