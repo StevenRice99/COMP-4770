@@ -3,10 +3,12 @@
 public class CornerGraphGenerator : NodeGenerator
 {
     [SerializeField]
+    [Tooltip("How far away can nodes connect to each other from. Setting to zero means there is no limit.")]
     private float nodeDistance;
     
     [SerializeField]
     [Min(0)]
+    [Tooltip("How far away from corners should the nodes be placed.")]
     private int cornerNodeSteps;
     
     public override float SetNodeDistance()
