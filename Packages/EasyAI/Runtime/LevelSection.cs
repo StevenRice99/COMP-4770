@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LevelSection : NodeBase
 {
@@ -12,7 +13,7 @@ public class LevelSection : NodeBase
 
     public const char Node = '*';
     
-    private struct Connection
+    public struct Connection
     {
         public readonly Vector3 A;
         public readonly Vector3 B;
@@ -56,16 +57,7 @@ public class LevelSection : NodeBase
 
     public int NodesPerStep => nodesPerStep;
 
-    private readonly List<Vector3> _nodes = new List<Vector3>();
-
-    private readonly List<Connection> _connections = new List<Connection>();
-
     private float _nodeDistance;
-
-    private void Start()
-    {
-        Perform();
-    }
 
     private void OnDrawGizmos()
     {
@@ -86,16 +78,9 @@ public class LevelSection : NodeBase
         Gizmos.DrawLine(new Vector3(pos1.x, height - distance, pos1.y), new Vector3(pos2.x, height - distance, pos1.y));
         Gizmos.DrawLine(new Vector3(pos2.x, height - distance, pos2.y), new Vector3(pos1.x, height - distance, pos2.y));
         Gizmos.DrawLine(new Vector3(pos2.x, height - distance, pos2.y), new Vector3(pos2.x, height - distance, pos1.y));
-        
-        // CONNECTIONS
-        Gizmos.color = Color.green;
-        foreach (Connection connection in _connections)
-        {
-            Gizmos.DrawLine(connection.A, connection.B);
-        }
     }
 
-    private void Perform()
+    public void Generate()
     {
         if (pos2.x > pos1.x)
         {
@@ -126,32 +111,32 @@ public class LevelSection : NodeBase
             _nodeDistance = generator.SetNodeDistance();
             generator.Generate();
 
-            for (int i = 0; i < _nodes.Count; i++)
+            for (int i = 0; i < AgentManager.Singleton.nodes.Count; i++)
             {
-                for (int j = 0; j < _nodes.Count; j++)
+                for (int j = 0; j < AgentManager.Singleton.nodes.Count; j++)
                 {
                     if (i == j)
                     {
                         continue;
                     }
 
-                    float d = Vector3.Distance(_nodes[i], _nodes[j]);
+                    float d = Vector3.Distance(AgentManager.Singleton.nodes[i], AgentManager.Singleton.nodes[j]);
                     if (_nodeDistance > 0 && d > _nodeDistance)
                     {
                         continue;
                     }
 
-                    if (Physics.Linecast(_nodes[i], _nodes[j]))
+                    if (Physics.Linecast(AgentManager.Singleton.nodes[i], AgentManager.Singleton.nodes[j]))
                     {
                         continue;
                     }
 
-                    if (_connections.Any(c => c.A == _nodes[i] && c.B == _nodes[j] || c.A == _nodes[j] && c.B == _nodes[i]))
+                    if (AgentManager.Singleton.connections.Any(c => c.A == AgentManager.Singleton.nodes[i] && c.B == AgentManager.Singleton.nodes[j] || c.A == AgentManager.Singleton.nodes[j] && c.B == AgentManager.Singleton.nodes[i]))
                     {
                         continue;
                     }
                 
-                    _connections.Add(new Connection(_nodes[i], _nodes[j]));
+                    AgentManager.Singleton.connections.Add(new Connection(AgentManager.Singleton.nodes[i], AgentManager.Singleton.nodes[j]));
                 }
             }
         }
@@ -160,12 +145,33 @@ public class LevelSection : NodeBase
         {
             g.Finish();
         }
+
+        const string folder = "Maps";
+
+        if (!Directory.Exists(folder))
+        {
+            DirectoryInfo info = Directory.CreateDirectory(folder);
+            if (!info.Exists)
+            {
+                Finish();
+                return;
+            }
+        }
         
-        StreamWriter writer = new StreamWriter("MapData.txt", false);
+        string fileName = $"{folder}/{SceneManager.GetActiveScene().name}";
+        LevelSection[] levelSections = FindObjectsOfType<LevelSection>();
+        if (levelSections.Length > 1)
+        {
+            fileName += $"_{levelSections.ToList().IndexOf(this)}";
+        }
+
+        fileName += ".txt";
+        
+        StreamWriter writer = new StreamWriter(fileName, false);
         writer.Write(ToString());
         writer.Close();
         
-        //Finish();
+        Finish();
     }
 
     private float2 GetRealPosition(int i, int j)
@@ -206,9 +212,9 @@ public class LevelSection : NodeBase
         y += nodeHeightOffset;
         
         Vector3 v = new Vector3(pos.x, y, pos.y);
-        if (!_nodes.Contains(v))
+        if (!AgentManager.Singleton.nodes.Contains(v))
         {
-            _nodes.Add(v);
+            AgentManager.Singleton.nodes.Add(v);
         }
     }
 

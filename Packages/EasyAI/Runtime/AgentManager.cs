@@ -140,6 +140,16 @@ public class AgentManager : MonoBehaviour
     /// All cameras in the scene.
     /// </summary>
     public Camera[] Cameras { get; protected set; } = Array.Empty<Camera>();
+    
+    /// <summary>
+    /// List of all navigation nodes.
+    /// </summary>
+    public readonly List<Vector3> nodes = new List<Vector3>();
+
+    /// <summary>
+    /// List of all navigation connections.
+    /// </summary>
+    public readonly List<LevelSection.Connection> connections = new List<LevelSection.Connection>();
 
     /// <summary>
     /// All agents which move during an update tick.
@@ -685,6 +695,11 @@ public class AgentManager : MonoBehaviour
 
     protected virtual void Start()
     {
+        foreach (LevelSection levelSection in FindObjectsOfType<LevelSection>())
+        {
+            levelSection.Generate();
+        }
+        
         FindCameras();
         if (selectedCamera != null)
         {
@@ -933,6 +948,16 @@ public class AgentManager : MonoBehaviour
             
         GL.End();
         GL.PopMatrix();
+    }
+    
+    private void OnDrawGizmos()
+    {
+        // CONNECTIONS
+        Gizmos.color = Color.green;
+        foreach (LevelSection.Connection connection in connections)
+        {
+            Gizmos.DrawLine(connection.A, connection.B);
+        }
     }
 
     /// <summary>
