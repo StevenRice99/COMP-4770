@@ -957,12 +957,6 @@ public class AgentManager : MonoBehaviour
         
     private void OnRenderObject()
     {
-        // Nothing to do if gizmos are turned off.
-        if (gizmos == GizmosState.Off)
-        {
-            return;
-        }
-            
         LineMaterial();
         _lineMaterial.SetPass(0);
 
@@ -972,39 +966,43 @@ public class AgentManager : MonoBehaviour
 
         if (navigation == NavigationState.All)
         {
+            GL.Color(Color.white);
             foreach (NodeArea.Connection connection in connections)
             {
-                GL.Color(Color.green);
                 GL.Vertex(connection.A);
                 GL.Vertex(connection.B);
             }
         }
-
-        // Render either all or the selected agent/component.
-        if (gizmos == GizmosState.All)
+        
+        // Nothing to do if gizmos are turned off.
+        if (gizmos != GizmosState.Off)
         {
-            foreach (Agent agent in Agents)
+            // Render either all or the selected agent/component.
+            if (gizmos == GizmosState.All)
             {
-                AgentGizmos(agent);
+                foreach (Agent agent in Agents)
+                {
+                    AgentGizmos(agent);
+                }
             }
-        }
-        else
-        {
-            if (Agents.Count == 1)
+            else
             {
-                SelectedAgent = Agents[0];
-            }
+                if (Agents.Count == 1)
+                {
+                    SelectedAgent = Agents[0];
+                }
                 
-            if (_selectedComponent != null)
-            {
-                _selectedComponent.DisplayGizmos();
-            }
-            else if (SelectedAgent != null)
-            {
-                AgentGizmos(SelectedAgent);
+                if (_selectedComponent != null)
+                {
+                    _selectedComponent.DisplayGizmos();
+                }
+                else if (SelectedAgent != null)
+                {
+                    AgentGizmos(SelectedAgent);
+                }
             }
         }
-            
+
         GL.End();
         GL.PopMatrix();
     }

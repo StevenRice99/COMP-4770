@@ -7,11 +7,11 @@ using UnityEngine.SceneManagement;
 
 public class NodeArea : NodeBase
 {
-    public const char Open = ' ';
+    private const char Open = ' ';
 
-    public const char Closed = '#';
+    private const char Closed = '#';
 
-    public const char Node = '*';
+    private const char Node = '*';
     
     public struct Connection
     {
@@ -35,12 +35,12 @@ public class NodeArea : NodeBase
 
     [SerializeField]
     [Tooltip("How high up to start raycasts for node generation. Ensure this is above all level geometry.")]
-    private float height = 10;
+    private float ceiling = 10;
 
     [SerializeField]
     [Min(float.Epsilon)]
     [Tooltip("How far to raycast for node generation. Ensure this extends down past or equal to the level geometry.")]
-    private float distance = 11;
+    private float floor = -1;
 
     [SerializeField]
     [Min(1)]
@@ -58,15 +58,15 @@ public class NodeArea : NodeBase
     private float nodeHeightOffset = 0.1f;
 
     [SerializeField]
-    [Tooltip("Which layers can nodes be placed on.")]
-    private LayerMask groundLayers;
-
-    [SerializeField]
     [Min(0)]
     [Tooltip("How wide is the agent radius for connecting nodes to ensure enough space for movement.")]
     private float navigationRadius;
 
-    public char[,] Data { get; private set; }
+    [SerializeField]
+    [Tooltip("Which layers can nodes be placed on.")]
+    private LayerMask groundLayers;
+
+    private char[,] data;
 
     public int RangeX => (corner1.x - corner2.x) * nodesPerStep + 1;
     
@@ -79,22 +79,22 @@ public class NodeArea : NodeBase
     private void OnDrawGizmosSelected()
     {
         // Vertical lines.
-        Gizmos.DrawLine(new Vector3(corner1.x, height, corner1.y), new Vector3(corner1.x, height - distance, corner1.y));
-        Gizmos.DrawLine(new Vector3(corner1.x, height, corner2.y), new Vector3(corner1.x, height - distance, corner2.y));
-        Gizmos.DrawLine(new Vector3(corner2.x, height, corner1.y), new Vector3(corner2.x, height - distance, corner1.y));
-        Gizmos.DrawLine(new Vector3(corner2.x, height, corner2.y), new Vector3(corner2.x, height - distance, corner2.y));
+        Gizmos.DrawLine(new Vector3(corner1.x, ceiling, corner1.y), new Vector3(corner1.x, floor, corner1.y));
+        Gizmos.DrawLine(new Vector3(corner1.x, ceiling, corner2.y), new Vector3(corner1.x, floor, corner2.y));
+        Gizmos.DrawLine(new Vector3(corner2.x, ceiling, corner1.y), new Vector3(corner2.x, floor, corner1.y));
+        Gizmos.DrawLine(new Vector3(corner2.x, ceiling, corner2.y), new Vector3(corner2.x, floor, corner2.y));
         
         // Top horizontal lines.
-        Gizmos.DrawLine(new Vector3(corner1.x, height, corner1.y), new Vector3(corner1.x, height, corner2.y));
-        Gizmos.DrawLine(new Vector3(corner1.x, height, corner1.y), new Vector3(corner2.x, height, corner1.y));
-        Gizmos.DrawLine(new Vector3(corner2.x, height, corner2.y), new Vector3(corner1.x, height, corner2.y));
-        Gizmos.DrawLine(new Vector3(corner2.x, height, corner2.y), new Vector3(corner2.x, height, corner1.y));
+        Gizmos.DrawLine(new Vector3(corner1.x, ceiling, corner1.y), new Vector3(corner1.x, ceiling, corner2.y));
+        Gizmos.DrawLine(new Vector3(corner1.x, ceiling, corner1.y), new Vector3(corner2.x, ceiling, corner1.y));
+        Gizmos.DrawLine(new Vector3(corner2.x, ceiling, corner2.y), new Vector3(corner1.x, ceiling, corner2.y));
+        Gizmos.DrawLine(new Vector3(corner2.x, ceiling, corner2.y), new Vector3(corner2.x, ceiling, corner1.y));
         
         // Bottom horizontal lines.
-        Gizmos.DrawLine(new Vector3(corner1.x, height - distance, corner1.y), new Vector3(corner1.x, height - distance, corner2.y));
-        Gizmos.DrawLine(new Vector3(corner1.x, height - distance, corner1.y), new Vector3(corner2.x, height - distance, corner1.y));
-        Gizmos.DrawLine(new Vector3(corner2.x, height - distance, corner2.y), new Vector3(corner1.x, height - distance, corner2.y));
-        Gizmos.DrawLine(new Vector3(corner2.x, height - distance, corner2.y), new Vector3(corner2.x, height - distance, corner1.y));
+        Gizmos.DrawLine(new Vector3(corner1.x, floor, corner1.y), new Vector3(corner1.x, floor, corner2.y));
+        Gizmos.DrawLine(new Vector3(corner1.x, floor, corner1.y), new Vector3(corner2.x, floor, corner1.y));
+        Gizmos.DrawLine(new Vector3(corner2.x, floor, corner2.y), new Vector3(corner1.x, floor, corner2.y));
+        Gizmos.DrawLine(new Vector3(corner2.x, floor, corner2.y), new Vector3(corner2.x, floor, corner1.y));
     }
 
     public void Generate()
@@ -109,13 +109,13 @@ public class NodeArea : NodeBase
             (corner1.y, corner2.y) = (corner2.y, corner1.y);
         }
 
-        Data = new char[RangeX, RangeZ];
+        data = new char[RangeX, RangeZ];
         
-        for (int i = 0; i < RangeX; i++)
+        for (int x = 0; x < RangeX; x++)
         {
-            for (int j = 0; j < RangeZ; j++)
+            for (int z = 0; z < RangeZ; z++)
             {
-                Data[i, j] = ScanOpen(i, j) ? Open : Closed;
+                data[x, z] = ScanOpen(x, z) ? Open : Closed;
             }
         }
         
@@ -128,16 +128,16 @@ public class NodeArea : NodeBase
             _nodeDistance = generator.SetNodeDistance();
             generator.Generate();
 
-            for (int i = 0; i < AgentManager.Singleton.nodes.Count; i++)
+            for (int x = 0; x < AgentManager.Singleton.nodes.Count; x++)
             {
-                for (int j = 0; j < AgentManager.Singleton.nodes.Count; j++)
+                for (int z = 0; z < AgentManager.Singleton.nodes.Count; z++)
                 {
-                    if (i == j)
+                    if (x == z)
                     {
                         continue;
                     }
 
-                    float d = Vector3.Distance(AgentManager.Singleton.nodes[i], AgentManager.Singleton.nodes[j]);
+                    float d = Vector3.Distance(AgentManager.Singleton.nodes[x], AgentManager.Singleton.nodes[z]);
                     if (_nodeDistance > 0 && d > _nodeDistance)
                     {
                         continue;
@@ -145,16 +145,16 @@ public class NodeArea : NodeBase
 
                     if (navigationRadius <= 0)
                     {
-                        if (Physics.Linecast(AgentManager.Singleton.nodes[i], AgentManager.Singleton.nodes[j]))
+                        if (Physics.Linecast(AgentManager.Singleton.nodes[x], AgentManager.Singleton.nodes[z]))
                         {
                             continue;
                         }
                     }
                     else
                     {
-                        Vector3 p1 = AgentManager.Singleton.nodes[i];
+                        Vector3 p1 = AgentManager.Singleton.nodes[x];
                         p1.y += navigationRadius / 2;
-                        Vector3 p2 = AgentManager.Singleton.nodes[j];
+                        Vector3 p2 = AgentManager.Singleton.nodes[z];
                         p2.y += navigationRadius / 2;
                         Vector3 direction = (p2 - p1).normalized;
                         if (Physics.SphereCast(p1, navigationRadius, direction, out _, d))
@@ -163,12 +163,12 @@ public class NodeArea : NodeBase
                         }
                     }
 
-                    if (AgentManager.Singleton.connections.Any(c => c.A == AgentManager.Singleton.nodes[i] && c.B == AgentManager.Singleton.nodes[j] || c.A == AgentManager.Singleton.nodes[j] && c.B == AgentManager.Singleton.nodes[i]))
+                    if (AgentManager.Singleton.connections.Any(c => c.A == AgentManager.Singleton.nodes[x] && c.B == AgentManager.Singleton.nodes[z] || c.A == AgentManager.Singleton.nodes[z] && c.B == AgentManager.Singleton.nodes[x]))
                     {
                         continue;
                     }
                 
-                    AgentManager.Singleton.connections.Add(new Connection(AgentManager.Singleton.nodes[i], AgentManager.Singleton.nodes[j]));
+                    AgentManager.Singleton.connections.Add(new Connection(AgentManager.Singleton.nodes[x], AgentManager.Singleton.nodes[z]));
                 }
             }
         }
@@ -205,15 +205,15 @@ public class NodeArea : NodeBase
         Finish();
     }
 
-    private float2 GetRealPosition(int i, int j)
+    private float2 GetRealPosition(int x, int z)
     {
-        return new float2(corner2.x + i * 1f / nodesPerStep, corner2.y + j * 1f / nodesPerStep);
+        return new float2(corner2.x + x * 1f / nodesPerStep, corner2.y + z * 1f / nodesPerStep);
     }
 
-    private bool ScanOpen(int i, int j)
+    private bool ScanOpen(int x, int z)
     {
-        float2 pos = GetRealPosition(i, j);
-        if (Physics.Raycast(new Vector3(pos.x, height, pos.y), Vector3.down, out RaycastHit hit, Mathf.Infinity))
+        float2 pos = GetRealPosition(x, z);
+        if (Physics.Raycast(new Vector3(pos.x, ceiling, pos.y), Vector3.down, out RaycastHit hit, ceiling - floor))
         {
             return (groundLayers.value & (1 << hit.transform.gameObject.layer)) > 0;
         }
@@ -221,21 +221,17 @@ public class NodeArea : NodeBase
         return false;
     }
 
-    public bool IsOpen(int i, int j)
+    public bool IsOpen(int x, int z)
     {
-        if (Data == null)
-        {
-            return false;
-        }
-
-        return Data[i, j] != Closed;
+        return data[x, z] != Closed;
     }
 
-    public void AddNode(int i, int j)
+    public void AddNode(int x, int z)
     {
-        float2 pos = GetRealPosition(i, j);
-        float y = height;
-        if (Physics.Raycast(new Vector3(pos.x, height, pos.y), Vector3.down, out RaycastHit hit, Mathf.Infinity, groundLayers))
+        data[x, z] = Node;
+        float2 pos = GetRealPosition(x, z);
+        float y = ceiling;
+        if (Physics.Raycast(new Vector3(pos.x, ceiling, pos.y), Vector3.down, out RaycastHit hit, Mathf.Infinity, groundLayers))
         {
             y = hit.point.y;
         }
@@ -251,7 +247,7 @@ public class NodeArea : NodeBase
 
     public override string ToString()
     {
-        if (Data == null)
+        if (data == null)
         {
             return "No data.";
         }
@@ -261,7 +257,7 @@ public class NodeArea : NodeBase
         {
             for (int j = 0; j < RangeZ; j++)
             {
-                s += Data[i, j];
+                s += data[i, j];
             }
 
             if (i != RangeX - 1)

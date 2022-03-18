@@ -18,24 +18,24 @@ public class CornerGraphGenerator : NodeGenerator
     
     public override void Generate()
     {
-        for (int i = cornerNodeSteps * 2; i < NodeArea.RangeX - cornerNodeSteps * 2; i++)
+        for (int x = cornerNodeSteps * 2; x < NodeArea.RangeX - cornerNodeSteps * 2; x++)
         {
-            for (int j = cornerNodeSteps * 2; j < NodeArea.RangeZ - cornerNodeSteps * 2; j++)
+            for (int z = cornerNodeSteps * 2; z < NodeArea.RangeZ - cornerNodeSteps * 2; z++)
             {
-                if (NodeArea.Data[i, j] != NodeArea.Closed)
+                if (NodeArea.IsOpen(x, z))
                 {
                     continue;
                 }
                 
                 // ++
-                if (NodeArea.Data[i + 1, j] != NodeArea.Closed && NodeArea.Data[i, j + 1] != NodeArea.Closed)
+                if (NodeArea.IsOpen(x + 1, z) && NodeArea.IsOpen(x, z + 1))
                 {
                     bool good = true;
-                    for (int x = i + 1; x <= i + 1 + cornerNodeSteps * 2; x++)
+                    for (int x1 = x + 1; x1 <= x + 1 + cornerNodeSteps * 2; x1++)
                     {
-                        for (int z = j + 1; z <= j + 1 + cornerNodeSteps * 2; z++)
+                        for (int z1 = z + 1; z1 <= z + 1 + cornerNodeSteps * 2; z1++)
                         {
-                            if (NodeArea.Data[x, z] != NodeArea.Closed)
+                            if (NodeArea.IsOpen(x1, z1))
                             {
                                 continue;
                             }
@@ -52,22 +52,19 @@ public class CornerGraphGenerator : NodeGenerator
 
                     if (good)
                     {
-                        int posX = i + 1 + cornerNodeSteps;
-                        int posY = j + 1 + cornerNodeSteps;
-                        NodeArea.Data[posX, posY] = NodeArea.Node;
-                        NodeArea.AddNode(posX, posY);
+                        NodeArea.AddNode(x + 1 + cornerNodeSteps, z + 1 + cornerNodeSteps);
                     }
                 }
                 
                 // +-
-                if (NodeArea.Data[i + 1, j] != NodeArea.Closed && NodeArea.Data[i, j - 1] != NodeArea.Closed)
+                if (NodeArea.IsOpen(x + 1, z) && NodeArea.IsOpen(x, z - 1))
                 {
                     bool good = true;
-                    for (int x = i + 1; x <= i + 1 + cornerNodeSteps * 2; x++)
+                    for (int x1 = x + 1; x1 <= x + 1 + cornerNodeSteps * 2; x1++)
                     {
-                        for (int z = j - 1; z >= j - 1 - cornerNodeSteps * 2; z--)
+                        for (int z1 = z - 1; z1 >= z - 1 - cornerNodeSteps * 2; z1--)
                         {
-                            if (NodeArea.Data[x, z] != NodeArea.Closed)
+                            if (NodeArea.IsOpen(x1, z1))
                             {
                                 continue;
                             }
@@ -84,22 +81,19 @@ public class CornerGraphGenerator : NodeGenerator
 
                     if (good)
                     {
-                        int posX = i + 1 + cornerNodeSteps;
-                        int posY = j - 1 - cornerNodeSteps;
-                        NodeArea.Data[posX, posY] = NodeArea.Node;
-                        NodeArea.AddNode(posX, posY);
+                        NodeArea.AddNode(x + 1 + cornerNodeSteps, z - 1 - cornerNodeSteps);
                     }
                 }
                 
                 // -+
-                if (NodeArea.Data[i - 1, j] != NodeArea.Closed && NodeArea.Data[i, j + 1] != NodeArea.Closed)
+                if (NodeArea.IsOpen(x - 1, z) && NodeArea.IsOpen(x, z + 1))
                 {
                     bool good = true;
-                    for (int x = i - 1; x >= i - 1 - cornerNodeSteps * 2; x--)
+                    for (int x1 = x - 1; x1 >= x - 1 - cornerNodeSteps * 2; x1--)
                     {
-                        for (int z = j + 1; z <= j + 1 + cornerNodeSteps * 2; z++)
+                        for (int z1 = z + 1; z1 <= z + 1 + cornerNodeSteps * 2; z1++)
                         {
-                            if (NodeArea.Data[x, z] != NodeArea.Closed)
+                            if (NodeArea.IsOpen(x1, z1))
                             {
                                 continue;
                             }
@@ -116,22 +110,19 @@ public class CornerGraphGenerator : NodeGenerator
 
                     if (good)
                     {
-                        int posX = i - 1 - cornerNodeSteps;
-                        int posY = j + 1 + cornerNodeSteps;
-                        NodeArea.Data[posX, posY] = NodeArea.Node;
-                        NodeArea.AddNode(posX, posY);
+                        NodeArea.AddNode(x - 1 - cornerNodeSteps, z + 1 + cornerNodeSteps);
                     }
                 }
                 
                 // --
-                if (NodeArea.Data[i - 1, j] != NodeArea.Closed && NodeArea.Data[i, j - 1] != NodeArea.Closed)
+                if (NodeArea.IsOpen(x - 1, z) && NodeArea.IsOpen(x, z - 1))
                 {
                     bool good = true;
-                    for (int x = i - 1; x >= i - 1 - cornerNodeSteps * 2; x--)
+                    for (int x1 = x - 1; x1 >= x - 1 - cornerNodeSteps * 2; x1--)
                     {
-                        for (int z = j - 1; z >= j - 1 - cornerNodeSteps * 2; z--)
+                        for (int z1 = z - 1; z1 >= z - 1 - cornerNodeSteps * 2; z1--)
                         {
-                            if (NodeArea.Data[x, z] != NodeArea.Closed)
+                            if (NodeArea.IsOpen(x1, z1))
                             {
                                 continue;
                             }
@@ -148,10 +139,7 @@ public class CornerGraphGenerator : NodeGenerator
 
                     if (good)
                     {
-                        int posX = i - 1 - cornerNodeSteps;
-                        int posY = j - 1 - cornerNodeSteps;
-                        NodeArea.Data[posX, posY] = NodeArea.Node;
-                        NodeArea.AddNode(posX, posY);
+                        NodeArea.AddNode(x - 1 - cornerNodeSteps, z - 1 - cornerNodeSteps);
                     }
                 }
             }

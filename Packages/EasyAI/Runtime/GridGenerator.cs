@@ -7,13 +7,13 @@
 
     public override void Generate()
     {
-        for (int i = 0; i < NodeArea.RangeX; i++)
+        for (int x = 0; x < NodeArea.RangeX; x++)
         {
-            for (int j = 0; j < NodeArea.RangeZ; j++)
+            for (int z = 0; z < NodeArea.RangeZ; z++)
             {
-                if (NodeArea.IsOpen(i, j))
+                if (NodeArea.IsOpen(x, z))
                 {
-                    NodeArea.AddNode(i, j);
+                    NodeArea.AddNode(x, z);
                 }
             }
         }
