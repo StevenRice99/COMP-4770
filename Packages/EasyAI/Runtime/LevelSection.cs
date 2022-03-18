@@ -49,6 +49,10 @@ public class LevelSection : NodeBase
     [SerializeField]
     private LayerMask groundLayers;
 
+    [SerializeField]
+    [Min(0)]
+    private float navigationRadius;
+
     public char[,] Data { get; set; }
 
     public int RangeX => (pos1.x - pos2.x) * nodesPerStep + 1;
@@ -126,9 +130,24 @@ public class LevelSection : NodeBase
                         continue;
                     }
 
-                    if (Physics.Linecast(AgentManager.Singleton.nodes[i], AgentManager.Singleton.nodes[j]))
+                    if (navigationRadius <= 0)
                     {
-                        continue;
+                        if (Physics.Linecast(AgentManager.Singleton.nodes[i], AgentManager.Singleton.nodes[j]))
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        Vector3 p1 = AgentManager.Singleton.nodes[i];
+                        p1.y += navigationRadius / 2;
+                        Vector3 p2 = AgentManager.Singleton.nodes[j];
+                        p2.y += navigationRadius / 2;
+                        Vector3 direction = (p2 - p1).normalized;
+                        if (Physics.SphereCast(p1, navigationRadius, direction, out _, d))
+                        {
+                            continue;
+                        }
                     }
 
                     if (AgentManager.Singleton.connections.Any(c => c.A == AgentManager.Singleton.nodes[i] && c.B == AgentManager.Singleton.nodes[j] || c.A == AgentManager.Singleton.nodes[j] && c.B == AgentManager.Singleton.nodes[i]))

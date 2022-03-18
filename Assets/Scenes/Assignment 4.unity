@@ -954,6 +954,7 @@ MonoBehaviour:
   groundLayers:
     serializedVersion: 2
     m_Bits: 8
+  navigationRadius: 0.5
 --- !u!4 &2139949937
 Transform:
   m_ObjectHideFlags: 0
