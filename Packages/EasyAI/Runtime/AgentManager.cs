@@ -171,7 +171,7 @@ public class AgentManager : MonoBehaviour
     /// <summary>
     /// List of all navigation connections.
     /// </summary>
-    public readonly List<LevelSection.Connection> connections = new List<LevelSection.Connection>();
+    public readonly List<NodeArea.Connection> connections = new List<NodeArea.Connection>();
 
     /// <summary>
     /// All agents which move during an update tick.
@@ -731,7 +731,7 @@ public class AgentManager : MonoBehaviour
 
     protected virtual void Start()
     {
-        foreach (LevelSection levelSection in FindObjectsOfType<LevelSection>())
+        foreach (NodeArea levelSection in FindObjectsOfType<NodeArea>())
         {
             levelSection.Generate();
         }
@@ -972,7 +972,7 @@ public class AgentManager : MonoBehaviour
 
         if (navigation == NavigationState.All)
         {
-            foreach (LevelSection.Connection connection in connections)
+            foreach (NodeArea.Connection connection in connections)
             {
                 GL.Color(Color.green);
                 GL.Vertex(connection.A);

@@ -1,6 +1,6 @@
 ﻿public abstract class NodeGenerator : NodeBase
 {
-    public LevelSection LevelSection { get; set; }
+    public NodeArea NodeArea { get; set; }
 
     public abstract void Generate();
 

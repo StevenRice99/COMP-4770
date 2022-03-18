@@ -5,7 +5,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class LevelSection : NodeBase
+public class NodeArea : NodeBase
 {
     public const char Open = ' ';
 
@@ -53,7 +53,7 @@ public class LevelSection : NodeBase
     [Min(0)]
     private float navigationRadius;
 
-    public char[,] Data { get; set; }
+    public char[,] Data { get; private set; }
 
     public int RangeX => (pos1.x - pos2.x) * nodesPerStep + 1;
     
@@ -111,7 +111,7 @@ public class LevelSection : NodeBase
         NodeGenerator generator = generators.FirstOrDefault(g => g.enabled);
         if (generator != null)
         {
-            generator.LevelSection = this;
+            generator.NodeArea = this;
             _nodeDistance = generator.SetNodeDistance();
             generator.Generate();
 
@@ -178,12 +178,11 @@ public class LevelSection : NodeBase
         }
         
         string fileName = $"{folder}/{SceneManager.GetActiveScene().name}";
-        LevelSection[] levelSections = FindObjectsOfType<LevelSection>();
+        NodeArea[] levelSections = FindObjectsOfType<NodeArea>();
         if (levelSections.Length > 1)
         {
             fileName += $"_{levelSections.ToList().IndexOf(this)}";
         }
-
         fileName += ".txt";
         
         StreamWriter writer = new StreamWriter(fileName, false);
