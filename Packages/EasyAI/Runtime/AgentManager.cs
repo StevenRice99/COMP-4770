@@ -582,18 +582,26 @@ public class AgentManager : MonoBehaviour
         return backwards;
     }
 
+    /// <summary>
+    /// Find the nearest node to a position.
+    /// </summary>
+    /// <param name="position">The position to find the nearest node to.</param>
+    /// <returns></returns>
     private Vector3 Nearest(Vector3 position)
     {
         float offset = navigationRadius / 2;
         
+        // Order all nodes by distance to the position.
         List<Vector3> potential = nodes.OrderBy(n => Vector3.Distance(n, position)).ToList();
         foreach (Vector3 node in potential)
         {
+            // If the node is directly at the position, return it.
             if (node == position)
             {
                 return node;
             }
             
+            // Otherwise if there is a line of sight to the node, return it.
             if (navigationRadius <= 0)
             {
                 if (!Physics.Linecast(position, node, obstacleLayers))
@@ -614,17 +622,25 @@ public class AgentManager : MonoBehaviour
             }
         }
 
+        // If no nodes are in line of sight, return the nearest node even though it is not in line of sight.
         return potential.First();
     }
 
+    /// <summary>
+    /// Shorten a path.
+    /// </summary>
+    /// <param name="path">The path to shorten.</param>
     private void StringPull(IList<Vector3> path)
     {
         float offset = navigationRadius / 2;
 
+        // Loop through every point in the path less two as there must be at least two points in a path.
         for (int i = 0; i < path.Count - 2; i++)
         {
+            // Inner loop from two points ahead of the outer loop to check if a node can be skipped.
             for (int j = i + 2; j < path.Count; j++)
             {
+                // If a node can be skipped as there is line of sight without it, remove it.
                 if (navigationRadius <= 0)
                 {
                     if (!Physics.Linecast(path[i], path[j], obstacleLayers))
@@ -647,6 +663,11 @@ public class AgentManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Calculate how long a path is to determine which path is the most optimal to take.
+    /// </summary>
+    /// <param name="path">The path to get the length of.</param>
+    /// <returns>The length of the path.</returns>
     private static float PathLength(IReadOnlyList<Vector3> path)
     {
         float length = 0;
@@ -1029,20 +1050,25 @@ public class AgentManager : MonoBehaviour
 
     protected virtual void Start()
     {
+        // If we should use a pre-generated lookup table, use it if one exists.
         if (lookupTable)
         {
             ReadLookupData();
         }
         
+        // If we should generate a lookup table or there was not one pre-generated to load, generate one.
         if (!lookupTable)
         {
-            foreach (NodeArea levelSection in FindObjectsOfType<NodeArea>())
+            // Generate all node areas in the scene.
+            foreach (NodeArea nodeArea in FindObjectsOfType<NodeArea>())
             {
-                levelSection.Generate();
+                nodeArea.Generate();
             }
 
+            // Store all new lookup tables.
             List<NavigationLookup> table = new List<NavigationLookup>();
 
+            // If any nodes are not a part of any connections, remove them.
             for (int i = 0; i < nodes.Count; i++)
             {
                 if (!connections.Any(c => c.A == nodes[i] || c.B == nodes[i]))
@@ -1051,23 +1077,31 @@ public class AgentManager : MonoBehaviour
                 }
             }
         
+            // Loop through all nodes.
             for (int i = 0; i < nodes.Count; i++)
             {
+                // Loop through all nodes again so pathfinding can be done on each pair.
                 for (int j = 0; j < nodes.Count; j++)
                 {
+                    // Skip if each node is the same.
                     if (i == j)
                     {
                         continue;
                     }
 
+                    // Get the A* path from one node to another.
                     List<Vector3> path = AStar(nodes[i], nodes[j]);
+                    
+                    // Skip if there was no path.
                     if (path.Count < 2)
                     {
                         continue;
                     }
 
+                    // Loop through all nodes in the path and add them to the lookup table.
                     for (int k = 0; k < path.Count - 1; k++)
                     {
+                        // Ensure there are no duplicates in the lookup table.
                         if (path[k] == nodes[j] || table.Any(t => t.current == path[k] && t.goal == nodes[j] && t.next == path[k + 1]))
                         {
                             continue;
@@ -1079,16 +1113,20 @@ public class AgentManager : MonoBehaviour
                 }
             }
 
+            // Finalize the lookup table.
             _navigationTable = table.ToArray();
 
+            // Write the lookup table to a file for fast reading on future runs.
             WriteLookupData();
         }
 
+        // Clean up all node related components in the scene as they are no longer needed after generation.
         foreach (NodeBase nodeBase in FindObjectsOfType<NodeBase>())
         {
             nodeBase.Finish();
         }
         
+        // Setup cameras.
         FindCameras();
         if (selectedCamera != null)
         {
@@ -1309,8 +1347,10 @@ public class AgentManager : MonoBehaviour
         GL.MultMatrix(transform.localToWorldMatrix);
         GL.Begin(GL.LINES);
 
+        // Render navigation nodes if either all or only active nodes should be shown.
         if (navigation == NavigationState.All || navigation == NavigationState.Active)
         {
+            // Render all nodes as white if they should be.
             if (navigation == NavigationState.All)
             {
                 GL.Color(Color.white);
@@ -1325,6 +1365,7 @@ public class AgentManager : MonoBehaviour
                 }
             }
 
+            // Render active nodes in green.
             GL.Color(Color.green);
             foreach (Agent agent in Agents.Where(agent => agent.Path != null && agent.Path.Count != 0))
             {
@@ -2006,25 +2047,44 @@ public class AgentManager : MonoBehaviour
         _stepping = false;
     }
 
+    /// <summary>
+    /// Perform A* pathfinding.
+    /// </summary>
+    /// <param name="current">The starting position.</param>
+    /// <param name="goal">The end goal position.</param>
+    /// <returns>The path of nodes to take.</returns>
     private List<Vector3> AStar(Vector3 current, Vector3 goal)
     {
         AStarNode best = null;
+        
+        // Add the starting position to the list of nodes.
         List<AStarNode> aStarNodes = new List<AStarNode> { new AStarNode(current, goal) };
 
+        // Loop until there are no options left meaning the path cannot be completed.
         while (aStarNodes.Any(n => n.IsOpen))
         {
+            // Get the open node with the lowest F cost and then by the lowest H cost if there is a tie in F cost.
             AStarNode node = aStarNodes.Where(n => n.IsOpen).OrderBy(n => n.CostF).ThenBy(n => n.CostH).First();
+            
+            // Close the current node.
             node.Close();
+            
+            // Update this to the best node if it is.
             if (best == null || node.CostF < best.CostF)
             {
                 best = node;
             }
             
+            // Loop through all nodes which connect to the current node.
             foreach (NodeArea.Connection connection in connections.Where(c => c.A == node.position || c.B == node.position))
             {
+                // Get the other position in the connection so we do not work with the exact same node again and get stuck.
                 Vector3 position = connection.A == node.position ? connection.B : connection.A;
+                
+                // Create the A* node.
                 AStarNode successor = new AStarNode(position, goal, node);
 
+                // If this node is the goal destination, A* is done so set it as the best and clear the node list so the loop ends.
                 if (position == goal)
                 {
                     best = successor;
@@ -2032,6 +2092,7 @@ public class AgentManager : MonoBehaviour
                     break;
                 }
 
+                // If the node is not yet in the list, add it.
                 AStarNode existing = aStarNodes.FirstOrDefault(n => n.position == position);
                 if (existing == null)
                 {
@@ -2039,21 +2100,25 @@ public class AgentManager : MonoBehaviour
                     continue;
                 }
 
+                // If it did already exist in the list but this path takes longer do nothing. 
                 if (existing.CostF <= successor.CostF)
                 {
                     continue;
                 }
 
+                // If the new path is shorter, update its previous node and open it again.
                 existing.UpdatePrevious(node);
                 existing.Open();
             }
         }
 
+        // If there was no best node which should never happen, simply return a line between the start and end positions.
         if (best == null)
         {
             return new List<Vector3> { current, goal };
         }
 
+        // Go from the last to node to the first adding all positions to the path.
         List<Vector3> path = new List<Vector3>();
         while (best != null)
         {
@@ -2061,12 +2126,17 @@ public class AgentManager : MonoBehaviour
             best = best.Previous;
         }
 
+        // Reverse the path so it is from start to goal and return it.
         path.Reverse();
         return path;
     }
 
+    /// <summary>
+    /// Write lookup table data to a file.
+    /// </summary>
     private void WriteLookupData()
     {
+        // Build the data string.
         string data = string.Empty;
         for (int i = 0; i < _navigationTable.Length; i++)
         {
@@ -2077,11 +2147,13 @@ public class AgentManager : MonoBehaviour
             }
         }
 
+        // Do not create files if there is no node data.
         if (string.IsNullOrWhiteSpace(data))
         {
             return;
         }
         
+        // Create the directory.
         if (!Directory.Exists(Folder))
         {
             DirectoryInfo info = Directory.CreateDirectory(Folder);
@@ -2091,30 +2163,41 @@ public class AgentManager : MonoBehaviour
             }
         }
 
+        // Write to the file.
         string fileName = $"{Folder}/{SceneManager.GetActiveScene().name}.txt";
         StreamWriter writer = new StreamWriter(fileName, false);
         writer.Write(data);
         writer.Close();
     }
 
+    /// <summary>
+    /// Read lookup table data from a file.
+    /// </summary>
     private void ReadLookupData()
     {
+        // If there is no directory for data return.
         if (!Directory.Exists(Folder))
         {
+            // Set that there was no pre-generated data so data can now be generated.
             lookupTable = false;
             return;
         }
         
+        // If there is no file for data return.
         string fileName = $"{Folder}/{SceneManager.GetActiveScene().name}.txt";
         if (!File.Exists(fileName))
         {
+            // Set that there was no pre-generated data so data can now be generated.
             lookupTable = false;
             return;
         }
 
         List<NavigationLookup> lookups = new List<NavigationLookup>();
 
+        // Read all lines from the file.
         string[] lines = File.ReadAllLines(fileName);
+        
+        // Loop through all lines building each into a data entry for the lookup table.
         foreach (string line in lines)
         {
             string[] s = line.Split(' ');
@@ -2124,6 +2207,7 @@ public class AgentManager : MonoBehaviour
                 new Vector3(float.Parse(s[6]), float.Parse(s[7]), float.Parse(s[8]))
             );
 
+            // Ensure all nodes are added.
             if (!nodes.Contains(lookup.current))
             {
                 nodes.Add(lookup.current);
@@ -2139,14 +2223,17 @@ public class AgentManager : MonoBehaviour
                 nodes.Add(lookup.next);
             }
 
+            // Ensure a connection between the current and next nodes exists.
             if (!connections.Any(c => c.A == lookup.current && c.B == lookup.next || c.A == lookup.next && c.B == lookup.current))
             {
                 connections.Add(new NodeArea.Connection(lookup.current, lookup.next));
             }
             
+            // Add to the lookup table.
             lookups.Add(lookup);
         }
 
+        // Finalize the lookup table.
         _navigationTable = lookups.ToArray();
     }
 }
