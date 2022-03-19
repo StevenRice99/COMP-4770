@@ -839,6 +839,37 @@ public abstract class Agent : MessageComponent
 
         if (Path != null)
         {
+            if (Path.Count == 2)
+            {
+                bool canReachEnd = false;
+                
+                float offset = AgentManager.Singleton.navigationRadius / 2;
+            
+                if (AgentManager.Singleton.navigationRadius <= 0)
+                {
+                    if (!Physics.Linecast(transform.position, Path[Path.Count - 1], AgentManager.Singleton.obstacleLayers))
+                    {
+                        canReachEnd = true;
+                    }
+                }
+                else
+                {
+                    Vector3 p1 = transform.position;
+                    p1.y += offset;
+                    Vector3 p2 = Path[Path.Count - 1];
+                    p2.y += offset;
+                    if (!Physics.SphereCast(p1, AgentManager.Singleton.navigationRadius, (p2 - p1).normalized, out _, Vector3.Distance(p1, p2), AgentManager.Singleton.obstacleLayers))
+                    {
+                        canReachEnd = true;
+                    }
+                }
+                
+                if (canReachEnd)
+                {
+                    Path = new List<Vector3> { Path[Path.Count - 1] };
+                }
+            }
+
             while (Path.Count > 0 && Vector2.Distance(position, new Vector2(Path[0].x, Path[0].z)) <= seekAcceptableDistance)
             {
                 Path.RemoveAt(0);
@@ -856,7 +887,7 @@ public abstract class Agent : MessageComponent
             }
         }
 
-        if (Path != null)
+        if (Path == null)
         {
             // If there is move data, perform it.
             if (MovesData.Count > 0)
