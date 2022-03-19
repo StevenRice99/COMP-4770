@@ -470,6 +470,31 @@ public class AgentManager : MonoBehaviour
             path.Add(goal);
         }
 
+        float offset = navigationRadius / 2;
+
+        for (int i = 0; i < path.Count - 2; i++)
+        {
+            if (navigationRadius <= 0)
+            {
+                if (!Physics.Linecast(path[i], path[i + 2]))
+                {
+                    path.RemoveAt(i-- + 1);
+                }
+            }
+            else
+            {
+                Vector3 p1 = path[i];
+                p1.y += offset;
+                Vector3 p2 = path[i + 2];
+                p2.y += offset;
+                Vector3 direction = (p2 - p1).normalized;
+                if (!Physics.SphereCast(p1, navigationRadius, direction, out _, Vector3.Distance(p1, p2)))
+                {
+                    path.RemoveAt(i-- + 1);
+                }
+            }
+        }
+
         return path;
     }
 
@@ -1845,11 +1870,9 @@ public class AgentManager : MonoBehaviour
             return new List<Vector3> { current, goal };
         }
 
-        string p = string.Empty;
         List<Vector3> path = new List<Vector3>();
         while (best != null)
         {
-            p += $" {best.position}";
             path.Add(best.position);
             best = best.Previous;
         }

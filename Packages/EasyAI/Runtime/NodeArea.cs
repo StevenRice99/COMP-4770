@@ -224,7 +224,7 @@ public class NodeArea : NodeBase
         data[x, z] = Node;
         float2 pos = GetRealPosition(x, z);
         float y = ceiling;
-        if (Physics.Raycast(new Vector3(pos.x, ceiling, pos.y), Vector3.down, out RaycastHit hit, Mathf.Infinity, AgentManager.Singleton.groundLayers))
+        if (Physics.Raycast(new Vector3(pos.x, ceiling, pos.y), Vector3.down, out RaycastHit hit, ceiling - floor, AgentManager.Singleton.groundLayers))
         {
             y = hit.point.y;
         }
