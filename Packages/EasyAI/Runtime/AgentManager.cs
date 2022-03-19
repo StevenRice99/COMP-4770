@@ -447,8 +447,8 @@ public class AgentManager : MonoBehaviour
             return new List<Vector3> { goal };
         }
         
-        Vector3 nodePosition = nodes.OrderBy(n => Vector3.Distance(n, position)).First();
-        Vector3 nodeGoal = nodes.OrderBy(n => Vector3.Distance(n, goal)).First();
+        Vector3 nodePosition = Nearest(position);
+        Vector3 nodeGoal = Nearest(goal);
 
         List<Vector3> path = new List<Vector3> { position };
         if (nodePosition != position)
@@ -495,6 +495,36 @@ public class AgentManager : MonoBehaviour
 
         backwards.Reverse();
         return backwards;
+    }
+
+    private Vector3 Nearest(Vector3 position)
+    {
+        float offset = navigationRadius / 2;
+        
+        List<Vector3> potential = nodes.OrderBy(n => Vector3.Distance(n, position)).ToList();
+        foreach (Vector3 node in potential)
+        {
+            if (navigationRadius <= 0)
+            {
+                if (!Physics.Linecast(position, node, obstacleLayers))
+                {
+                    return node;
+                }
+            }
+            else
+            {
+                Vector3 p1 = position;
+                p1.y += offset;
+                Vector3 p2 = node;
+                p2.y += offset;
+                if (!Physics.SphereCast(p1, navigationRadius, (p2 - p1).normalized, out _, Vector3.Distance(p1, p2), obstacleLayers))
+                {
+                    return node;
+                }
+            }
+        }
+
+        return potential.First();
     }
 
     private void StringPull(IList<Vector3> path)
