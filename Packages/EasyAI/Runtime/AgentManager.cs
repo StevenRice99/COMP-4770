@@ -1911,15 +1911,6 @@ public class AgentManager : MonoBehaviour
 
     private void WriteLookupData()
     {
-        if (!Directory.Exists(Folder))
-        {
-            DirectoryInfo info = Directory.CreateDirectory(Folder);
-            if (!info.Exists)
-            {
-                return;
-            }
-        }
-
         string data = string.Empty;
         for (int i = 0; i < _navigationTable.Length; i++)
         {
@@ -1927,6 +1918,20 @@ public class AgentManager : MonoBehaviour
             if (i != _navigationTable.Length - 1)
             {
                 data += "\n";
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(data))
+        {
+            return;
+        }
+        
+        if (!Directory.Exists(Folder))
+        {
+            DirectoryInfo info = Directory.CreateDirectory(Folder);
+            if (!info.Exists)
+            {
+                return;
             }
         }
 
