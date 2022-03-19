@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-
-/// <summary>
+﻿/// <summary>
 /// Base component for sensors, actuators, minds, and performance measures.
 /// </summary>
 public abstract class IntelligenceComponent : MessageComponent

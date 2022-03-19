@@ -203,7 +203,7 @@ public class AgentManager : MonoBehaviour
     public float navigationVisualOffset = 0.1f;
 
     [SerializeField]
-    [Tooltip("Read and use a pre-generated navigation lookup table.")]
+    [Tooltip("Read and use a pre-generated navigation lookup table instead of generating it at start.")]
     private bool lookupTable;
 
     /// <summary>
@@ -884,7 +884,8 @@ public class AgentManager : MonoBehaviour
         {
             ReadLookupData();
         }
-        else
+        
+        if (!lookupTable)
         {
             foreach (NodeArea levelSection in FindObjectsOfType<NodeArea>())
             {
@@ -915,8 +916,6 @@ public class AgentManager : MonoBehaviour
                     {
                         continue;
                     }
-
-                    path.Reverse();
 
                     for (int k = 0; k < path.Count - 1; k++)
                     {
@@ -961,6 +960,11 @@ public class AgentManager : MonoBehaviour
 
     protected virtual void Update()
     {
+        if (Agents.Count == 1)
+        {
+            SelectedAgent = Agents[0];
+        }
+        
         // Perform for all agents if there is no limit or only the next allowable number of agents if there is.
         if (maxAgentsPerUpdate <= 0)
         {
@@ -1908,6 +1912,7 @@ public class AgentManager : MonoBehaviour
             best = best.Previous;
         }
 
+        path.Reverse();
         return path;
     }
 
@@ -1947,12 +1952,14 @@ public class AgentManager : MonoBehaviour
     {
         if (!Directory.Exists(Folder))
         {
+            lookupTable = false;
             return;
         }
         
         string fileName = $"{Folder}/{SceneManager.GetActiveScene().name}.txt";
         if (!File.Exists(fileName))
         {
+            lookupTable = false;
             return;
         }
 
