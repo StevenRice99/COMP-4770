@@ -480,7 +480,25 @@ public class AgentManager : MonoBehaviour
         {
             path.Add(goal);
         }
+        
+        List<Vector3> backwards = new List<Vector3>();
+        backwards.AddRange(path);
+        backwards.Reverse();
 
+        StringPull(path);
+        StringPull(backwards);
+
+        if (PathLength(path) <= PathLength(backwards))
+        {
+            return path;
+        }
+
+        backwards.Reverse();
+        return backwards;
+    }
+
+    private void StringPull(IList<Vector3> path)
+    {
         float offset = navigationRadius / 2;
 
         for (int i = 0; i < path.Count - 2; i++)
@@ -507,8 +525,17 @@ public class AgentManager : MonoBehaviour
                 }
             }
         }
+    }
 
-        return path;
+    private static float PathLength(IReadOnlyList<Vector3> path)
+    {
+        float length = 0;
+        for (int i = 0; i < path.Count - 1; i++)
+        {
+            length += Vector3.Distance(path[i], path[i + 1]);
+        }
+
+        return length;
     }
 
     /// <summary>
