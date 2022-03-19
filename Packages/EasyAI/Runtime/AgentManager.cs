@@ -11,12 +11,32 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public class AgentManager : MonoBehaviour
 {
+    /// <summary>
+    /// Hold data for the navigation lookup table.
+    /// </summary>
     private struct NavigationLookup
     {
+        /// <summary>
+        /// The current or starting node.
+        /// </summary>
         public readonly Vector3 current;
+        
+        /// <summary>
+        /// Where the end goal of the navigation is.
+        /// </summary>
         public readonly Vector3 goal;
+        
+        /// <summary>
+        /// The node to move to from the current node in order to navigate towards the goal.
+        /// </summary>
         public readonly Vector3 next;
 
+        /// <summary>
+        /// Create a data entry for a navigation lookup table.
+        /// </summary>
+        /// <param name="current">The current or starting node.</param>
+        /// <param name="goal">Where the end goal of the navigation is.</param>
+        /// <param name="next">The node to move to from the current node in order to navigate towards the goal.</param>
         public NavigationLookup(Vector3 current, Vector3 goal, Vector3 next)
         {
             this.current = current;
@@ -25,20 +45,47 @@ public class AgentManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Class to hold data for each node during A* pathfinding.
+    /// </summary>
     private class AStarNode
     {
+        /// <summary>
+        /// The position of the node.
+        /// </summary>
         public readonly Vector3 position;
 
-        public float CostG { get; private set; }
-
+        /// <summary>
+        /// The heuristic cost of this node to the goal.
+        /// </summary>
         public float CostH { get; }
 
+        /// <summary>
+        /// The final cost of this node.
+        /// </summary>
         public float CostF => CostG + CostH;
 
+        /// <summary>
+        /// The previous node which was moved to prior to this node.
+        /// </summary>
         public AStarNode Previous { get; private set; }
         
+        /// <summary>
+        /// If this node is currently open or closed.
+        /// </summary>
         public bool IsOpen { get; private set; }
 
+        /// <summary>
+        /// The cost to reach this node from previous nodes.
+        /// </summary>
+        private float CostG { get; set; }
+
+        /// <summary>
+        /// Store node data during A* pathfinding.
+        /// </summary>
+        /// <param name="pos">The position of the node.</param>
+        /// <param name="goal">The goal to find a path to.</param>
+        /// <param name="previous">The previous node in the A* pathfinding.</param>
         public AStarNode(Vector3 pos, Vector3 goal, AStarNode previous = null)
         {
             Open();
@@ -47,22 +94,33 @@ public class AgentManager : MonoBehaviour
             UpdatePrevious(previous);
         }
 
+        /// <summary>
+        /// Update the node to have a new previous node and then update its G cost.
+        /// </summary>
+        /// <param name="previous">The previous node in the A* pathfinding.</param>
         public void UpdatePrevious(AStarNode previous)
         {
             Previous = previous;
             if (Previous == null)
             {
+                CostG = 0;
                 return;
             }
 
             CostG = previous.CostG + Vector3.Distance(position, Previous.position);
         }
 
+        /// <summary>
+        /// Open the node.
+        /// </summary>
         public void Open()
         {
             IsOpen = true;
         }
 
+        /// <summary>
+        /// Close the node.
+        /// </summary>
         public void Close()
         {
             IsOpen = false;
@@ -123,6 +181,9 @@ public class AgentManager : MonoBehaviour
         Component
     }
 
+    /// <summary>
+    /// The folder to output navigation lookup tables into.
+    /// </summary>
     private const string Folder = "Navigation";
         
     /// <summary>
@@ -135,6 +196,9 @@ public class AgentManager : MonoBehaviour
     /// </summary>
     public static AgentManager Singleton;
     
+    /// <summary>
+    /// All registered states.
+    /// </summary>
     private static readonly Dictionary<Type, State> RegisteredStates = new Dictionary<Type, State>();
 
     /// <summary>
@@ -161,12 +225,7 @@ public class AgentManager : MonoBehaviour
     [Min(0)]
     [Tooltip("How wide the controls list is. Set to zero to disable controls list rendering.")]
     private float controlsWidth = 120;
-
-    /// Determine what gizmos lines are drawn.
-    /// Off - No lines are drawn.
-    /// All - Every line from every agent, sensor, and actuator is drawn.
-    /// Selected - If an agent is selected, only it and its sensors and actuators are drawn. If an individual sensor or actuator is selected, only it is drawn.
-        
+    
     [SerializeField]
     [Tooltip(
         "Determine what gizmos lines are drawn.\n" +
@@ -291,9 +350,12 @@ public class AgentManager : MonoBehaviour
     /// </summary>
     private IntelligenceComponent _selectedComponent;
 
-    private NavigationLookup[] _navigationTable = null;
+    /// <summary>
+    /// The navigation lookup table.
+    /// </summary>
+    private NavigationLookup[] _navigationTable;
     
-        /// <summary>
+    /// <summary>
     /// Create a transform agent.
     /// </summary>
     public static GameObject CreateTransformAgent()
@@ -440,32 +502,48 @@ public class AgentManager : MonoBehaviour
         return camera;
     }
 
+    /// <summary>
+    /// Lookup a path to take from a starting position to an end goal.
+    /// </summary>
+    /// <param name="position">The starting position.</param>
+    /// <param name="goal">The end goal position.</param>
+    /// <returns>A list of the points to move to to reach the goal destination.</returns>
     public List<Vector3> LookupPath(Vector3 position, Vector3 goal)
     {
+        // If there are no nodes in the lookup table simply return the end goal position.
         if (nodes.Count == 0)
         {
             return new List<Vector3> { goal };
         }
         
+        // Get the starting node and end nodes closest to their positions.
         Vector3 nodePosition = Nearest(position);
         Vector3 nodeGoal = Nearest(goal);
 
+        // Add the starting position to the path.
         List<Vector3> path = new List<Vector3> { position };
+        
+        // If the first node is not the same as the starting position, add it as well.
         if (nodePosition != position)
         {
             path.Add(nodePosition);
         }
 
+        // Loop until the path is finished or the end goal cannot be reached.
         while (true)
         {
             try
             {
+                // Get the next node to move to.
                 NavigationLookup lookup = _navigationTable.First(l => l.current == nodePosition && l.goal == nodeGoal);
+                
+                // If the node is the goal destination, all nodes in the path have been finished so stop the loop.
                 if (lookup.next == nodeGoal)
                 {
                     break;
                 }
-
+                
+                // Move to the next node and add it to the path.
                 nodePosition = lookup.next;
                 path.Add(nodePosition);
             }
@@ -475,24 +553,31 @@ public class AgentManager : MonoBehaviour
             }
         }
         
+        // Add the goal node to the path.
         path.Add(nodeGoal);
+        
+        // If the goal node and the goal itself are not the same, add the goal itself to the path as well.
         if (goal != nodeGoal)
         {
             path.Add(goal);
         }
         
+        // Create a copy of the path in reverse from the end to the start.
         List<Vector3> backwards = new List<Vector3>();
         backwards.AddRange(path);
         backwards.Reverse();
 
+        // Pull the strings of both the forwards and backwards path.
         StringPull(path);
         StringPull(backwards);
 
+        // Return the path which is the shortest after string pulling.
         if (PathLength(path) <= PathLength(backwards))
         {
             return path;
         }
 
+        // The backwards path needs to be reversed once again to switch it back to its original order.
         backwards.Reverse();
         return backwards;
     }
@@ -504,6 +589,11 @@ public class AgentManager : MonoBehaviour
         List<Vector3> potential = nodes.OrderBy(n => Vector3.Distance(n, position)).ToList();
         foreach (Vector3 node in potential)
         {
+            if (node == position)
+            {
+                return node;
+            }
+            
             if (navigationRadius <= 0)
             {
                 if (!Physics.Linecast(position, node, obstacleLayers))
