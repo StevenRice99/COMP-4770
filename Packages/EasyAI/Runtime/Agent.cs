@@ -166,7 +166,7 @@ public abstract class Agent : MessageComponent
 
             if (globalState != null)
             {
-                globalState.Execute(this);
+                globalState.Enter(this);
             }
         }
     }
