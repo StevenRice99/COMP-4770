@@ -182,18 +182,20 @@ public class AgentManager : MonoBehaviour
     )]
     private NavigationState navigation = NavigationState.All;
 
-    [SerializeField]
     [Tooltip("The currently selected camera. Set this to start with that camera active. Leaving empty will default to the first camera by alphabetic order.")]
     public Camera selectedCamera;
 
-    [SerializeField]
     [Min(0)]
     [Tooltip("How wide is the agent radius for connecting nodes to ensure enough space for movement.")]
     public float navigationRadius;
 
-    [SerializeField]
     [Tooltip("Which layers can nodes be placed on.")]
     public LayerMask groundLayers;
+
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("How much to visually offset navigation by so it does not clip into the ground.")]
+    private float navigationVisualOffset = 0.1f;
 
     /// <summary>
     /// Getter for the maximum number of messages any component can hold.
@@ -476,7 +478,7 @@ public class AgentManager : MonoBehaviour
         {
             if (navigationRadius <= 0)
             {
-                if (!Physics.Linecast(path[i], path[i + 2]))
+                if (!Physics.Linecast(path[i], path[i + 2], ~groundLayers))
                 {
                     path.RemoveAt(i-- + 1);
                 }
@@ -488,7 +490,7 @@ public class AgentManager : MonoBehaviour
                 Vector3 p2 = path[i + 2];
                 p2.y += offset;
                 Vector3 direction = (p2 - p1).normalized;
-                if (!Physics.SphereCast(p1, navigationRadius, direction, out _, Vector3.Distance(p1, p2)))
+                if (!Physics.SphereCast(p1, navigationRadius, direction, out _, Vector3.Distance(p1, p2), ~groundLayers))
                 {
                     path.RemoveAt(i-- + 1);
                 }
@@ -1141,16 +1143,24 @@ public class AgentManager : MonoBehaviour
             GL.Color(Color.white);
             foreach (NodeArea.Connection connection in connections)
             {
-                GL.Vertex(connection.A);
-                GL.Vertex(connection.B);
+                Vector3 a = connection.A;
+                a.y += navigationVisualOffset;
+                Vector3 b = connection.B;
+                b.y += navigationVisualOffset;
+                GL.Vertex(a);
+                GL.Vertex(b);
             }
             
-            List<Vector3> path = LookupPath(new Vector3(10, 0.1f, 10), new Vector3(-10, 0.1f, -10));
+            List<Vector3> path = LookupPath(new Vector3(10, 0, 10), new Vector3(-10, 0, -10));
             GL.Color(Color.green);
             for (int i = 0; i < path.Count - 1; i++)
             {
-                GL.Vertex(path[i]);
-                GL.Vertex(path[i + 1]);
+                Vector3 a = path[i];
+                a.y += navigationVisualOffset;
+                Vector3 b = path[i + 1];
+                b.y += navigationVisualOffset;
+                GL.Vertex(a);
+                GL.Vertex(b);
             }
         }
         

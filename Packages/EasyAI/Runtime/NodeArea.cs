@@ -34,13 +34,8 @@ public class NodeArea : NodeBase
     private int2 corner2 = new int2(-5, -5);
 
     [SerializeField]
-    [Tooltip("How high up to start raycasts for node generation. Ensure this is above all level geometry.")]
-    private float ceiling = 10;
-
-    [SerializeField]
-    [Min(float.Epsilon)]
-    [Tooltip("How far to raycast for node generation. Ensure this extends down past or equal to the level geometry.")]
-    private float floor = -1;
+    [Tooltip("The floor and ceiling to cast down between.")]
+    private float2 floorCeiling = new float2(-1, 10);
 
     [SerializeField]
     [Min(1)]
@@ -51,11 +46,6 @@ public class NodeArea : NodeBase
         "4 - Node per every 0.25 units."
     )]
     private int nodesPerStep = 1;
-
-    [SerializeField]
-    [Min(0)]
-    [Tooltip("How high off the ground set nodes for both visuals and raycasts for connections.")]
-    private float nodeHeightOffset = 0.1f;
 
     private char[,] data;
 
@@ -70,22 +60,22 @@ public class NodeArea : NodeBase
     private void OnDrawGizmosSelected()
     {
         // Vertical lines.
-        Gizmos.DrawLine(new Vector3(corner1.x, ceiling, corner1.y), new Vector3(corner1.x, floor, corner1.y));
-        Gizmos.DrawLine(new Vector3(corner1.x, ceiling, corner2.y), new Vector3(corner1.x, floor, corner2.y));
-        Gizmos.DrawLine(new Vector3(corner2.x, ceiling, corner1.y), new Vector3(corner2.x, floor, corner1.y));
-        Gizmos.DrawLine(new Vector3(corner2.x, ceiling, corner2.y), new Vector3(corner2.x, floor, corner2.y));
+        Gizmos.DrawLine(new Vector3(corner1.x, floorCeiling.x, corner1.y), new Vector3(corner1.x, floorCeiling.y, corner1.y));
+        Gizmos.DrawLine(new Vector3(corner1.x, floorCeiling.x, corner2.y), new Vector3(corner1.x, floorCeiling.y, corner2.y));
+        Gizmos.DrawLine(new Vector3(corner2.x, floorCeiling.x, corner1.y), new Vector3(corner2.x, floorCeiling.y, corner1.y));
+        Gizmos.DrawLine(new Vector3(corner2.x, floorCeiling.x, corner2.y), new Vector3(corner2.x, floorCeiling.y, corner2.y));
         
         // Top horizontal lines.
-        Gizmos.DrawLine(new Vector3(corner1.x, ceiling, corner1.y), new Vector3(corner1.x, ceiling, corner2.y));
-        Gizmos.DrawLine(new Vector3(corner1.x, ceiling, corner1.y), new Vector3(corner2.x, ceiling, corner1.y));
-        Gizmos.DrawLine(new Vector3(corner2.x, ceiling, corner2.y), new Vector3(corner1.x, ceiling, corner2.y));
-        Gizmos.DrawLine(new Vector3(corner2.x, ceiling, corner2.y), new Vector3(corner2.x, ceiling, corner1.y));
+        Gizmos.DrawLine(new Vector3(corner1.x, floorCeiling.y, corner1.y), new Vector3(corner1.x, floorCeiling.y, corner2.y));
+        Gizmos.DrawLine(new Vector3(corner1.x, floorCeiling.y, corner1.y), new Vector3(corner2.x, floorCeiling.y, corner1.y));
+        Gizmos.DrawLine(new Vector3(corner2.x, floorCeiling.y, corner2.y), new Vector3(corner1.x, floorCeiling.y, corner2.y));
+        Gizmos.DrawLine(new Vector3(corner2.x, floorCeiling.y, corner2.y), new Vector3(corner2.x, floorCeiling.y, corner1.y));
         
         // Bottom horizontal lines.
-        Gizmos.DrawLine(new Vector3(corner1.x, floor, corner1.y), new Vector3(corner1.x, floor, corner2.y));
-        Gizmos.DrawLine(new Vector3(corner1.x, floor, corner1.y), new Vector3(corner2.x, floor, corner1.y));
-        Gizmos.DrawLine(new Vector3(corner2.x, floor, corner2.y), new Vector3(corner1.x, floor, corner2.y));
-        Gizmos.DrawLine(new Vector3(corner2.x, floor, corner2.y), new Vector3(corner2.x, floor, corner1.y));
+        Gizmos.DrawLine(new Vector3(corner1.x, floorCeiling.x, corner1.y), new Vector3(corner1.x, floorCeiling.x, corner2.y));
+        Gizmos.DrawLine(new Vector3(corner1.x, floorCeiling.x, corner1.y), new Vector3(corner2.x, floorCeiling.x, corner1.y));
+        Gizmos.DrawLine(new Vector3(corner2.x, floorCeiling.x, corner2.y), new Vector3(corner1.x, floorCeiling.x, corner2.y));
+        Gizmos.DrawLine(new Vector3(corner2.x, floorCeiling.x, corner2.y), new Vector3(corner2.x, floorCeiling.x, corner1.y));
     }
 
     public void Generate()
@@ -98,6 +88,11 @@ public class NodeArea : NodeBase
         if (corner2.y > corner1.y)
         {
             (corner1.y, corner2.y) = (corner2.y, corner1.y);
+        }
+
+        if (floorCeiling.x > floorCeiling.y)
+        {
+            (floorCeiling.x, floorCeiling.y) = (floorCeiling.y, floorCeiling.x);
         }
 
         data = new char[RangeX, RangeZ];
@@ -138,7 +133,7 @@ public class NodeArea : NodeBase
 
                     if (AgentManager.Singleton.navigationRadius <= 0)
                     {
-                        if (Physics.Linecast(AgentManager.Singleton.nodes[x], AgentManager.Singleton.nodes[z]))
+                        if (Physics.Linecast(AgentManager.Singleton.nodes[x], AgentManager.Singleton.nodes[z], ~AgentManager.Singleton.groundLayers))
                         {
                             continue;
                         }
@@ -150,7 +145,7 @@ public class NodeArea : NodeBase
                         Vector3 p2 = AgentManager.Singleton.nodes[z];
                         p2.y += offset;
                         Vector3 direction = (p2 - p1).normalized;
-                        if (Physics.SphereCast(p1, AgentManager.Singleton.navigationRadius, direction, out _, d))
+                        if (Physics.SphereCast(p1, AgentManager.Singleton.navigationRadius, direction, out _, d, ~AgentManager.Singleton.groundLayers))
                         {
                             continue;
                         }
@@ -206,7 +201,7 @@ public class NodeArea : NodeBase
     private bool ScanOpen(int x, int z)
     {
         float2 pos = GetRealPosition(x, z);
-        if (Physics.Raycast(new Vector3(pos.x, ceiling, pos.y), Vector3.down, out RaycastHit hit, ceiling - floor))
+        if (Physics.Raycast(new Vector3(pos.x, floorCeiling.y, pos.y), Vector3.down, out RaycastHit hit, floorCeiling.y - floorCeiling.x))
         {
             return (AgentManager.Singleton.groundLayers.value & (1 << hit.transform.gameObject.layer)) > 0;
         }
@@ -223,13 +218,11 @@ public class NodeArea : NodeBase
     {
         data[x, z] = Node;
         float2 pos = GetRealPosition(x, z);
-        float y = ceiling;
-        if (Physics.Raycast(new Vector3(pos.x, ceiling, pos.y), Vector3.down, out RaycastHit hit, ceiling - floor, AgentManager.Singleton.groundLayers))
+        float y = floorCeiling.x;
+        if (Physics.Raycast(new Vector3(pos.x, floorCeiling.y, pos.y), Vector3.down, out RaycastHit hit, floorCeiling.y - floorCeiling.x, AgentManager.Singleton.groundLayers))
         {
             y = hit.point.y;
         }
-
-        y += nodeHeightOffset;
         
         Vector3 v = new Vector3(pos.x, y, pos.y);
         if (!AgentManager.Singleton.nodes.Contains(v))

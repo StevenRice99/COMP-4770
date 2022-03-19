@@ -267,10 +267,11 @@ MonoBehaviour:
   gizmos: 1
   navigation: 1
   selectedCamera: {fileID: 0}
-  navigationRadius: 1
+  navigationRadius: 0.5
   groundLayers:
     serializedVersion: 2
     m_Bits: 8
+  navigationVisualOffset: 0.1
 --- !u!4 &460686381
 Transform:
   m_ObjectHideFlags: 0
@@ -954,7 +955,6 @@ MonoBehaviour:
   ceiling: 10
   floor: -1
   nodesPerStep: 4
-  nodeHeightOffset: 0.1
 --- !u!4 &2139949937
 Transform:
   m_ObjectHideFlags: 0
