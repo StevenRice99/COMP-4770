@@ -267,6 +267,10 @@ MonoBehaviour:
   gizmos: 1
   navigation: 1
   selectedCamera: {fileID: 0}
+  navigationRadius: 1
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 8
 --- !u!4 &460686381
 Transform:
   m_ObjectHideFlags: 0
@@ -941,20 +945,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 159bfd9a85fd43cd829700c1b6e5e75d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pos1:
+  corner1:
     x: 5
     y: 5
-  pos2:
+  corner2:
     x: -5
     y: -5
-  height: 10
-  distance: 11
+  ceiling: 10
+  floor: -1
   nodesPerStep: 4
   nodeHeightOffset: 0.1
-  groundLayers:
-    serializedVersion: 2
-    m_Bits: 8
-  navigationRadius: 0.5
 --- !u!4 &2139949937
 Transform:
   m_ObjectHideFlags: 0

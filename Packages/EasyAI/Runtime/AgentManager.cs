@@ -186,6 +186,15 @@ public class AgentManager : MonoBehaviour
     [Tooltip("The currently selected camera. Set this to start with that camera active. Leaving empty will default to the first camera by alphabetic order.")]
     public Camera selectedCamera;
 
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("How wide is the agent radius for connecting nodes to ensure enough space for movement.")]
+    public float navigationRadius;
+
+    [SerializeField]
+    [Tooltip("Which layers can nodes be placed on.")]
+    public LayerMask groundLayers;
+
     /// <summary>
     /// Getter for the maximum number of messages any component can hold.
     /// </summary>

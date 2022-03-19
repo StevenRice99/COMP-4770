@@ -57,15 +57,6 @@ public class NodeArea : NodeBase
     [Tooltip("How high off the ground set nodes for both visuals and raycasts for connections.")]
     private float nodeHeightOffset = 0.1f;
 
-    [SerializeField]
-    [Min(0)]
-    [Tooltip("How wide is the agent radius for connecting nodes to ensure enough space for movement.")]
-    private float navigationRadius;
-
-    [SerializeField]
-    [Tooltip("Which layers can nodes be placed on.")]
-    private LayerMask groundLayers;
-
     private char[,] data;
 
     public int RangeX => (corner1.x - corner2.x) * nodesPerStep + 1;
@@ -128,7 +119,7 @@ public class NodeArea : NodeBase
             _nodeDistance = generator.SetNodeDistance();
             generator.Generate();
             
-            float offset = navigationRadius / 2;
+            float offset = AgentManager.Singleton.navigationRadius / 2;
 
             for (int x = 0; x < AgentManager.Singleton.nodes.Count; x++)
             {
@@ -145,7 +136,7 @@ public class NodeArea : NodeBase
                         continue;
                     }
 
-                    if (navigationRadius <= 0)
+                    if (AgentManager.Singleton.navigationRadius <= 0)
                     {
                         if (Physics.Linecast(AgentManager.Singleton.nodes[x], AgentManager.Singleton.nodes[z]))
                         {
@@ -159,7 +150,7 @@ public class NodeArea : NodeBase
                         Vector3 p2 = AgentManager.Singleton.nodes[z];
                         p2.y += offset;
                         Vector3 direction = (p2 - p1).normalized;
-                        if (Physics.SphereCast(p1, navigationRadius, direction, out _, d))
+                        if (Physics.SphereCast(p1, AgentManager.Singleton.navigationRadius, direction, out _, d))
                         {
                             continue;
                         }
@@ -217,7 +208,7 @@ public class NodeArea : NodeBase
         float2 pos = GetRealPosition(x, z);
         if (Physics.Raycast(new Vector3(pos.x, ceiling, pos.y), Vector3.down, out RaycastHit hit, ceiling - floor))
         {
-            return (groundLayers.value & (1 << hit.transform.gameObject.layer)) > 0;
+            return (AgentManager.Singleton.groundLayers.value & (1 << hit.transform.gameObject.layer)) > 0;
         }
 
         return false;
@@ -233,7 +224,7 @@ public class NodeArea : NodeBase
         data[x, z] = Node;
         float2 pos = GetRealPosition(x, z);
         float y = ceiling;
-        if (Physics.Raycast(new Vector3(pos.x, ceiling, pos.y), Vector3.down, out RaycastHit hit, Mathf.Infinity, groundLayers))
+        if (Physics.Raycast(new Vector3(pos.x, ceiling, pos.y), Vector3.down, out RaycastHit hit, Mathf.Infinity, AgentManager.Singleton.groundLayers))
         {
             y = hit.point.y;
         }
