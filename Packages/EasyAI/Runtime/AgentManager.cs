@@ -188,24 +188,23 @@ public class AgentManager : MonoBehaviour
     [Tooltip("The currently selected camera. Set this to start with that camera active. Leaving empty will default to the first camera by alphabetic order.")]
     public Camera selectedCamera;
 
-    [Min(0)]
-    [Tooltip("How wide is the agent radius for connecting nodes to ensure enough space for movement.")]
-    public float navigationRadius;
-
     [Tooltip("Which layers can nodes be placed on.")]
     public LayerMask groundLayers;
 
     [Tooltip("Which layers are obstacles that nodes cannot be placed on.")]
     public LayerMask obstacleLayers;
 
-    [SerializeField]
+    [Min(0)]
+    [Tooltip("How wide is the agent radius for connecting nodes to ensure enough space for movement.")]
+    public float navigationRadius;
+
     [Min(0)]
     [Tooltip("How much to visually offset navigation by so it does not clip into the ground.")]
     public float navigationVisualOffset = 0.1f;
 
     [SerializeField]
     [Tooltip("Read and use a pre-generated navigation lookup table.")]
-    private bool lookupTable = false;
+    private bool lookupTable;
 
     /// <summary>
     /// Getter for the maximum number of messages any component can hold.

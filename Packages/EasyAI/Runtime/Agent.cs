@@ -301,42 +301,45 @@ public abstract class Agent : MessageComponent
     {
         Vector3 position = transform.position;
         position.y += AgentManager.Singleton.navigationVisualOffset;
-        
-        // Display the movement vectors of all move types.
-        foreach (MoveData moveData in MovesData)
-        {
-            // Assign different colors for different behaviours:
-            // Blue for seek, cyan for pursuit, red for flee, and orange for evade.
-            GL.Color(moveData.MoveType switch
-            {
-                MoveType.Seek => Color.blue,
-                MoveType.Pursuit => Color.cyan,
-                MoveType.Flee => Color.red,
-                _ => new Color(1f, 0.65f, 0f),
-            });
-            
-            // Draw a line from the agent's position showing the force of this movement.
-            GL.Vertex(position);
-            GL.Vertex(position + transform.rotation * (new Vector3(moveData.MoveVector.x, position.y, moveData.MoveVector.y).normalized * 2));
 
-            if (moveData.MoveType == MoveType.Seek || moveData.MoveType == MoveType.Flee)
+        if (Path == null || Path.Count == 0)
+        {
+            // Display the movement vectors of all move types.
+            foreach (MoveData moveData in MovesData)
             {
-                continue;
+                // Assign different colors for different behaviours:
+                // Blue for seek, cyan for pursuit, red for flee, and orange for evade.
+                GL.Color(moveData.MoveType switch
+                {
+                    MoveType.Seek => Color.blue,
+                    MoveType.Pursuit => Color.cyan,
+                    MoveType.Flee => Color.red,
+                    _ => new Color(1f, 0.65f, 0f),
+                });
+            
+                // Draw a line from the agent's position showing the force of this movement.
+                GL.Vertex(position);
+                GL.Vertex(position + transform.rotation * (new Vector3(moveData.MoveVector.x, position.y, moveData.MoveVector.y).normalized * 2));
+
+                if (moveData.MoveType == MoveType.Seek || moveData.MoveType == MoveType.Flee)
+                {
+                    continue;
+                }
+            
+                // Draw another line from the agent's position to where the agent is seeking/pursuing/fleeing/evading to/from.
+                GL.Vertex(position);
+                GL.Vertex(new Vector3(moveData.Position.x, position.y, moveData.Position.y));
             }
-            
-            // Draw another line from the agent's position to where the agent is seeking/pursuing/fleeing/evading to/from.
-            GL.Vertex(position);
-            GL.Vertex(new Vector3(moveData.Position.x, position.y, moveData.Position.y));
+
+            // If the agent is moving, draw a green line indicating the direction it is currently moving in.
+            if (MoveVelocity != Vector2.zero)
+            {
+                GL.Color(Color.green);
+                GL.Vertex(position);
+                GL.Vertex(position + transform.rotation * (MoveVelocity3.normalized * 2));
+            }
         }
 
-        // If the agent is moving, draw a green line indicating the direction it is currently moving in.
-        if (MoveVelocity != Vector2.zero)
-        {
-            GL.Color(Color.green);
-            GL.Vertex(position);
-            GL.Vertex(position + transform.rotation * (MoveVelocity3.normalized * 2));
-        }
-        
         // If the agent is looking towards a particular target (not just based on where it is moving), draw a line towards the target.
         if (LookingToTarget)
         {

@@ -1378,15 +1378,15 @@ MonoBehaviour:
   gizmos: 1
   navigation: 1
   selectedCamera: {fileID: 448259072}
-  navigationRadius: 0.5
   groundLayers:
     serializedVersion: 2
     m_Bits: 8
   obstacleLayers:
     serializedVersion: 2
     m_Bits: 64
+  navigationRadius: 0.5
   navigationVisualOffset: 0.1
-  lookupTable: 0
+  lookupTable: 1
 --- !u!4 &460686381
 Transform:
   m_ObjectHideFlags: 0
