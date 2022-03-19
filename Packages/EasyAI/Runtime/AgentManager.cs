@@ -1772,9 +1772,9 @@ public class AgentManager : MonoBehaviour
             y = NextItem(y, h, p);
             if (GuiButton(x, y, w, h, navigation switch
                 {
-                    NavigationState.Off => "Navigation: Off",
-                    NavigationState.Active => "Navigation: Active",
-                    _ => "Navigation: All"
+                    NavigationState.Off => "Nodes: Off",
+                    NavigationState.Active => "Nodes: Active",
+                    _ => "Nodes: All"
                 }))
             {
                 ChangeNavigationState();
