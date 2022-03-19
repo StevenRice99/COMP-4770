@@ -127,6 +127,8 @@ public class NodeArea : NodeBase
             generator.NodeArea = this;
             _nodeDistance = generator.SetNodeDistance();
             generator.Generate();
+            
+            float offset = navigationRadius / 2;
 
             for (int x = 0; x < AgentManager.Singleton.nodes.Count; x++)
             {
@@ -153,9 +155,9 @@ public class NodeArea : NodeBase
                     else
                     {
                         Vector3 p1 = AgentManager.Singleton.nodes[x];
-                        p1.y += navigationRadius / 2;
+                        p1.y += offset;
                         Vector3 p2 = AgentManager.Singleton.nodes[z];
-                        p2.y += navigationRadius / 2;
+                        p2.y += offset;
                         Vector3 direction = (p2 - p1).normalized;
                         if (Physics.SphereCast(p1, navigationRadius, direction, out _, d))
                         {

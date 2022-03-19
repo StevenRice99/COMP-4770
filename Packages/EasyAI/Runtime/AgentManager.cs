@@ -10,6 +10,64 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public class AgentManager : MonoBehaviour
 {
+    private struct NavigationLookup
+    {
+        public readonly Vector3 current;
+        public readonly Vector3 goal;
+        public readonly Vector3 next;
+
+        public NavigationLookup(Vector3 current, Vector3 goal, Vector3 next)
+        {
+            this.current = current;
+            this.goal = goal;
+            this.next = next;
+        }
+    }
+
+    private class AStarNode
+    {
+        public readonly Vector3 position;
+
+        public float CostG { get; private set; }
+
+        public float CostH { get; }
+
+        public float CostF => CostG + CostH;
+
+        public AStarNode Previous { get; private set; }
+        
+        public bool IsOpen { get; private set; }
+
+        public AStarNode(Vector3 pos, Vector3 goal, AStarNode previous = null)
+        {
+            Open();
+            position = pos;
+            CostH = Vector3.Distance(position, goal);
+            UpdatePrevious(previous);
+        }
+
+        public void UpdatePrevious(AStarNode previous)
+        {
+            Previous = previous;
+            if (Previous == null)
+            {
+                return;
+            }
+
+            CostG = previous.CostG + Vector3.Distance(position, Previous.position);
+        }
+
+        public void Open()
+        {
+            IsOpen = true;
+        }
+
+        public void Close()
+        {
+            IsOpen = false;
+        }
+    }
+    
     /// <summary>
     /// Determine what mode messages are stored in.
     /// All - All messages are captured.
@@ -35,7 +93,7 @@ public class AgentManager : MonoBehaviour
         All,
         Selected
     }
-    
+
     /// <summary>
     /// Determine what navigation lines are drawn.
     /// Off - No lines are drawn.
@@ -212,6 +270,8 @@ public class AgentManager : MonoBehaviour
     /// The currently selected component.
     /// </summary>
     private IntelligenceComponent _selectedComponent;
+
+    private NavigationLookup[] _navigationTable = null;
     
         /// <summary>
     /// Create a transform agent.
@@ -358,6 +418,50 @@ public class AgentManager : MonoBehaviour
         GameObject camera = new GameObject(name);
         camera.AddComponent<Camera>();
         return camera;
+    }
+
+    public List<Vector3> LookupPath(Vector3 position, Vector3 goal)
+    {
+        if (nodes.Count == 0)
+        {
+            return new List<Vector3> { goal };
+        }
+        
+        Vector3 nodePosition = nodes.OrderBy(n => Vector3.Distance(n, position)).First();
+        Vector3 nodeGoal = nodes.OrderBy(n => Vector3.Distance(n, goal)).First();
+
+        List<Vector3> path = new List<Vector3> { position };
+        if (nodePosition != position)
+        {
+            path.Add(nodePosition);
+        }
+
+        while (true)
+        {
+            try
+            {
+                NavigationLookup lookup = _navigationTable.First(l => l.current == nodePosition && l.goal == nodeGoal);
+                if (lookup.next == nodeGoal)
+                {
+                    break;
+                }
+
+                nodePosition = lookup.next;
+                path.Add(nodePosition);
+            }
+            catch
+            {
+                break;
+            }
+        }
+        
+        path.Add(nodeGoal);
+        if (goal != nodeGoal)
+        {
+            path.Add(goal);
+        }
+
+        return path;
     }
 
     /// <summary>
@@ -741,6 +845,8 @@ public class AgentManager : MonoBehaviour
             nodeBase.Finish();
         }
 
+        List<NavigationLookup> table = new List<NavigationLookup>();
+
         for (int i = 0; i < nodes.Count; i++)
         {
             if (!connections.Any(c => c.A == nodes[i] || c.B == nodes[i]))
@@ -748,6 +854,38 @@ public class AgentManager : MonoBehaviour
                 nodes.RemoveAt(i--);
             }
         }
+        
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            for (int j = 0; j < nodes.Count; j++)
+            {
+                if (i == j)
+                {
+                    continue;
+                }
+
+                List<Vector3> path = AStar(nodes[i], nodes[j]);
+                if (path.Count < 2)
+                {
+                    continue;
+                }
+
+                path.Reverse();
+
+                for (int k = 0; k < path.Count - 1; k++)
+                {
+                    if (path[k] == nodes[j] || table.Any(t => t.current == path[k] && t.goal == nodes[j] && t.next == path[k + 1]))
+                    {
+                        continue;
+                    }
+
+                    NavigationLookup lookup = new NavigationLookup(path[k], nodes[j], path[k + 1]);
+                    table.Add(lookup);
+                }
+            }
+        }
+
+        _navigationTable = table.ToArray();
         
         FindCameras();
         if (selectedCamera != null)
@@ -971,6 +1109,14 @@ public class AgentManager : MonoBehaviour
             {
                 GL.Vertex(connection.A);
                 GL.Vertex(connection.B);
+            }
+            
+            List<Vector3> path = LookupPath(new Vector3(10, 0.1f, 10), new Vector3(-10, 0.1f, -10));
+            GL.Color(Color.green);
+            for (int i = 0; i < path.Count - 1; i++)
+            {
+                GL.Vertex(path[i]);
+                GL.Vertex(path[i + 1]);
             }
         }
         
@@ -1495,7 +1641,7 @@ public class AgentManager : MonoBehaviour
         {
             w = ClosedSize;
         }
-            
+        
         if (Agents.Count == 0 && w + 4 * p > Screen.width)
         {
             w = Screen.width - 4 * p;
@@ -1640,5 +1786,65 @@ public class AgentManager : MonoBehaviour
         yield return 0;
         Pause();
         _stepping = false;
+    }
+
+    private List<Vector3> AStar(Vector3 current, Vector3 goal)
+    {
+        AStarNode best = null;
+        List<AStarNode> aStarNodes = new List<AStarNode> { new AStarNode(current, goal) };
+
+        while (aStarNodes.Any(n => n.IsOpen))
+        {
+            AStarNode node = aStarNodes.Where(n => n.IsOpen).OrderBy(n => n.CostF).ThenBy(n => n.CostH).First();
+            node.Close();
+            if (best == null || node.CostF < best.CostF)
+            {
+                best = node;
+            }
+            
+            foreach (NodeArea.Connection connection in connections.Where(c => c.A == node.position || c.B == node.position))
+            {
+                Vector3 position = connection.A == node.position ? connection.B : connection.A;
+                AStarNode successor = new AStarNode(position, goal, node);
+
+                if (position == goal)
+                {
+                    best = successor;
+                    aStarNodes.Clear();
+                    break;
+                }
+
+                AStarNode existing = aStarNodes.FirstOrDefault(n => n.position == position);
+                if (existing == null)
+                {
+                    aStarNodes.Add(successor);
+                    continue;
+                }
+
+                if (existing.CostF <= successor.CostF)
+                {
+                    continue;
+                }
+
+                existing.UpdatePrevious(node);
+                existing.Open();
+            }
+        }
+
+        if (best == null)
+        {
+            return new List<Vector3> { current, goal };
+        }
+
+        string p = string.Empty;
+        List<Vector3> path = new List<Vector3>();
+        while (best != null)
+        {
+            p += $" {best.position}";
+            path.Add(best.position);
+            best = best.Previous;
+        }
+
+        return path;
     }
 }
