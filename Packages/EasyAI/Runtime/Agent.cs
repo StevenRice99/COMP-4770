@@ -298,6 +298,7 @@ public abstract class Agent : MessageComponent
     public override void DisplayGizmos()
     {
         Vector3 position = transform.position;
+        position.y += AgentManager.Singleton.navigationVisualOffset;
         
         // Display the movement vectors of all move types.
         foreach (MoveData moveData in MovesData)

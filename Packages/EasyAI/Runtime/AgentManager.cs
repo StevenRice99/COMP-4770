@@ -195,7 +195,7 @@ public class AgentManager : MonoBehaviour
     [SerializeField]
     [Min(0)]
     [Tooltip("How much to visually offset navigation by so it does not clip into the ground.")]
-    private float navigationVisualOffset = 0.1f;
+    public float navigationVisualOffset = 0.1f;
 
     /// <summary>
     /// Getter for the maximum number of messages any component can hold.
@@ -1146,18 +1146,6 @@ public class AgentManager : MonoBehaviour
                 Vector3 a = connection.A;
                 a.y += navigationVisualOffset;
                 Vector3 b = connection.B;
-                b.y += navigationVisualOffset;
-                GL.Vertex(a);
-                GL.Vertex(b);
-            }
-            
-            List<Vector3> path = LookupPath(new Vector3(10, 0, 10), new Vector3(-10, 0, -10));
-            GL.Color(Color.green);
-            for (int i = 0; i < path.Count - 1; i++)
-            {
-                Vector3 a = path[i];
-                a.y += navigationVisualOffset;
-                Vector3 b = path[i + 1];
                 b.y += navigationVisualOffset;
                 GL.Vertex(a);
                 GL.Vertex(b);
