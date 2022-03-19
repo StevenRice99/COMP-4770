@@ -5775,7 +5775,7 @@ GameObject:
   - component: {fileID: 1658188431}
   - component: {fileID: 1658188430}
   m_Layer: 0
-  m_Name: Rigidbody Agent
+  m_Name: Agent
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5810,7 +5810,7 @@ MonoBehaviour:
   seekAcceptableDistance: 0.1
   fleeAcceptableDistance: 10
   restVelocity: 0.1
-  lookSpeed: 360
+  lookSpeed: 0
   maxWanderTurn: 30
   globalState: {fileID: 0}
   state: {fileID: 0}

@@ -121,7 +121,7 @@ public abstract class Agent : MessageComponent
     
     [Min(0)]
     [Tooltip("How fast this agent can increase in move speed in units per second.")]
-    public float moveAcceleration = 10;
+    public float moveAcceleration;
 
     [Tooltip("How close an agent can be to a location its seeking or pursuing to declare it as reached?. Set negative for none.")]
     public float seekAcceptableDistance = 0.1f;
@@ -135,7 +135,7 @@ public abstract class Agent : MessageComponent
     
     [Min(0)]
     [Tooltip("How fast this agent can look in degrees per second.")]
-    public float lookSpeed = 5;
+    public float lookSpeed;
 
     [Min(0)]
     [Tooltip("How many degrees at max this agent could shift when wandering.")]
@@ -774,7 +774,7 @@ public abstract class Agent : MessageComponent
         }
 
         // Face towards the target.
-        Visuals.rotation = Steering.Face(Visuals.position, Visuals.forward, target, lookSpeed, Time.deltaTime);
+        Visuals.rotation = Steering.Face(Visuals.position, Visuals.forward, target, lookSpeed > 0 ? lookSpeed : Mathf.Infinity, Time.deltaTime);
     }
 
     protected virtual void Start()
