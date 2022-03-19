@@ -108,9 +108,11 @@ public static class Steering
     /// <param name="target">The position to look towards.</param>
     /// <param name="lookSpeed">The maximum degrees the agent can rotate in a second.</param>
     /// <param name="deltaTime">The elapsed time.</param>
+    /// <param name="current">The current rotation prior to calling.</param>
     /// <returns>The quaternion of the updated rotation for the agent visuals.</returns>
-    public static Quaternion Face(Vector3 position, Vector3 forward, Vector3 target, float lookSpeed, float deltaTime)
+    public static Quaternion Face(Vector3 position, Vector3 forward, Vector3 target, float lookSpeed, float deltaTime, Quaternion current)
     {
-        return Quaternion.LookRotation(Vector3.RotateTowards(forward, target - position, lookSpeed * deltaTime, 0.0f));
+        Vector3 rotation = Vector3.RotateTowards(forward, target - position, lookSpeed * deltaTime, 0.0f);
+        return rotation == Vector3.zero || float.IsNaN(rotation.x) || float.IsNaN(rotation.y) || float.IsNaN(rotation.z) ? current : Quaternion.LookRotation(rotation);
     }
 }

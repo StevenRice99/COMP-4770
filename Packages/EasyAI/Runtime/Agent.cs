@@ -774,7 +774,7 @@ public abstract class Agent : MessageComponent
         }
 
         // Face towards the target.
-        Visuals.rotation = Steering.Face(Visuals.position, Visuals.forward, target, lookSpeed > 0 ? lookSpeed : Mathf.Infinity, Time.deltaTime);
+        Visuals.rotation = Steering.Face(Visuals.position, Visuals.forward, target, lookSpeed > 0 ? lookSpeed : Mathf.Infinity, Time.deltaTime, Visuals.rotation);
     }
 
     protected virtual void Start()
