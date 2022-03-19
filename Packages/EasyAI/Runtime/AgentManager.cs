@@ -1154,17 +1154,32 @@ public class AgentManager : MonoBehaviour
         GL.MultMatrix(transform.localToWorldMatrix);
         GL.Begin(GL.LINES);
 
-        if (navigation == NavigationState.All)
+        if (navigation == NavigationState.All || navigation == NavigationState.Active)
         {
-            GL.Color(Color.white);
-            foreach (NodeArea.Connection connection in connections)
+            if (navigation == NavigationState.All)
             {
-                Vector3 a = connection.A;
-                a.y += navigationVisualOffset;
-                Vector3 b = connection.B;
-                b.y += navigationVisualOffset;
-                GL.Vertex(a);
-                GL.Vertex(b);
+                GL.Color(Color.white);
+                foreach (NodeArea.Connection connection in connections)
+                {
+                    Vector3 a = connection.A;
+                    a.y += navigationVisualOffset;
+                    Vector3 b = connection.B;
+                    b.y += navigationVisualOffset;
+                    GL.Vertex(a);
+                    GL.Vertex(b);
+                }
+            }
+
+            GL.Color(Color.green);
+            foreach (Agent agent in Agents.Where(agent => agent.Path != null && agent.Path.Count != 0))
+            {
+                GL.Vertex(agent.transform.position);
+                GL.Vertex(agent.Path[0]);
+                for (int i = 0; i < agent.Path.Count - 1; i++)
+                {
+                    GL.Vertex(agent.Path[i]);
+                    GL.Vertex(agent.Path[i + 1]);
+                }
             }
         }
         

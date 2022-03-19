@@ -277,6 +277,8 @@ public abstract class Agent : MessageComponent
 
     public List<MoveData> MovesData { get; private set; } = new List<MoveData>();
 
+    public List<Vector3> Path { get; private set; }
+
     /// <summary>
     /// The index of the currently selected mind.
     /// </summary>
@@ -291,8 +293,6 @@ public abstract class Agent : MessageComponent
     /// Helper transform for storing the wander forward.
     /// </summary>
     private Transform _wanderForward;
-
-    private List<Vector3> _path;
     
     /// <summary>
     /// Display lines to highlight agent movement.
@@ -343,7 +343,7 @@ public abstract class Agent : MessageComponent
 
     public void Navigate(Vector3 goal)
     {
-        _path = AgentManager.Singleton.LookupPath(transform.position, goal);
+        Path = AgentManager.Singleton.LookupPath(transform.position, goal);
     }
 
     /// <summary>
@@ -391,7 +391,7 @@ public abstract class Agent : MessageComponent
             return;
         }
 
-        _path = null;
+        Path = null;
         RemoveMoveData(tr);
         MovesData.Add(new MoveData(moveType, tr));
     }
@@ -418,7 +418,7 @@ public abstract class Agent : MessageComponent
             return;
         }
         
-        _path = null;
+        Path = null;
         RemoveMoveData(pos);
         MovesData.Add(new MoveData(moveType, pos));
     }
@@ -822,26 +822,26 @@ public abstract class Agent : MessageComponent
         Vector3 positionVector3 = transform.position;
         Vector2 position = new Vector2(positionVector3.x, positionVector3.z);
 
-        if (_path != null)
+        if (Path != null)
         {
-            while (_path.Count > 0 && Vector2.Distance(position, new Vector2(_path[0].x, _path[0].z)) <= seekAcceptableDistance)
+            while (Path.Count > 0 && Vector2.Distance(position, new Vector2(Path[0].x, Path[0].z)) <= seekAcceptableDistance)
             {
-                _path.RemoveAt(0);
+                Path.RemoveAt(0);
             }
 
-            if (_path.Count > 0)
+            if (Path.Count > 0)
             {
                 // Align the wander guide with the rotation so it will be properly aligned if switched to wandering.
                 _wanderRoot.transform.localRotation = Visuals.rotation;
-                movement += Steering.Seek(position, MoveVelocity, new Vector2(_path[0].x, _path[0].z), acceleration);
+                movement += Steering.Seek(position, MoveVelocity, new Vector2(Path[0].x, Path[0].z), acceleration);
             }
             else
             {
-                _path = null;
+                Path = null;
             }
         }
 
-        if (_path != null)
+        if (Path != null)
         {
             // If there is move data, perform it.
             if (MovesData.Count > 0)
