@@ -168,7 +168,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 8
+  orthographic size: 6
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -266,7 +266,7 @@ MonoBehaviour:
   controlsWidth: 120
   gizmos: 1
   navigation: 1
-  selectedCamera: {fileID: 0}
+  selectedCamera: {fileID: 448259072}
   navigationRadius: 0.5
   groundLayers:
     serializedVersion: 2
@@ -952,8 +952,9 @@ MonoBehaviour:
   corner2:
     x: -5
     y: -5
-  ceiling: 10
-  floor: -1
+  floorCeiling:
+    x: -1
+    y: 10
   nodesPerStep: 4
 --- !u!4 &2139949937
 Transform:

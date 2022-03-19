@@ -291,6 +291,8 @@ public abstract class Agent : MessageComponent
     /// Helper transform for storing the wander forward.
     /// </summary>
     private Transform _wanderForward;
+
+    private List<Vector3> _path;
     
     /// <summary>
     /// Display lines to highlight agent movement.
@@ -339,6 +341,11 @@ public abstract class Agent : MessageComponent
         }
     }
 
+    public void Navigate(Vector3 goal)
+    {
+        _path = AgentManager.Singleton.LookupPath(transform.position, goal);
+    }
+
     /// <summary>
     /// Set a transform to move based upon.
     /// </summary>
@@ -384,6 +391,7 @@ public abstract class Agent : MessageComponent
             return;
         }
 
+        _path = null;
         RemoveMoveData(tr);
         MovesData.Add(new MoveData(moveType, tr));
     }
@@ -410,6 +418,7 @@ public abstract class Agent : MessageComponent
             return;
         }
         
+        _path = null;
         RemoveMoveData(pos);
         MovesData.Add(new MoveData(moveType, pos));
     }
@@ -813,59 +822,81 @@ public abstract class Agent : MessageComponent
         Vector3 positionVector3 = transform.position;
         Vector2 position = new Vector2(positionVector3.x, positionVector3.z);
 
-        // If there is move data, perform it.
-        if (MovesData.Count > 0)
+        if (_path != null)
         {
-            // Align the wander guide with the rotation so it will be properly aligned if switched to wandering.
-            _wanderRoot.transform.localRotation = Visuals.rotation;
-            
-            // Look through every move data.
-            for (int i = 0; i < MovesData.Count; i++)
+            while (_path.Count > 0 && Vector2.Distance(position, new Vector2(_path[0].x, _path[0].z)) <= seekAcceptableDistance)
             {
-                // Get the position to move to/from.
-                Vector2 target = MovesData[i].Position;
+                _path.RemoveAt(0);
+            }
 
-                // If this was a transform movement and the transform is now gone or the move has been satisfied, remove it.
-                if (MovesData[i].IsTransformTarget && MovesData[i].Transform == null || IsCompleteMove(MovesData[i].MoveType, position, target))
-                {
-                    MovesData.RemoveAt(i--);
-                    continue;
-                }
-
-                // Increase the elapsed time for the move data.
-                MovesData[i].DeltaTime += deltaTime;
-
-                // Update the movement vector of the data based on its given move type.
-                MovesData[i].MoveVector = MovesData[i].MoveType switch
-                {
-                    MoveType.Seek => Steering.Seek(position, MoveVelocity, target, acceleration),
-                    MoveType.Flee => Steering.Flee(position, MoveVelocity, target, acceleration),
-                    MoveType.Pursuit => Steering.Pursuit(position, MoveVelocity, target, MovesData[i].LastPosition, acceleration, MovesData[i].DeltaTime),
-                    MoveType.Evade => Steering.Evade(position, MoveVelocity, target, MovesData[i].LastPosition, acceleration, MovesData[i].DeltaTime),
-                    _ => MovesData[i].MoveVector
-                };
-
-                // Add the newly calculated movement data to the movement vector for this time step.
-                movement += MovesData[i].MoveVector;
-
-                // Update the last position so the next time step could calculated predictive movement.
-                MovesData[i].LastPosition = target;
-                
-                // Zero the elapsed time since the action was completed for this move data.
-                MovesData[i].DeltaTime = 0;
+            if (_path.Count > 0)
+            {
+                // Align the wander guide with the rotation so it will be properly aligned if switched to wandering.
+                _wanderRoot.transform.localRotation = Visuals.rotation;
+                movement += Steering.Seek(position, MoveVelocity, new Vector2(_path[0].x, _path[0].z), acceleration);
+            }
+            else
+            {
+                _path = null;
             }
         }
-        // Otherwise if there is no movement data and the agent should wander, have the agent randomly wander.
-        else if (Wander)
+
+        if (_path != null)
         {
-            // Get the desired angle to rotate by for the random wander sway.
-            _wanderRoot.transform.localRotation = Quaternion.Euler(0, Steering.Wander(_wanderRoot.transform.rotation.eulerAngles.y, maxWanderTurn), 0);
-            
-            // Then simply seek towards the given wander guide position.
-            Vector3 wander3 = _wanderForward.position;
-            movement += Steering.Seek(position, MoveVelocity, new Vector2(wander3.x, wander3.z), acceleration);
+            // If there is move data, perform it.
+            if (MovesData.Count > 0)
+            {
+                // Align the wander guide with the rotation so it will be properly aligned if switched to wandering.
+                _wanderRoot.transform.localRotation = Visuals.rotation;
+                
+                // Look through every move data.
+                for (int i = 0; i < MovesData.Count; i++)
+                {
+                    // Get the position to move to/from.
+                    Vector2 target = MovesData[i].Position;
+
+                    // If this was a transform movement and the transform is now gone or the move has been satisfied, remove it.
+                    if (MovesData[i].IsTransformTarget && MovesData[i].Transform == null || IsCompleteMove(MovesData[i].MoveType, position, target))
+                    {
+                        MovesData.RemoveAt(i--);
+                        continue;
+                    }
+
+                    // Increase the elapsed time for the move data.
+                    MovesData[i].DeltaTime += deltaTime;
+
+                    // Update the movement vector of the data based on its given move type.
+                    MovesData[i].MoveVector = MovesData[i].MoveType switch
+                    {
+                        MoveType.Seek => Steering.Seek(position, MoveVelocity, target, acceleration),
+                        MoveType.Flee => Steering.Flee(position, MoveVelocity, target, acceleration),
+                        MoveType.Pursuit => Steering.Pursuit(position, MoveVelocity, target, MovesData[i].LastPosition, acceleration, MovesData[i].DeltaTime),
+                        MoveType.Evade => Steering.Evade(position, MoveVelocity, target, MovesData[i].LastPosition, acceleration, MovesData[i].DeltaTime),
+                        _ => MovesData[i].MoveVector
+                    };
+
+                    // Add the newly calculated movement data to the movement vector for this time step.
+                    movement += MovesData[i].MoveVector;
+
+                    // Update the last position so the next time step could calculated predictive movement.
+                    MovesData[i].LastPosition = target;
+                    
+                    // Zero the elapsed time since the action was completed for this move data.
+                    MovesData[i].DeltaTime = 0;
+                }
+            }
+            // Otherwise if there is no movement data and the agent should wander, have the agent randomly wander.
+            else if (Wander)
+            {
+                // Get the desired angle to rotate by for the random wander sway.
+                _wanderRoot.transform.localRotation = Quaternion.Euler(0, Steering.Wander(_wanderRoot.transform.rotation.eulerAngles.y, maxWanderTurn), 0);
+                
+                // Then simply seek towards the given wander guide position.
+                Vector3 wander3 = _wanderForward.position;
+                movement += Steering.Seek(position, MoveVelocity, new Vector2(wander3.x, wander3.z), acceleration);
+            }
         }
-        
+
         // If there was no movement, bring the agent to a stop.
         if (movement == Vector2.zero)
         {
