@@ -195,6 +195,9 @@ public class AgentManager : MonoBehaviour
     [Tooltip("Which layers can nodes be placed on.")]
     public LayerMask groundLayers;
 
+    [Tooltip("Which layers are obstacles that nodes cannot be placed on.")]
+    public LayerMask obstacleLayers;
+
     [SerializeField]
     [Min(0)]
     [Tooltip("How much to visually offset navigation by so it does not clip into the ground.")]
@@ -485,7 +488,7 @@ public class AgentManager : MonoBehaviour
         {
             if (navigationRadius <= 0)
             {
-                if (!Physics.Linecast(path[i], path[i + 2], ~groundLayers))
+                if (!Physics.Linecast(path[i], path[i + 2], obstacleLayers))
                 {
                     path.RemoveAt(i-- + 1);
                 }
@@ -497,7 +500,7 @@ public class AgentManager : MonoBehaviour
                 Vector3 p2 = path[i + 2];
                 p2.y += offset;
                 Vector3 direction = (p2 - p1).normalized;
-                if (!Physics.SphereCast(p1, navigationRadius, direction, out _, Vector3.Distance(p1, p2), ~groundLayers))
+                if (!Physics.SphereCast(p1, navigationRadius, direction, out _, Vector3.Distance(p1, p2), obstacleLayers))
                 {
                     path.RemoveAt(i-- + 1);
                 }

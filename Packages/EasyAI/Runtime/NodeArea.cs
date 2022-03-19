@@ -133,7 +133,7 @@ public class NodeArea : NodeBase
 
                     if (AgentManager.Singleton.navigationRadius <= 0)
                     {
-                        if (Physics.Linecast(AgentManager.Singleton.nodes[x], AgentManager.Singleton.nodes[z], ~AgentManager.Singleton.groundLayers))
+                        if (Physics.Linecast(AgentManager.Singleton.nodes[x], AgentManager.Singleton.nodes[z], AgentManager.Singleton.obstacleLayers))
                         {
                             continue;
                         }
@@ -145,7 +145,7 @@ public class NodeArea : NodeBase
                         Vector3 p2 = AgentManager.Singleton.nodes[z];
                         p2.y += offset;
                         Vector3 direction = (p2 - p1).normalized;
-                        if (Physics.SphereCast(p1, AgentManager.Singleton.navigationRadius, direction, out _, d, ~AgentManager.Singleton.groundLayers))
+                        if (Physics.SphereCast(p1, AgentManager.Singleton.navigationRadius, direction, out _, d, AgentManager.Singleton.obstacleLayers))
                         {
                             continue;
                         }
@@ -201,7 +201,7 @@ public class NodeArea : NodeBase
     private bool ScanOpen(int x, int z)
     {
         float2 pos = GetRealPosition(x, z);
-        if (Physics.Raycast(new Vector3(pos.x, floorCeiling.y, pos.y), Vector3.down, out RaycastHit hit, floorCeiling.y - floorCeiling.x))
+        if (Physics.Raycast(new Vector3(pos.x, floorCeiling.y, pos.y), Vector3.down, out RaycastHit hit, floorCeiling.y - floorCeiling.x, AgentManager.Singleton.groundLayers | AgentManager.Singleton.obstacleLayers))
         {
             return (AgentManager.Singleton.groundLayers.value & (1 << hit.transform.gameObject.layer)) > 0;
         }

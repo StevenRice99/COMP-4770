@@ -318,6 +318,11 @@ public abstract class Agent : MessageComponent
             // Draw a line from the agent's position showing the force of this movement.
             GL.Vertex(position);
             GL.Vertex(position + transform.rotation * (new Vector3(moveData.MoveVector.x, position.y, moveData.MoveVector.y).normalized * 2));
+
+            if (moveData.MoveType == MoveType.Seek || moveData.MoveType == MoveType.Flee)
+            {
+                continue;
+            }
             
             // Draw another line from the agent's position to where the agent is seeking/pursuing/fleeing/evading to/from.
             GL.Vertex(position);
@@ -343,7 +348,14 @@ public abstract class Agent : MessageComponent
 
     public void Navigate(Vector3 goal)
     {
-        Path = AgentManager.Singleton.LookupPath(transform.position, goal);
+        List<Vector3> path = AgentManager.Singleton.LookupPath(transform.position, goal);
+        if (path.Count == 1)
+        {
+            SetMoveData(MoveType.Seek, path[0]);
+            return;
+        }
+
+        Path = path;
     }
 
     /// <summary>
