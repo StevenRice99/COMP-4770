@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -121,6 +122,8 @@ public class AgentManager : MonoBehaviour
         Components,
         Component
     }
+
+    private const string Folder = "Navigation";
         
     /// <summary>
     /// The width of the GUI buttons to open their respective menus when they are closed.
@@ -196,6 +199,10 @@ public class AgentManager : MonoBehaviour
     [Min(0)]
     [Tooltip("How much to visually offset navigation by so it does not clip into the ground.")]
     public float navigationVisualOffset = 0.1f;
+
+    [SerializeField]
+    [Tooltip("Read and use a pre-generated navigation lookup table.")]
+    private bool lookupTable = false;
 
     /// <summary>
     /// Getter for the maximum number of messages any component can hold.
@@ -871,57 +878,66 @@ public class AgentManager : MonoBehaviour
 
     protected virtual void Start()
     {
-        foreach (NodeArea levelSection in FindObjectsOfType<NodeArea>())
+        if (lookupTable)
         {
-            levelSection.Generate();
+            ReadLookupData();
+        }
+        else
+        {
+            foreach (NodeArea levelSection in FindObjectsOfType<NodeArea>())
+            {
+                levelSection.Generate();
+            }
+
+            List<NavigationLookup> table = new List<NavigationLookup>();
+
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                if (!connections.Any(c => c.A == nodes[i] || c.B == nodes[i]))
+                {
+                    nodes.RemoveAt(i--);
+                }
+            }
+        
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                for (int j = 0; j < nodes.Count; j++)
+                {
+                    if (i == j)
+                    {
+                        continue;
+                    }
+
+                    List<Vector3> path = AStar(nodes[i], nodes[j]);
+                    if (path.Count < 2)
+                    {
+                        continue;
+                    }
+
+                    path.Reverse();
+
+                    for (int k = 0; k < path.Count - 1; k++)
+                    {
+                        if (path[k] == nodes[j] || table.Any(t => t.current == path[k] && t.goal == nodes[j] && t.next == path[k + 1]))
+                        {
+                            continue;
+                        }
+
+                        NavigationLookup lookup = new NavigationLookup(path[k], nodes[j], path[k + 1]);
+                        table.Add(lookup);
+                    }
+                }
+            }
+
+            _navigationTable = table.ToArray();
+
+            WriteLookupData();
         }
 
         foreach (NodeBase nodeBase in FindObjectsOfType<NodeBase>())
         {
             nodeBase.Finish();
         }
-
-        List<NavigationLookup> table = new List<NavigationLookup>();
-
-        for (int i = 0; i < nodes.Count; i++)
-        {
-            if (!connections.Any(c => c.A == nodes[i] || c.B == nodes[i]))
-            {
-                nodes.RemoveAt(i--);
-            }
-        }
-        
-        for (int i = 0; i < nodes.Count; i++)
-        {
-            for (int j = 0; j < nodes.Count; j++)
-            {
-                if (i == j)
-                {
-                    continue;
-                }
-
-                List<Vector3> path = AStar(nodes[i], nodes[j]);
-                if (path.Count < 2)
-                {
-                    continue;
-                }
-
-                path.Reverse();
-
-                for (int k = 0; k < path.Count - 1; k++)
-                {
-                    if (path[k] == nodes[j] || table.Any(t => t.current == path[k] && t.goal == nodes[j] && t.next == path[k + 1]))
-                    {
-                        continue;
-                    }
-
-                    NavigationLookup lookup = new NavigationLookup(path[k], nodes[j], path[k + 1]);
-                    table.Add(lookup);
-                }
-            }
-        }
-
-        _navigationTable = table.ToArray();
         
         FindCameras();
         if (selectedCamera != null)
@@ -1876,5 +1892,83 @@ public class AgentManager : MonoBehaviour
         }
 
         return path;
+    }
+
+    private void WriteLookupData()
+    {
+        if (!Directory.Exists(Folder))
+        {
+            DirectoryInfo info = Directory.CreateDirectory(Folder);
+            if (!info.Exists)
+            {
+                return;
+            }
+        }
+
+        string data = string.Empty;
+        for (int i = 0; i < _navigationTable.Length; i++)
+        {
+            data += $"{_navigationTable[i].current.x} {_navigationTable[i].current.y} {_navigationTable[i].current.z} {_navigationTable[i].goal.x} {_navigationTable[i].goal.y} {_navigationTable[i].goal.z} {_navigationTable[i].next.x} {_navigationTable[i].next.y} {_navigationTable[i].next.z}";
+            if (i != _navigationTable.Length - 1)
+            {
+                data += "\n";
+            }
+        }
+
+        string fileName = $"{Folder}/{SceneManager.GetActiveScene().name}.txt";
+        StreamWriter writer = new StreamWriter(fileName, false);
+        writer.Write(data);
+        writer.Close();
+    }
+
+    private void ReadLookupData()
+    {
+        if (!Directory.Exists(Folder))
+        {
+            return;
+        }
+        
+        string fileName = $"{Folder}/{SceneManager.GetActiveScene().name}.txt";
+        if (!File.Exists(fileName))
+        {
+            return;
+        }
+
+        List<NavigationLookup> lookups = new List<NavigationLookup>();
+
+        string[] lines = File.ReadAllLines(fileName);
+        foreach (string line in lines)
+        {
+            string[] s = line.Split(' ');
+            NavigationLookup lookup = new NavigationLookup(
+                new Vector3(float.Parse(s[0]), float.Parse(s[1]), float.Parse(s[2])),
+                new Vector3(float.Parse(s[3]), float.Parse(s[4]), float.Parse(s[5])),
+                new Vector3(float.Parse(s[6]), float.Parse(s[7]), float.Parse(s[8]))
+            );
+
+            if (!nodes.Contains(lookup.current))
+            {
+                nodes.Add(lookup.current);
+            }
+            
+            if (!nodes.Contains(lookup.goal))
+            {
+                nodes.Add(lookup.goal);
+            }
+            
+            if (!nodes.Contains(lookup.next))
+            {
+                nodes.Add(lookup.next);
+            }
+
+            if (!connections.Any(c => c.A == lookup.current && c.B == lookup.next || c.A == lookup.next && c.B == lookup.current))
+            {
+                connections.Add(new NodeArea.Connection(lookup.current, lookup.next));
+            }
+            
+            lookups.Add(lookup);
+        }
+
+        _navigationTable = lookups.ToArray();
     }
 }
