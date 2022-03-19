@@ -485,23 +485,25 @@ public class AgentManager : MonoBehaviour
 
         for (int i = 0; i < path.Count - 2; i++)
         {
-            if (navigationRadius <= 0)
+            for (int j = i + 2; j < path.Count; j++)
             {
-                if (!Physics.Linecast(path[i], path[i + 2], obstacleLayers))
+                if (navigationRadius <= 0)
                 {
-                    path.RemoveAt(i-- + 1);
+                    if (!Physics.Linecast(path[i], path[j], obstacleLayers))
+                    {
+                        path.RemoveAt(j-- - 1);
+                    }
                 }
-            }
-            else
-            {
-                Vector3 p1 = path[i];
-                p1.y += offset;
-                Vector3 p2 = path[i + 2];
-                p2.y += offset;
-                Vector3 direction = (p2 - p1).normalized;
-                if (!Physics.SphereCast(p1, navigationRadius, direction, out _, Vector3.Distance(p1, p2), obstacleLayers))
+                else
                 {
-                    path.RemoveAt(i-- + 1);
+                    Vector3 p1 = path[i];
+                    p1.y += offset;
+                    Vector3 p2 = path[j];
+                    p2.y += offset;
+                    if (!Physics.SphereCast(p1, navigationRadius, (p2 - p1).normalized, out _, Vector3.Distance(p1, p2), obstacleLayers))
+                    {
+                        path.RemoveAt(j-- - 1);
+                    }
                 }
             }
         }
