@@ -275,8 +275,14 @@ public abstract class Agent : MessageComponent
     /// </summary>
     public PerformanceMeasure PerformanceMeasure { get; private set; }
 
+    /// <summary>
+    /// All movement the agent is doing without path finding.
+    /// </summary>
     public List<MoveData> MovesData { get; private set; } = new List<MoveData>();
 
+    /// <summary>
+    /// The current path an agent is following.
+    /// </summary>
     public List<Vector3> Path { get; private set; }
 
     /// <summary>
@@ -349,6 +355,10 @@ public abstract class Agent : MessageComponent
         }
     }
 
+    /// <summary>
+    /// Calculate a path towards a position.
+    /// </summary>
+    /// <param name="goal">The position to navigate to.</param>
     public void Navigate(Vector3 goal)
     {
         Path = AgentManager.Singleton.LookupPath(transform.position, goal);
@@ -658,6 +668,9 @@ public abstract class Agent : MessageComponent
         return GetType().Name;
     }
 
+    /// <summary>
+    /// Setup the agent.
+    /// </summary>
     public void Setup()
     {
         // Register this agent with the manager.
@@ -830,8 +843,10 @@ public abstract class Agent : MessageComponent
         Vector3 positionVector3 = transform.position;
         Vector2 position = new Vector2(positionVector3.x, positionVector3.z);
 
+        // If there is a path the agent is following, follow it.
         if (Path != null)
         {
+            // If we are at the end of the path, see if the agent can skip to the end in case it was off of a node and thus sub-optimal.
             if (Path.Count == 2)
             {
                 bool canReachEnd = false;
@@ -861,11 +876,13 @@ public abstract class Agent : MessageComponent
                 }
             }
 
+            // Remove path locations which have been satisfied in being reached.
             while (Path.Count > 0 && Vector2.Distance(position, new Vector2(Path[0].x, Path[0].z)) <= seekAcceptableDistance)
             {
                 Path.RemoveAt(0);
             }
 
+            // If there is still a path to follow, seek towards the next point and if not, remove the path list.
             if (Path.Count > 0)
             {
                 // Align the wander guide with the rotation so it will be properly aligned if switched to wandering.
@@ -878,6 +895,7 @@ public abstract class Agent : MessageComponent
             }
         }
 
+        // If there is not a path the agent is following, calculate movements.
         if (Path == null)
         {
             // If there is move data, perform it.
