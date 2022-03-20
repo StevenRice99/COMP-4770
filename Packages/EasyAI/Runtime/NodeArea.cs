@@ -5,26 +5,26 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Define an area for nodes to be placed in by an associated node generator.
+/// </summary>
 public class NodeArea : NodeBase
 {
+    /// <summary>
+    /// Open symbol.
+    /// </summary>
     private const char Open = ' ';
-
+    
+    /// <summary>
+    /// Closed symbol.
+    /// </summary>
     private const char Closed = '#';
 
+    /// <summary>
+    /// Node symbol.
+    /// </summary>
     private const char Node = '*';
-    
-    public struct Connection
-    {
-        public readonly Vector3 A;
-        public readonly Vector3 B;
 
-        public Connection(Vector3 a, Vector3 b)
-        {
-            A = a;
-            B = b;
-        }
-    }
-    
     [SerializeField]
     [Tooltip("One of the corner coordinates (X, Z) of the area to generate nodes in.")]
     private int2 corner1 = new int2(5, 5);
@@ -47,15 +47,35 @@ public class NodeArea : NodeBase
     )]
     private int nodesPerStep = 1;
 
-    private char[,] data;
-
+    /// <summary>
+    /// How many node spaces there are on the X axis.
+    /// </summary>
     public int RangeX => (corner1.x - corner2.x) * nodesPerStep + 1;
     
+    /// <summary>
+    /// How many node spaces there are on the Z axis.
+    /// </summary>
     public int RangeZ => (corner1.y - corner2.y) * nodesPerStep + 1;
 
+    /// <summary>
+    /// How many nodes are placed per every one unit of world space along each axis.
+    /// </summary>
     public int NodesPerStep => nodesPerStep;
 
+    /// <summary>
+    /// Data map.
+    /// </summary>
+    private char[,] _data;
+
+    /// <summary>
+    /// How far nodes can connect to each other from.
+    /// </summary>
     private float _nodeDistance;
+
+    /// <summary>
+    /// The nodes.
+    /// </summary>
+    private List<Vector3> _nodes = new List<Vector3>();
 
     private void OnDrawGizmosSelected()
     {
@@ -80,70 +100,82 @@ public class NodeArea : NodeBase
 
     public void Generate()
     {
+        // Ensure X coordinates are in the required order.
         if (corner2.x > corner1.x)
         {
             (corner1.x, corner2.x) = (corner2.x, corner1.x);
         }
         
+        // Ensure Z coordinates are in the required order.
         if (corner2.y > corner1.y)
         {
             (corner1.y, corner2.y) = (corner2.y, corner1.y);
         }
 
+        // Ensure floor and ceiling are in the required order.
         if (floorCeiling.x > floorCeiling.y)
         {
             (floorCeiling.x, floorCeiling.y) = (floorCeiling.y, floorCeiling.x);
         }
 
-        data = new char[RangeX, RangeZ];
+        // Initialize the data table.
+        _data = new char[RangeX, RangeZ];
         
+        // Scan each position to determine if it is open or closed.
         for (int x = 0; x < RangeX; x++)
         {
             for (int z = 0; z < RangeZ; z++)
             {
-                data[x, z] = ScanOpen(x, z) ? Open : Closed;
+                float2 pos = GetRealPosition(x, z);
+                _data[x, z] = Physics.Raycast(new Vector3(pos.x, floorCeiling.y, pos.y), Vector3.down, out RaycastHit hit, floorCeiling.y - floorCeiling.x, AgentManager.Singleton.groundLayers | AgentManager.Singleton.obstacleLayers) && (AgentManager.Singleton.groundLayers.value & (1 << hit.transform.gameObject.layer)) > 0
+                    ? Open
+                    : Closed;
             }
         }
         
+        // Get the node generator.
         List<NodeGenerator> generators = GetComponents<NodeGenerator>().ToList();
         generators.AddRange(GetComponentsInChildren<NodeGenerator>());
         NodeGenerator generator = generators.FirstOrDefault(g => g.enabled);
         if (generator != null)
         {
+            // Run the node generator.
             generator.NodeArea = this;
             _nodeDistance = generator.SetNodeDistance();
             generator.Generate();
-            
-            float offset = AgentManager.Singleton.navigationRadius / 2;
 
-            for (int x = 0; x < AgentManager.Singleton.nodes.Count; x++)
+            // Form connections between nodes.
+            for (int x = 0; x < _nodes.Count; x++)
             {
-                for (int z = 0; z < AgentManager.Singleton.nodes.Count; z++)
+                for (int z = 0; z < _nodes.Count; z++)
                 {
+                    // Cannot connect the same node.
                     if (x == z)
                     {
                         continue;
                     }
 
-                    float d = Vector3.Distance(AgentManager.Singleton.nodes[x], AgentManager.Singleton.nodes[z]);
+                    // Ensure the nodes are in range to form a connection.
+                    float d = Vector3.Distance(_nodes[x], _nodes[z]);
                     if (_nodeDistance > 0 && d > _nodeDistance)
                     {
                         continue;
                     }
 
+                    // Ensure the nodes have line of sight on each other.
                     if (AgentManager.Singleton.navigationRadius <= 0)
                     {
-                        if (Physics.Linecast(AgentManager.Singleton.nodes[x], AgentManager.Singleton.nodes[z], AgentManager.Singleton.obstacleLayers))
+                        if (Physics.Linecast(_nodes[x], _nodes[z], AgentManager.Singleton.obstacleLayers))
                         {
                             continue;
                         }
                     }
                     else
                     {
-                        Vector3 p1 = AgentManager.Singleton.nodes[x];
-                        p1.y += offset;
-                        Vector3 p2 = AgentManager.Singleton.nodes[z];
-                        p2.y += offset;
+                        Vector3 p1 = _nodes[x];
+                        p1.y += AgentManager.Singleton.navigationRadius;
+                        Vector3 p2 = _nodes[z];
+                        p2.y += AgentManager.Singleton.navigationRadius;
                         Vector3 direction = (p2 - p1).normalized;
                         if (Physics.SphereCast(p1, AgentManager.Singleton.navigationRadius, direction, out _, d, AgentManager.Singleton.obstacleLayers))
                         {
@@ -151,23 +183,26 @@ public class NodeArea : NodeBase
                         }
                     }
 
-                    if (AgentManager.Singleton.connections.Any(c => c.A == AgentManager.Singleton.nodes[x] && c.B == AgentManager.Singleton.nodes[z] || c.A == AgentManager.Singleton.nodes[z] && c.B == AgentManager.Singleton.nodes[x]))
+                    // Ensure there is not already an entry for this connection in the list.
+                    if (AgentManager.Singleton.connections.Any(c => c.A == _nodes[x] && c.B == _nodes[z] || c.A == _nodes[z] && c.B == _nodes[x]))
                     {
                         continue;
                     }
                 
-                    AgentManager.Singleton.connections.Add(new Connection(AgentManager.Singleton.nodes[x], AgentManager.Singleton.nodes[z]));
+                    // Add the connection to the list.
+                    AgentManager.Singleton.connections.Add(new AgentManager.Connection(_nodes[x], _nodes[z]));
                 }
             }
         }
 
+        // Cleanup all generators.
         foreach (NodeGenerator g in generators)
         {
             g.Finish();
         }
 
+        // Ensure the folder to save the map data exists.
         const string folder = "Maps";
-
         if (!Directory.Exists(folder))
         {
             DirectoryInfo info = Directory.CreateDirectory(folder);
@@ -178,6 +213,7 @@ public class NodeArea : NodeBase
             }
         }
         
+        // Write to the file.
         string fileName = $"{folder}/{SceneManager.GetActiveScene().name}";
         NodeArea[] levelSections = FindObjectsOfType<NodeArea>();
         if (levelSections.Length > 1)
@@ -190,33 +226,43 @@ public class NodeArea : NodeBase
         writer.Write(ToString());
         writer.Close();
         
+        // Cleanup this node area.
         Finish();
     }
 
+    /// <summary>
+    /// Get the actual coordinate from the node generator indexes.
+    /// </summary>
+    /// <param name="x">The X coordinate.</param>
+    /// <param name="z">The Z coordinate.</param>
+    /// <returns>The real (X, Z) position.</returns>
     private float2 GetRealPosition(int x, int z)
     {
         return new float2(corner2.x + x * 1f / nodesPerStep, corner2.y + z * 1f / nodesPerStep);
     }
 
-    private bool ScanOpen(int x, int z)
-    {
-        float2 pos = GetRealPosition(x, z);
-        if (Physics.Raycast(new Vector3(pos.x, floorCeiling.y, pos.y), Vector3.down, out RaycastHit hit, floorCeiling.y - floorCeiling.x, AgentManager.Singleton.groundLayers | AgentManager.Singleton.obstacleLayers))
-        {
-            return (AgentManager.Singleton.groundLayers.value & (1 << hit.transform.gameObject.layer)) > 0;
-        }
-
-        return false;
-    }
-
+    /// <summary>
+    /// Check if a given coordinate is open.
+    /// </summary>
+    /// <param name="x">The X coordinate.</param>
+    /// <param name="z">The Z coordinate.</param>
+    /// <returns>True if the space is open, false otherwise.</returns>
     public bool IsOpen(int x, int z)
     {
-        return data[x, z] != Closed;
+        return _data[x, z] != Closed;
     }
 
+    /// <summary>
+    /// Add a node at a given position.
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="z"></param>
     public void AddNode(int x, int z)
     {
-        data[x, z] = Node;
+        // Set that it is a node in the map data.
+        _data[x, z] = Node;
+        
+        // Get the position of the node.
         float2 pos = GetRealPosition(x, z);
         float y = floorCeiling.x;
         if (Physics.Raycast(new Vector3(pos.x, floorCeiling.y, pos.y), Vector3.down, out RaycastHit hit, floorCeiling.y - floorCeiling.x, AgentManager.Singleton.groundLayers))
@@ -224,7 +270,13 @@ public class NodeArea : NodeBase
             y = hit.point.y;
         }
         
+        // Add the node.
         Vector3 v = new Vector3(pos.x, y, pos.y);
+        if (!_nodes.Contains(v))
+        {
+            _nodes.Add(v);
+        }
+
         if (!AgentManager.Singleton.nodes.Contains(v))
         {
             AgentManager.Singleton.nodes.Add(v);
@@ -233,17 +285,19 @@ public class NodeArea : NodeBase
 
     public override string ToString()
     {
-        if (data == null)
+        // Nothing to write if there is no data.
+        if (_data == null)
         {
             return "No data.";
         }
 
+        // Add all map data.
         string s = string.Empty;
         for (int i = 0; i < RangeX; i++)
         {
             for (int j = 0; j < RangeZ; j++)
             {
-                s += data[i, j];
+                s += _data[i, j];
             }
 
             if (i != RangeX - 1)

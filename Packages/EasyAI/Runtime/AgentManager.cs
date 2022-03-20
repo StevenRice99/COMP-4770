@@ -11,39 +11,7 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public class AgentManager : MonoBehaviour
 {
-    /// <summary>
-    /// Hold data for the navigation lookup table.
-    /// </summary>
-    private struct NavigationLookup
-    {
-        /// <summary>
-        /// The current or starting node.
-        /// </summary>
-        public readonly Vector3 current;
-        
-        /// <summary>
-        /// Where the end goal of the navigation is.
-        /// </summary>
-        public readonly Vector3 goal;
-        
-        /// <summary>
-        /// The node to move to from the current node in order to navigate towards the goal.
-        /// </summary>
-        public readonly Vector3 next;
-
-        /// <summary>
-        /// Create a data entry for a navigation lookup table.
-        /// </summary>
-        /// <param name="current">The current or starting node.</param>
-        /// <param name="goal">Where the end goal of the navigation is.</param>
-        /// <param name="next">The node to move to from the current node in order to navigate towards the goal.</param>
-        public NavigationLookup(Vector3 current, Vector3 goal, Vector3 next)
-        {
-            this.current = current;
-            this.goal = goal;
-            this.next = next;
-        }
-    }
+    
 
     /// <summary>
     /// Class to hold data for each node during A* pathfinding.
@@ -124,6 +92,67 @@ public class AgentManager : MonoBehaviour
         public void Close()
         {
             IsOpen = false;
+        }
+    }
+    
+    /// <summary>
+    /// Hold a connection between two nodes.
+    /// </summary>
+    public struct Connection
+    {
+        /// <summary>
+        /// A node in the connection.
+        /// </summary>
+        public readonly Vector3 A;
+        
+        /// <summary>
+        /// A node in the connection.
+        /// </summary>
+        public readonly Vector3 B;
+
+        /// <summary>
+        /// Add a connection for two nodes.
+        /// </summary>
+        /// <param name="a">The first node.</param>
+        /// <param name="b">The second node.</param>
+        public Connection(Vector3 a, Vector3 b)
+        {
+            A = a;
+            B = b;
+        }
+    }
+    
+    /// <summary>
+    /// Hold data for the navigation lookup table.
+    /// </summary>
+    private struct NavigationLookup
+    {
+        /// <summary>
+        /// The current or starting node.
+        /// </summary>
+        public readonly Vector3 current;
+        
+        /// <summary>
+        /// Where the end goal of the navigation is.
+        /// </summary>
+        public readonly Vector3 goal;
+        
+        /// <summary>
+        /// The node to move to from the current node in order to navigate towards the goal.
+        /// </summary>
+        public readonly Vector3 next;
+
+        /// <summary>
+        /// Create a data entry for a navigation lookup table.
+        /// </summary>
+        /// <param name="current">The current or starting node.</param>
+        /// <param name="goal">Where the end goal of the navigation is.</param>
+        /// <param name="next">The node to move to from the current node in order to navigate towards the goal.</param>
+        public NavigationLookup(Vector3 current, Vector3 goal, Vector3 next)
+        {
+            this.current = current;
+            this.goal = goal;
+            this.next = next;
         }
     }
     
@@ -308,7 +337,7 @@ public class AgentManager : MonoBehaviour
     /// <summary>
     /// List of all navigation connections.
     /// </summary>
-    public readonly List<NodeArea.Connection> connections = new List<NodeArea.Connection>();
+    public readonly List<Connection> connections = new List<Connection>();
 
     /// <summary>
     /// All agents which move during an update tick.
@@ -1137,7 +1166,7 @@ public class AgentManager : MonoBehaviour
         }
 
         // Clean up all node related components in the scene as they are no longer needed after generation.
-        foreach (NodeBase nodeBase in FindObjectsOfType<NodeBase>())
+        foreach (NodeBase nodeBase in FindObjectsOfType<NodeBase>().OrderBy(n => n.transform.childCount))
         {
             nodeBase.Finish();
         }
@@ -1370,7 +1399,7 @@ public class AgentManager : MonoBehaviour
             if (navigation == NavigationState.All)
             {
                 GL.Color(Color.white);
-                foreach (NodeArea.Connection connection in connections)
+                foreach (Connection connection in connections)
                 {
                     Vector3 a = connection.A;
                     a.y += navigationVisualOffset;
@@ -2092,7 +2121,7 @@ public class AgentManager : MonoBehaviour
             }
             
             // Loop through all nodes which connect to the current node.
-            foreach (NodeArea.Connection connection in connections.Where(c => c.A == node.position || c.B == node.position))
+            foreach (Connection connection in connections.Where(c => c.A == node.position || c.B == node.position))
             {
                 // Get the other position in the connection so we do not work with the exact same node again and get stuck.
                 Vector3 position = connection.A == node.position ? connection.B : connection.A;
@@ -2242,7 +2271,7 @@ public class AgentManager : MonoBehaviour
             // Ensure a connection between the current and next nodes exists.
             if (!connections.Any(c => c.A == lookup.current && c.B == lookup.next || c.A == lookup.next && c.B == lookup.current))
             {
-                connections.Add(new NodeArea.Connection(lookup.current, lookup.next));
+                connections.Add(new Connection(lookup.current, lookup.next));
             }
             
             // Add to the lookup table.
