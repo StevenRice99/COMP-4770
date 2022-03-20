@@ -38,28 +38,46 @@
     - **Click the button which has "Nodes" in its text to change what nodes are drawn.**
 - **Unlike Dr. Goodwin's starter project, my equivalent to "MapData.txt" is located in the root of the project in the "Maps" folder and is named "Assignment 4.txt". Note that I did not add in the numbers on the sides of the text file as I did not need them for my implementation since my implementation does not actually use this text file directly and I am simply outputting it for review purposes only.**
 - **My node generation graphs generates a lookup table with A\* which allows for quick loading in from a text file as opposed to a lengthy generation period at each run. By default I have this enabled and details as to how to toggle this will be in the requirements section below.**
+- I have copied over the core level geometry from Dr. Goodwin's sample level for the assignment into my project but applied a matte material style to it.
 
 ## A4 Requirements
 
-1. Familiarize yourself with the provided framework and the code reviews in class.
+1. **Familiarize yourself with the provided framework and the code reviews in class.**
 
-- TODO.
+- Read through all node and navigation related classes which served as the base for my implementation in [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI").
 
-2. Explore the provided scripts in GridSearchSpace.cs, LevelInfo.cs, and A4Testing.cs.
+2. **Explore the provided scripts in GridSearchSpace.cs, LevelInfo.cs, and A4Testing.cs.**
 
-- TODO.
+- Recreated my own version of grid search space which can be found in "Packages > Easy AI > Runtime > GridGenerator.cs".
+  - Note that this is not currently in use in the scene as the corner graph is used instead.
+- Recreated and improved "LevelInfo.cs" where its equivalent in [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI") can be found at "Packages > Easy AI > Runtime > NodeArea.cs" which does not have hardcoded level sizes and can instead generate nodes for any size of level.
+  - More info on this at the end of this requirements section.
 
-3. Use ideas from GridSearchSpace.cs to complete the implementation of CornerGraphSearchSpace.cs. You will need to test for corners using LevelInfo.cs and its provided methods as well as any others you need. For convex corner detection, see example below.
+3. **Use ideas from GridSearchSpace.cs to complete the implementation of CornerGraphSearchSpace.cs. You will need to test for corners using LevelInfo.cs and its provided methods as well as any others you need. For convex corner detection, see example below.**
 
-- TODO.
+- The equivalent of "CornerGraphSearchSpace.cs" in [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI") can be found at "Packages > Easy AI > Runtime > CornerGraphGenerator.cs".
+- This class is fully commented with the main node placing logic in the "Generate" method.
 
-4. Test and document.
+4. **Test and document.**
 
-- TODO.
+- Every method and every parameter in every class is fully documented.
+- Testing is extremely easy as all that is needed it to right click with your mouse anywhere in the level and the agent will navigate to that position.
 
-5. Go above and beyond to distinguish yourself. Remember, 20% of the marking is competitive.
+5. **Go above and beyond to distinguish yourself. Remember, 20% of the marking is competitive.**
 
-- TODO.
+- Complete lookup table generation, saving, and loading.
+  1. "NodeArea.cs" found at "Packages > Easy AI > Runtime > NodeArea.cs" generates nodes based off an attached generator such as "CornerGraphGenerator.cs" or "GridGenerator.cs".
+  2. Nodes are then connected in "NodeArea.cs" based off of line of sight, taking into account the radius of agents to ensure no paths that are too thin are made. **Note that because of this, some connections seen in the assignment handout such as the ones on the far left and right of the images where a line is going over an obstacle are not made as those do not take into account the agent radius.**
+  3. After all nodes and connections are generated, A* pathfinding is done between all nodes.
+     1. The A* method can be found in the "AgentManager.cs" class at "Packages > Easy AI > Runtime > AgentManager.cs" in the method named "AStar".
+  4. All moves from each node to another are stored in memory for easy lookup and fast navigation as well as saved to a file.
+     1. **The lookup table is saved in the root of the project in the "Navigation" folder in "Assignment 4.txt".**
+  5. **On the "AgentManager" in the scene, enabling the parameter "Lookup Table" will have future runs load this data back from the text file instead of going through the above steps again, greatly reducing startup times. Due to this greatly reduced time, I have enabled this by default for your convenience. If you wish to run the generation yourself such as if you change the level geometry or simply want to try it out, uncheck this field but be aware that due to needing to perform every A\* combination in the level this will take some time and Unity will be unresponsive for a while once entering play mode.**
+     1. The methods for reading and writing this data can be found in the "AgentManager.cs" class at "Packages > Easy AI > Runtime > AgentManager.cs" in the "WriteLookupData" and "ReadLookupData" methods.
+- String pulling for paths.
+  - Paths are read from the lookup table in the "AgentManager.cs" class at "Packages > Easy AI > Runtime > AgentManager.cs" in the "LookupPath" method where nodes will be skipped if the agent has a direct path from them to another node or its destination.
+- Click to move.
+  - Right click with your mouse anywhere in the level to have the agent navigate to that position.
 
 # Assignment 3
 
@@ -302,7 +320,7 @@
 
 # Details
 
-- Created using Unity 2020.3.30f1.
+- Created using Unity 2020.3.31f1.
 - Created using [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI").
 - Project setup using the [Universal Render Pipeline](https://unity.com/srp/universal-render-pipeline "Universal Render Pipeline").
 - Project setup using Unity's [Input System](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.1/manual/index.html "Input System").
