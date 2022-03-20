@@ -1,6 +1,9 @@
 # COMP 4770 - Artificial Intelligence for Games
 
 - [Overview](#overview "Overview")
+- [Assignment 4](#assignment-4 "Assignment 4")
+  - [A4 Getting Started](#a4-getting-started "A4 Getting Started")
+  - [A4 Requirements](#a4-requirements "A4 Requirements")
 - [Assignment 3](#assignment-3 "Assignment 3")
   - [A3 Getting Started](#a3-getting-started "A3 Getting Started")
   - [A3 Requirements](#a3-requirements "A3 Requirements")
@@ -21,6 +24,42 @@
 - This project uses my own AI library, [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI"), so there will likely be some differences between my solutions and those using Dr. Goodwin's library although [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI") is based upon Dr. Goodwin's library. I will explain any of these differences when they occur.
   - **I have shared this library with Dr. Goodwin since the first assignment and he was okay with me building and using my own.**
   - I developed [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI") directly in this project and its fully commented source code can be found under "Packages > Easy AI".
+
+# Assignment 4
+
+## A4 Getting Started
+
+- Under "Assets", go to "Scenes" and open "Assignment 4".
+- **When running the scene, right click anywhere on the level with the mouse and the agent will find a path to that location.**
+- The general controls for the scene are as follows:
+  - Click the "Controls" button to see:
+    - Buttons to pause, resume, or step through the scene.
+    - Buttons to switch between cameras.
+    - **Click the button which has "Nodes" in its text to change what nodes are drawn.**
+- **Unlike Dr. Goodwin's starter project, my equivalent to "MapData.txt" is located in the root of the project in the "Maps" folder and is named "Assignment 4.txt". Note that I did not add in the numbers on the sides of the text file as I did not need them for my implementation since my implementation does not actually use this text file directly and I am simply outputting it for review purposes only.**
+- **My node generation graphs generates a lookup table with A\* which allows for quick loading in from a text file as opposed to a lengthy generation period at each run. By default I have this enabled and details as to how to toggle this will be in the requirements section below.**
+
+## A4 Requirements
+
+1. Familiarize yourself with the provided framework and the code reviews in class.
+
+- TODO.
+
+2. Explore the provided scripts in GridSearchSpace.cs, LevelInfo.cs, and A4Testing.cs.
+
+- TODO.
+
+3. Use ideas from GridSearchSpace.cs to complete the implementation of CornerGraphSearchSpace.cs. You will need to test for corners using LevelInfo.cs and its provided methods as well as any others you need. For convex corner detection, see example below.
+
+- TODO.
+
+4. Test and document.
+
+- TODO.
+
+5. Go above and beyond to distinguish yourself. Remember, 20% of the marking is competitive.
+
+- TODO.
 
 # Assignment 3
 
@@ -46,145 +85,25 @@
 
 - Reviewed Dr. Goodwin's code as well as Buckland's book to develop my own seek behaviour which can be found in "Packages > Easy AI > Runtime > Steering.cs".
 
-```csharp
-/// <summary>
-/// Seek - Move directly towards a position.
-/// Based upon the implementation detailed in Programming Game AI by Example page 91.
-/// </summary>
-/// <param name="position">The position of the agent.</param>
-/// <param name="velocity">The current velocity of the agent.</param>
-/// <param name="evader">The position of the target to seek to.</param>
-/// <param name="speed">The speed at which the agent can move.</param>
-/// <returns>The velocity to apply to the agent to perform the seek.</returns>
-public static Vector2 Seek(Vector2 position, Vector2 velocity, Vector2 evader, float speed)
-{
-    return (evader - position).normalized * speed - velocity;
-}
-```
-
 2. **Implement the Flee steering behaviour. You can do this by completing the Steer() method in Flee.cs. This version of Flee inherits from LinearSlow like Seek does and is a straightforward modification of Seek.cs. An alternative is to inherit from Seek or contain an instance of Seek and let Seek do the heavy lifting rather than replicate code from Seek in Flee.**
 
 - Implemented the flee steering behaviour based on Buckland's book which can be found in "Packages > Easy AI > Runtime > Steering.cs".
-
-```csharp
-/// <summary>
-/// Flee - Move directly away from a position.
-/// Based upon the implementation detailed in Programming Game AI by Example page 92.
-/// </summary>
-/// <param name="position">The position of the agent.</param>
-/// <param name="velocity">The current velocity of the agent.</param>
-/// <param name="pursuer">The position of the target to flee from.</param>
-/// <param name="speed">The speed at which the agent can move.</param>
-/// <returns>The velocity to apply to the agent to perform the flee.</returns>
-public static Vector2 Flee(Vector2 position, Vector2 velocity, Vector2 pursuer, float speed)
-{
-    // Flee is almost identical to seek except the initial subtraction of positions is reversed.
-    return (position - pursuer).normalized * speed - velocity;
-}
-```
 
 3. **Implement the Pursuit behaviour by completing the Steer() method in Pursue.cs. For this you will need to compute the predicted future position of the target.**
 
 - Implemented the pursuit steering behaviour based on Buckland's book which can be found in "Packages > Easy AI > Runtime > Steering.cs".
 - *To best see the difference between seek and pursuit, in the "Assignment 3" scene, observe the differences in the path an agent takes when clicking the "Seek Spinner" and "Pursue Spinner" buttons where the pursuit behaviour will aim ahead of the target to intercept it.*
 
-```csharp
-/// <summary>
-/// Pursuit - Move towards a position factoring in its current speed to predict where it is moving.
-/// Based upon the implementation detailed in Programming Game AI by Example page 94.
-/// </summary>
-/// <param name="position">The position of the agent.</param>
-/// <param name="velocity">The current velocity of the agent.</param>
-/// <param name="evader">The position of the target to pursuit to.</param>
-/// <param name="targetLastPosition">The position of the target during the last time step.</param>
-/// <param name="speed">The speed at which the agent can move.</param>
-/// <param name="deltaTime">The time elapsed between when the target is in its current position and its previous</param>
-/// <returns>The velocity to apply to the agent to perform the pursuit.</returns>
-public static Vector2 Pursuit(Vector2 position, Vector2 velocity, Vector2 evader, Vector2 targetLastPosition, float speed, float deltaTime)
-{
-    // Get the vector between the agent and the target.
-    Vector2 toEvader = evader - position;
-    
-    // The time to look ahead is equal to the vector magnitude divided by the sum of the speed of both the agent and the target,
-    // with the target's speed calculated by determining how far it has traveled during the elapsed time.
-    float lookAheadTime = toEvader.magnitude / (speed + Vector2.Distance(evader, targetLastPosition) * deltaTime);
-    
-    // Seek the predicted target position based upon adding its position to its velocity multiplied by the look ahead time,
-    // with the velocity calculated by subtracting the current and previous positions over the elapsed time.
-    return Seek(position, velocity, evader + (evader - targetLastPosition) / deltaTime * lookAheadTime, speed);
-}
-```
-
 4. **Implement Evade by completing the Steer() method in Evade.cs. Just as Flee is a mirror of Seek, Evade is a mirror of Pursue.**
 
 - Implemented the evade steering behaviour based on Buckland's book which can be found in "Packages > Easy AI > Runtime > Steering.cs".
 - *To best see the difference between flee and evade, in the "Assignment 3" scene, observe the differences in the path an agent takes when clicking the "Flee Spinner" and "Evade Spinner" buttons where by looking at the ground below the agent, you can notice in the evade behaviour it is influenced by the velocity of the spinning cube as the agent does not move in a straight line.*
-
-```csharp
-/// <summary>
-/// Evade - Move from a position factoring in its current speed to predict where it is moving.
-/// Based upon the implementation detailed in Programming Game AI by Example page 96.
-/// </summary>
-/// <param name="position">The position of the agent.</param>
-/// <param name="velocity">The current velocity of the agent.</param>
-/// <param name="pursuer">The position of the target to evade from.</param>
-/// <param name="pursuerLastPosition">The position of the target during the last time step.</param>
-/// <param name="speed">The speed at which the agent can move.</param>
-/// <param name="deltaTime">The time elapsed between when the target is in its current position and its previous</param>
-/// <returns>The velocity to apply to the agent to perform the evade.</returns>
-public static Vector2 Evade(Vector2 position, Vector2 velocity, Vector2 pursuer, Vector2 pursuerLastPosition, float speed, float deltaTime)
-{
-    // Get the vector between the agent and the target.
-    Vector2 toPursuer = pursuer - position;
-    
-    // The time to look ahead is equal to the vector magnitude divided by the sum of the speed of both the agent and the target,
-    // with the target's speed calculated by determining how far it has traveled during the elapsed time.
-    float lookAheadTime = toPursuer.magnitude / (speed + Vector2.Distance(pursuer, pursuerLastPosition) * deltaTime);
-    
-    // Flee the predicted target position based upon adding its position to its velocity multiplied by the look ahead time,
-    // with the velocity calculated by subtracting the current and previous positions over the elapsed time.
-    return Flee(position, velocity, pursuer + (pursuer - pursuerLastPosition) / deltaTime * lookAheadTime, speed);
-}
-```
 
 5. **Complete the Steer() method of at least one other steering behaviour in Steering/VelocityBased.**
 
 - I completed two additional steering behaviours being "Wander" and "Face" which can be found in "Packages > Easy AI > Runtime > Steering.cs".
 - "Wander" was based off of the behaviour outlined in Dr. Goodwin's slides where he using a random binomial value to steer the agent.
 - "Face" was a custom implementation of my own.
-
-```csharp
-/// <summary>
-/// Wander - Randomly adjust forward angle.
-/// Based upon the implementation detailed in Dr. Goodwin's "Steering Behaviours" slides on slide 19.
-/// </summary>
-/// <param name="currentAngle">The current rotation angle of the agent.</param>
-/// <param name="maxWanderTurn">The maximum degrees which the rotation can be adjusted by.</param>
-/// <returns>The new angle the agent should point towards for its wander.</returns>
-public static float Wander(float currentAngle, float maxWanderTurn)
-{
-    // Since each random call gives a value from [0.0, 1.0], this is a binomial distribution so values closer to zero are more likely.
-    return currentAngle + (Random.value - Random.value) * maxWanderTurn;
-}
-```
-
-```csharp
-/// <summary>
-/// Face - Face towards a target position.
-/// Custom implementation, not directly based off of any existing code in either Buckland's book or Dr. Goodwin's slides.
-/// Given that Vector2 does not have any RotateTowards method, this method is the only to use Vector3 values.
-/// </summary>
-/// <param name="position">The position of the agent.</param>
-/// <param name="forward">The forward vector the agent is visually facing.</param>
-/// <param name="target">The position to look towards.</param>
-/// <param name="lookSpeed">The maximum degrees the agent can rotate in a second.</param>
-/// <param name="deltaTime">The elapsed time.</param>
-/// <returns>The quaternion of the updated rotation for the agent visuals.</returns>
-public static Quaternion Face(Vector3 position, Vector3 forward, Vector3 target, float lookSpeed, float deltaTime)
-{
-    return Quaternion.LookRotation(Vector3.RotateTowards(forward, target - position, lookSpeed * deltaTime, 0.0f));
-}
-```
 
 6. **Distinguish yourself by completing more of the steering method templates, or adding additional steering behaviours beyond the given templates, or adding acceleration-based steering behaviours, or completing the prioritized or dithering combining methods in SteeringData. Be creative and have fun.**
 
