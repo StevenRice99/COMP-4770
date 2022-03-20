@@ -510,6 +510,26 @@ public class AgentManager : MonoBehaviour
     /// <returns>A list of the points to move to to reach the goal destination.</returns>
     public List<Vector3> LookupPath(Vector3 position, Vector3 goal)
     {
+        // Check if there is a direct line of sight so we can skip pathing and just move directly towards the goal.
+        if (navigationRadius <= 0)
+        {
+            if (!Physics.Linecast(position, goal, obstacleLayers))
+            {
+                return new List<Vector3> { goal };
+            }
+        }
+        else
+        {
+            Vector3 p1 = position;
+            p1.y += navigationRadius;
+            Vector3 p2 = goal;
+            p2.y += navigationRadius;
+            if (!Physics.SphereCast(p1, navigationRadius, (p2 - p1).normalized, out _, Vector3.Distance(p1, p2), obstacleLayers))
+            {
+                return new List<Vector3> { goal };
+            }
+        }
+        
         // If there are no nodes in the lookup table simply return the end goal position.
         if (nodes.Count == 0)
         {
@@ -589,8 +609,6 @@ public class AgentManager : MonoBehaviour
     /// <returns></returns>
     private Vector3 Nearest(Vector3 position)
     {
-        float offset = navigationRadius / 2;
-        
         // Order all nodes by distance to the position.
         List<Vector3> potential = nodes.OrderBy(n => Vector3.Distance(n, position)).ToList();
         foreach (Vector3 node in potential)
@@ -612,9 +630,9 @@ public class AgentManager : MonoBehaviour
             else
             {
                 Vector3 p1 = position;
-                p1.y += offset;
+                p1.y += navigationRadius;
                 Vector3 p2 = node;
-                p2.y += offset;
+                p2.y += navigationRadius;
                 if (!Physics.SphereCast(p1, navigationRadius, (p2 - p1).normalized, out _, Vector3.Distance(p1, p2), obstacleLayers))
                 {
                     return node;
@@ -632,8 +650,6 @@ public class AgentManager : MonoBehaviour
     /// <param name="path">The path to shorten.</param>
     private void StringPull(IList<Vector3> path)
     {
-        float offset = navigationRadius / 2;
-
         // Loop through every point in the path less two as there must be at least two points in a path.
         for (int i = 0; i < path.Count - 2; i++)
         {
@@ -651,9 +667,9 @@ public class AgentManager : MonoBehaviour
                 else
                 {
                     Vector3 p1 = path[i];
-                    p1.y += offset;
+                    p1.y += navigationRadius;
                     Vector3 p2 = path[j];
-                    p2.y += offset;
+                    p2.y += navigationRadius;
                     if (!Physics.SphereCast(p1, navigationRadius, (p2 - p1).normalized, out _, Vector3.Distance(p1, p2), obstacleLayers))
                     {
                         path.RemoveAt(j-- - 1);

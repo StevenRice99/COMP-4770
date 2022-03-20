@@ -351,14 +351,7 @@ public abstract class Agent : MessageComponent
 
     public void Navigate(Vector3 goal)
     {
-        List<Vector3> path = AgentManager.Singleton.LookupPath(transform.position, goal);
-        if (path.Count == 1)
-        {
-            SetMoveData(MoveType.Seek, path[0]);
-            return;
-        }
-
-        Path = path;
+        Path = AgentManager.Singleton.LookupPath(transform.position, goal);
     }
 
     /// <summary>
@@ -842,8 +835,6 @@ public abstract class Agent : MessageComponent
             if (Path.Count == 2)
             {
                 bool canReachEnd = false;
-                
-                float offset = AgentManager.Singleton.navigationRadius / 2;
             
                 if (AgentManager.Singleton.navigationRadius <= 0)
                 {
@@ -855,9 +846,9 @@ public abstract class Agent : MessageComponent
                 else
                 {
                     Vector3 p1 = transform.position;
-                    p1.y += offset;
+                    p1.y += AgentManager.Singleton.navigationRadius;
                     Vector3 p2 = Path[Path.Count - 1];
-                    p2.y += offset;
+                    p2.y += AgentManager.Singleton.navigationRadius;
                     if (!Physics.SphereCast(p1, AgentManager.Singleton.navigationRadius, (p2 - p1).normalized, out _, Vector3.Distance(p1, p2), AgentManager.Singleton.obstacleLayers))
                     {
                         canReachEnd = true;
