@@ -20,7 +20,7 @@ namespace A1.Sensors
             List<Floor> floors = CleanerAgentManager.CleanerAgentManagerSingleton.Floors;
             
             // Build the percept.
-            FloorsPercept percept = new FloorsPercept
+            FloorsPercept percept = new()
             {
                 Positions = new Vector3[floors.Count],
                 Dirty = new bool[floors.Count],

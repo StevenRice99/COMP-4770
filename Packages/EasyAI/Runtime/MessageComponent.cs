@@ -20,7 +20,7 @@ public class MessageComponent : MonoBehaviour
     /// <summary>
     /// The messages of this component.
     /// </summary>
-    public List<string> Messages { get; private set; } = new List<string>();
+    public List<string> Messages { get; private set; } = new();
 
     /// <summary>
     /// Override for custom detail rendering on the automatic GUI.

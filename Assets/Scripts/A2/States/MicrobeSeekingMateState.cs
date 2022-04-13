@@ -25,7 +25,7 @@ namespace A2.States
         /// <param name="agent">The agent.</param>
         public override void Execute(Agent agent)
         {
-            if (!(agent is Microbe microbe))
+            if (agent is not Microbe microbe)
             {
                 return;
             }
@@ -89,7 +89,7 @@ namespace A2.States
         /// <param name="agent">The agent.</param>
         public override void Exit(Agent agent)
         {
-            if (!(agent is Microbe microbe))
+            if (agent is not Microbe microbe)
             {
                 return;
             }
@@ -114,7 +114,7 @@ namespace A2.States
                 case MicrobeManager.MicrobeEvents.Impress:
                 {
                     // Determine if the receiver can mate or not and return true if it can, false otherwise.
-                    if (!(agent is Microbe { IsAdult: true } microbe) || microbe.DidMate || microbe.TargetMicrobe != null || !(aiEvent.Sender is Microbe sender))
+                    if (agent is not Microbe { IsAdult: true } microbe || microbe.DidMate || microbe.TargetMicrobe != null || aiEvent.Sender is not Microbe sender)
                     {
                         agent.AddMessage($"Cannot mate with {aiEvent.Sender.name}.");
                         return false;
@@ -127,7 +127,7 @@ namespace A2.States
                 // If the message is to mate with this microbe, mate.
                 case MicrobeManager.MicrobeEvents.Mate:
                 {
-                    if (!(agent is Microbe microbe))
+                    if (agent is not Microbe microbe)
                     {
                         return false;
                     }

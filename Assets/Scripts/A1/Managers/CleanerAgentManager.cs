@@ -22,7 +22,7 @@ namespace A1.Managers
 
         [SerializeField]
         [Tooltip("How many floor sections will be generated.")]
-        private Vector2 floorSize = new Vector2(3, 1);
+        private Vector2 floorSize = new(3, 1);
 
         [SerializeField]
         [Min(1)]
@@ -67,7 +67,7 @@ namespace A1.Managers
         /// <summary>
         /// All floors.
         /// </summary>
-        public readonly List<Floor> Floors = new List<Floor>();
+        public readonly List<Floor> Floors = new();
 
         /// <summary>
         /// The root game object of the cleaner agent.

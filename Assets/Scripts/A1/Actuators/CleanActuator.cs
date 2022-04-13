@@ -20,7 +20,7 @@ namespace A1.Actuators
         /// <summary>
         /// How long the floor tile has been getting cleaned for.
         /// </summary>
-        private float timeSpentCleaning;
+        private float _timeSpentCleaning;
 
         protected override void Start()
         {
@@ -36,7 +36,7 @@ namespace A1.Actuators
         protected override bool Act(Action action)
         {
             // Only act if there is a clean action.
-            if (!(action is CleanAction cleanAction))
+            if (action is not CleanAction cleanAction)
             {
                 StopCleaning();
                 return false;
@@ -51,10 +51,10 @@ namespace A1.Actuators
             }
 
             // Increment how long the floor has been getting cleaned for.
-            timeSpentCleaning += Agent.DeltaTime;
+            _timeSpentCleaning += Agent.DeltaTime;
 
             // If the tile has not been cleaned long enough, return false as it has not finished getting cleaned.
-            if (timeSpentCleaning < timeToClean)
+            if (_timeSpentCleaning < timeToClean)
             {
                 AddMessage("Cleaning current floor tile.");
                 StartCleaning();
@@ -63,7 +63,7 @@ namespace A1.Actuators
             
             // The floor has finished being cleaned so reset the time spent cleaning.
             AddMessage("Finished cleaning current floor tile.");
-            timeSpentCleaning = 0;
+            _timeSpentCleaning = 0;
             cleanAction.Floor.Clean();
             cleanAction.Complete = true;
             StopCleaning();

@@ -27,15 +27,15 @@ public class NodeArea : NodeBase
 
     [SerializeField]
     [Tooltip("One of the corner coordinates (X, Z) of the area to generate nodes in.")]
-    private int2 corner1 = new int2(5, 5);
+    private int2 corner1 = new(5, 5);
     
     [SerializeField]
     [Tooltip("One of the corner coordinates (X, Z) of the area to generate nodes in.")]
-    private int2 corner2 = new int2(-5, -5);
+    private int2 corner2 = new(-5, -5);
 
     [SerializeField]
     [Tooltip("The floor and ceiling to cast down between.")]
-    private float2 floorCeiling = new float2(-1, 10);
+    private float2 floorCeiling = new(-1, 10);
 
     [SerializeField]
     [Min(1)]
@@ -75,7 +75,7 @@ public class NodeArea : NodeBase
     /// <summary>
     /// The nodes.
     /// </summary>
-    private List<Vector3> _nodes = new List<Vector3>();
+    private readonly List<Vector3> _nodes = new();
 
     private void OnDrawGizmosSelected()
     {
@@ -184,13 +184,13 @@ public class NodeArea : NodeBase
                     }
 
                     // Ensure there is not already an entry for this connection in the list.
-                    if (AgentManager.Singleton.connections.Any(c => c.A == _nodes[x] && c.B == _nodes[z] || c.A == _nodes[z] && c.B == _nodes[x]))
+                    if (AgentManager.Singleton.Connections.Any(c => c.A == _nodes[x] && c.B == _nodes[z] || c.A == _nodes[z] && c.B == _nodes[x]))
                     {
                         continue;
                     }
                 
                     // Add the connection to the list.
-                    AgentManager.Singleton.connections.Add(new AgentManager.Connection(_nodes[x], _nodes[z]));
+                    AgentManager.Singleton.Connections.Add(new AgentManager.Connection(_nodes[x], _nodes[z]));
                 }
             }
         }
@@ -222,7 +222,7 @@ public class NodeArea : NodeBase
         }
         fileName += ".txt";
         
-        StreamWriter writer = new StreamWriter(fileName, false);
+        StreamWriter writer = new(fileName, false);
         writer.Write(ToString());
         writer.Close();
         
@@ -271,15 +271,15 @@ public class NodeArea : NodeBase
         }
         
         // Add the node.
-        Vector3 v = new Vector3(pos.x, y, pos.y);
+        Vector3 v = new(pos.x, y, pos.y);
         if (!_nodes.Contains(v))
         {
             _nodes.Add(v);
         }
 
-        if (!AgentManager.Singleton.nodes.Contains(v))
+        if (!AgentManager.Singleton.Nodes.Contains(v))
         {
-            AgentManager.Singleton.nodes.Add(v);
+            AgentManager.Singleton.Nodes.Add(v);
         }
     }
 

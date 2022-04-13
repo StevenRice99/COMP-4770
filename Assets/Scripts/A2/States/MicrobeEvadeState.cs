@@ -21,7 +21,7 @@ namespace A2.States
         public override void Execute(Agent agent)
         {
             // If no microbe is pursuing this microbe, return.
-            if (!(agent is Microbe microbe) || microbe.PursuerMicrobe == null)
+            if (agent is not Microbe microbe || microbe.PursuerMicrobe == null)
             {
                 return;
             }
@@ -44,7 +44,7 @@ namespace A2.States
         /// <param name="agent">The agent.</param>
         public override void Exit(Agent agent)
         {
-            if (!(agent is Microbe microbe))
+            if (agent is not Microbe microbe)
             {
                 return;
             }

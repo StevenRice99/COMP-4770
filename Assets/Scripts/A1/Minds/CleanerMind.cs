@@ -56,9 +56,9 @@ namespace A1.Minds
                 return Vector3.zero;
             }
             
-            List<Vector3> all = new List<Vector3>();
-            List<Vector3> dirty = new List<Vector3>();
-            List<Vector3> likelyToGetDirty = new List<Vector3>();
+            List<Vector3> all = new();
+            List<Vector3> dirty = new();
+            List<Vector3> likelyToGetDirty = new();
 
             // Build lists.
             foreach (FloorsPercept dirtPercept in dirtPercepts)

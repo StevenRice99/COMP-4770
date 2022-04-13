@@ -19,7 +19,10 @@ public abstract class IntelligenceComponent : MessageComponent
         {
             Setup();
         }
-        catch { }
+        catch
+        {
+            // Ignored.
+        }
     }
 
     protected virtual void OnDisable()
@@ -28,7 +31,10 @@ public abstract class IntelligenceComponent : MessageComponent
         {
             Setup();
         }
-        catch { }
+        catch
+        {
+            // Ignored.
+        }
     }
 
     protected virtual void OnDestroy()
@@ -37,7 +43,10 @@ public abstract class IntelligenceComponent : MessageComponent
         {
             Setup();
         }
-        catch { }
+        catch
+        {
+            // Ignored.
+        }
     }
 
     /// <summary>

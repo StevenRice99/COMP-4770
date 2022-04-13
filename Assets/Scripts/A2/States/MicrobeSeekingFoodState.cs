@@ -25,7 +25,7 @@ namespace A2.States
         /// <param name="agent">The agent.</param>
         public override void Execute(Agent agent)
         {
-            if (!(agent is Microbe microbe))
+            if (agent is not Microbe microbe)
             {
                 return;
             }
@@ -70,7 +70,7 @@ namespace A2.States
         /// <param name="agent">The agent.</param>
         public override void Exit(Agent agent)
         {
-            if (!(agent is Microbe microbe))
+            if (agent is not Microbe microbe)
             {
                 return;
             }

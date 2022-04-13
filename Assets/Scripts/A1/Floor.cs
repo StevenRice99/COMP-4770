@@ -109,21 +109,13 @@ namespace A1
         /// </summary>
         private void UpdateMaterial()
         {
-            switch (State)
+            _meshRenderer.material = State switch
             {
-                case DirtLevel.Clean:
-                    _meshRenderer.material = _cleanMaterial;
-                    break;
-                case DirtLevel.Dirty:
-                    _meshRenderer.material = _dirtyMaterial;
-                    break;
-                case DirtLevel.VeryDirty:
-                    _meshRenderer.material = _veryDirtyMaterial;
-                    break;
-                default:
-                    _meshRenderer.material = _extremelyDirtyMaterial;
-                    break;
-            }
+                DirtLevel.Clean => _cleanMaterial,
+                DirtLevel.Dirty => _dirtyMaterial,
+                DirtLevel.VeryDirty => _veryDirtyMaterial,
+                _ => _extremelyDirtyMaterial
+            };
         }
     }
 }

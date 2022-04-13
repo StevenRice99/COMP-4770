@@ -241,7 +241,10 @@ namespace A2.Agents
                 _audioSource.clip = clip;
                 _audioSource.Play();
             }
-            catch { }
+            catch
+            {
+                // Ignored.
+            }
         }
     }
 }

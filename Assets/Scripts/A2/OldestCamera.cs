@@ -67,7 +67,7 @@ namespace A2
             }
 
             // Move over the agent.
-            Vector3 position = new Vector3(_target.x, _target.y + height, _target.z);
+            Vector3 position = new(_target.x, _target.y + height, _target.z);
             transform.position = moveSpeed <= 0 ? position : Vector3.Slerp(transform.position, position, moveSpeed * Time.deltaTime);
         }
     }

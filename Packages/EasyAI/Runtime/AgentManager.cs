@@ -11,8 +11,6 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public class AgentManager : MonoBehaviour
 {
-    
-
     /// <summary>
     /// Class to hold data for each node during A* pathfinding.
     /// </summary>
@@ -21,7 +19,7 @@ public class AgentManager : MonoBehaviour
         /// <summary>
         /// The position of the node.
         /// </summary>
-        public readonly Vector3 position;
+        public readonly Vector3 Position;
 
         /// <summary>
         /// The heuristic cost of this node to the goal.
@@ -57,8 +55,8 @@ public class AgentManager : MonoBehaviour
         public AStarNode(Vector3 pos, Vector3 goal, AStarNode previous = null)
         {
             Open();
-            position = pos;
-            CostH = Vector3.Distance(position, goal);
+            Position = pos;
+            CostH = Vector3.Distance(Position, goal);
             UpdatePrevious(previous);
         }
 
@@ -75,7 +73,7 @@ public class AgentManager : MonoBehaviour
                 return;
             }
 
-            CostG = previous.CostG + Vector3.Distance(position, Previous.position);
+            CostG = previous.CostG + Vector3.Distance(Position, Previous.Position);
         }
 
         /// <summary>
@@ -130,17 +128,17 @@ public class AgentManager : MonoBehaviour
         /// <summary>
         /// The current or starting node.
         /// </summary>
-        public readonly Vector3 current;
+        public readonly Vector3 Current;
         
         /// <summary>
         /// Where the end goal of the navigation is.
         /// </summary>
-        public readonly Vector3 goal;
+        public readonly Vector3 Goal;
         
         /// <summary>
         /// The node to move to from the current node in order to navigate towards the goal.
         /// </summary>
-        public readonly Vector3 next;
+        public readonly Vector3 Next;
 
         /// <summary>
         /// Create a data entry for a navigation lookup table.
@@ -150,9 +148,9 @@ public class AgentManager : MonoBehaviour
         /// <param name="next">The node to move to from the current node in order to navigate towards the goal.</param>
         public NavigationLookup(Vector3 current, Vector3 goal, Vector3 next)
         {
-            this.current = current;
-            this.goal = goal;
-            this.next = next;
+            Current = current;
+            Goal = goal;
+            Next = next;
         }
     }
     
@@ -228,7 +226,7 @@ public class AgentManager : MonoBehaviour
     /// <summary>
     /// All registered states.
     /// </summary>
-    private static readonly Dictionary<Type, State> RegisteredStates = new Dictionary<Type, State>();
+    private static readonly Dictionary<Type, State> RegisteredStates = new();
 
     /// <summary>
     /// The auto-generated material for displaying lines.
@@ -312,7 +310,7 @@ public class AgentManager : MonoBehaviour
     /// <summary>
     /// The global messages.
     /// </summary>
-    public List<string> GlobalMessages { get; private set; } = new List<string>();
+    public List<string> GlobalMessages { get; private set; } = new();
 
     /// <summary>
     /// The currently selected agent.
@@ -322,7 +320,7 @@ public class AgentManager : MonoBehaviour
     /// <summary>
     /// All agents in the scene.
     /// </summary>
-    public List<Agent> Agents { get; private set; } = new List<Agent>();
+    public List<Agent> Agents { get; private set; } = new();
 
     /// <summary>
     /// All cameras in the scene.
@@ -332,22 +330,22 @@ public class AgentManager : MonoBehaviour
     /// <summary>
     /// List of all navigation nodes.
     /// </summary>
-    public readonly List<Vector3> nodes = new List<Vector3>();
+    public readonly List<Vector3> Nodes = new();
 
     /// <summary>
     /// List of all navigation connections.
     /// </summary>
-    public readonly List<Connection> connections = new List<Connection>();
+    public readonly List<Connection> Connections = new();
 
     /// <summary>
     /// All agents which move during an update tick.
     /// </summary>
-    private List<Agent> UpdateAgents = new List<Agent>();
+    private readonly List<Agent> _updateAgents = new();
 
     /// <summary>
     /// All agents which move during a fixed update tick.
     /// </summary>
-    private List<Agent> FixedUpdateAgents = new List<Agent>();
+    private readonly List<Agent> _fixedUpdateAgents = new();
     
     /// <summary>
     /// State of the GUI system.
@@ -383,7 +381,27 @@ public class AgentManager : MonoBehaviour
     /// The navigation lookup table.
     /// </summary>
     private NavigationLookup[] _navigationTable;
-    
+
+    /// <summary>
+    /// Cached shader value for use with line rendering.
+    /// </summary>
+    private static readonly int SrcBlend = Shader.PropertyToID("_SrcBlend");
+
+    /// <summary>
+    /// Cached shader value for use with line rendering.
+    /// </summary>
+    private static readonly int DstBlend = Shader.PropertyToID("_DstBlend");
+
+    /// <summary>
+    /// Cached shader value for use with line rendering.
+    /// </summary>
+    private static readonly int Cull = Shader.PropertyToID("_Cull");
+
+    /// <summary>
+    /// Cached shader value for use with line rendering.
+    /// </summary>
+    private static readonly int ZWrite = Shader.PropertyToID("_ZWrite");
+
     /// <summary>
     /// Create a transform agent.
     /// </summary>
@@ -494,9 +512,9 @@ public class AgentManager : MonoBehaviour
     /// <returns>Game object with the visuals setup for a basic agent.</returns>
     public static GameObject CreateAgent(string name)
     {
-        GameObject agent = new GameObject(name);
+        GameObject agent = new(name);
 
-        GameObject visuals = new GameObject("Visuals");
+        GameObject visuals = new("Visuals");
         visuals.transform.SetParent(agent.transform);
         visuals.transform.localPosition = Vector3.zero;
         visuals.transform.localRotation = Quaternion.identity;
@@ -526,7 +544,7 @@ public class AgentManager : MonoBehaviour
     /// <returns>Game object with a camera.</returns>
     public static GameObject CreateCamera(string name)
     {
-        GameObject camera = new GameObject(name);
+        GameObject camera = new(name);
         camera.AddComponent<Camera>();
         return camera;
     }
@@ -560,7 +578,7 @@ public class AgentManager : MonoBehaviour
         }
         
         // If there are no nodes in the lookup table simply return the end goal position.
-        if (nodes.Count == 0)
+        if (Nodes.Count == 0)
         {
             return new List<Vector3> { goal };
         }
@@ -570,7 +588,7 @@ public class AgentManager : MonoBehaviour
         Vector3 nodeGoal = Nearest(goal);
 
         // Add the starting position to the path.
-        List<Vector3> path = new List<Vector3> { position };
+        List<Vector3> path = new() { position };
         
         // If the first node is not the same as the starting position, add it as well.
         if (nodePosition != position)
@@ -584,16 +602,16 @@ public class AgentManager : MonoBehaviour
             try
             {
                 // Get the next node to move to.
-                NavigationLookup lookup = _navigationTable.First(l => l.current == nodePosition && l.goal == nodeGoal);
+                NavigationLookup lookup = _navigationTable.First(l => l.Current == nodePosition && l.Goal == nodeGoal);
                 
                 // If the node is the goal destination, all nodes in the path have been finished so stop the loop.
-                if (lookup.next == nodeGoal)
+                if (lookup.Next == nodeGoal)
                 {
                     break;
                 }
                 
                 // Move to the next node and add it to the path.
-                nodePosition = lookup.next;
+                nodePosition = lookup.Next;
                 path.Add(nodePosition);
             }
             catch
@@ -612,7 +630,7 @@ public class AgentManager : MonoBehaviour
         }
         
         // Create a copy of the path in reverse from the end to the start.
-        List<Vector3> backwards = new List<Vector3>();
+        List<Vector3> backwards = new();
         backwards.AddRange(path);
         backwards.Reverse();
 
@@ -639,7 +657,7 @@ public class AgentManager : MonoBehaviour
     private Vector3 Nearest(Vector3 position)
     {
         // Order all nodes by distance to the position.
-        List<Vector3> potential = nodes.OrderBy(n => Vector3.Distance(n, position)).ToList();
+        List<Vector3> potential = Nodes.OrderBy(n => Vector3.Distance(n, position)).ToList();
         foreach (Vector3 node in potential)
         {
             // If the node is directly at the position, return it.
@@ -804,7 +822,7 @@ public class AgentManager : MonoBehaviour
     {
         return !(y + h > Screen.height) && GUI.Button(new Rect(x, y, w, h), message);
     }
-        
+
     /// <summary>
     /// Render a GUI label.
     /// </summary>
@@ -812,6 +830,7 @@ public class AgentManager : MonoBehaviour
     /// <param name="y">Y rendering position. In most cases this should remain unchanged.</param>
     /// <param name="w">Width of components. In most cases this should remain unchanged.</param>
     /// <param name="h">Height of components. In most cases this should remain unchanged.</param>
+    /// <param name="p">Padding of components. In most cases this should remain unchanged.</param>
     /// <param name="message">The message to display.</param>
     public static void GuiLabel(float x, float y, float w, float h, float p, string message)
     {
@@ -830,6 +849,7 @@ public class AgentManager : MonoBehaviour
     /// <param name="y">Y rendering position. In most cases this should remain unchanged.</param>
     /// <param name="w">Width of components. In most cases this should remain unchanged.</param>
     /// <param name="h">Height of components. In most cases this should remain unchanged.</param>
+    /// <param name="p">Padding of components. In most cases this should remain unchanged.</param>
     /// <param name="number">How many labels the box should be able to hold.</param>
     public static void GuiBox(float x, float y, float w, float h, float p, int number)
     {
@@ -848,8 +868,8 @@ public class AgentManager : MonoBehaviour
     /// <summary>
     /// Determine the updated Y value for the next GUI to be placed with.
     /// </summary>
-    /// <param name="x">X rendering position. In most cases this should remain unchanged.</param>
     /// <param name="y">Y rendering position. In most cases this should remain unchanged.</param>
+    /// <param name="h">Height of components. In most cases this should remain unchanged.</param>
     /// <param name="p">Padding of components. In most cases this should remain unchanged.</param>
     /// <returns></returns>
     public static float NextItem(float y, float h, float p)
@@ -896,10 +916,10 @@ public class AgentManager : MonoBehaviour
         switch (agent)
         {
             case TransformAgent updateAgent:
-                UpdateAgents.Add(updateAgent);
+                _updateAgents.Add(updateAgent);
                 break;
             case RigidbodyAgent fixedUpdateAgent:
-                FixedUpdateAgents.Add(fixedUpdateAgent);
+                _fixedUpdateAgents.Add(fixedUpdateAgent);
                 break;
         }
             
@@ -936,18 +956,18 @@ public class AgentManager : MonoBehaviour
         {
             case TransformAgent updateAgent:
             {
-                if (UpdateAgents.Contains(updateAgent))
+                if (_updateAgents.Contains(updateAgent))
                 {
-                    UpdateAgents.Remove(updateAgent);
+                    _updateAgents.Remove(updateAgent);
                 }
 
                 break;
             }
             case RigidbodyAgent fixedUpdateAgent:
             {
-                if (FixedUpdateAgents.Contains(fixedUpdateAgent))
+                if (_fixedUpdateAgents.Contains(fixedUpdateAgent))
                 {
-                    FixedUpdateAgents.Remove(fixedUpdateAgent);
+                    _fixedUpdateAgents.Remove(fixedUpdateAgent);
                 }
 
                 break;
@@ -1111,22 +1131,22 @@ public class AgentManager : MonoBehaviour
             }
 
             // Store all new lookup tables.
-            List<NavigationLookup> table = new List<NavigationLookup>();
+            List<NavigationLookup> table = new();
 
             // If any nodes are not a part of any connections, remove them.
-            for (int i = 0; i < nodes.Count; i++)
+            for (int i = 0; i < Nodes.Count; i++)
             {
-                if (!connections.Any(c => c.A == nodes[i] || c.B == nodes[i]))
+                if (!Connections.Any(c => c.A == Nodes[i] || c.B == Nodes[i]))
                 {
-                    nodes.RemoveAt(i--);
+                    Nodes.RemoveAt(i--);
                 }
             }
         
             // Loop through all nodes.
-            for (int i = 0; i < nodes.Count; i++)
+            for (int i = 0; i < Nodes.Count; i++)
             {
                 // Loop through all nodes again so pathfinding can be done on each pair.
-                for (int j = 0; j < nodes.Count; j++)
+                for (int j = 0; j < Nodes.Count; j++)
                 {
                     // Skip if each node is the same.
                     if (i == j)
@@ -1135,7 +1155,7 @@ public class AgentManager : MonoBehaviour
                     }
 
                     // Get the A* path from one node to another.
-                    List<Vector3> path = AStar(nodes[i], nodes[j]);
+                    List<Vector3> path = AStar(Nodes[i], Nodes[j]);
                     
                     // Skip if there was no path.
                     if (path.Count < 2)
@@ -1147,12 +1167,12 @@ public class AgentManager : MonoBehaviour
                     for (int k = 0; k < path.Count - 1; k++)
                     {
                         // Ensure there are no duplicates in the lookup table.
-                        if (path[k] == nodes[j] || table.Any(t => t.current == path[k] && t.goal == nodes[j] && t.next == path[k + 1]))
+                        if (path[k] == Nodes[j] || table.Any(t => t.Current == path[k] && t.Goal == Nodes[j] && t.Next == path[k + 1]))
                         {
                             continue;
                         }
 
-                        NavigationLookup lookup = new NavigationLookup(path[k], nodes[j], path[k + 1]);
+                        NavigationLookup lookup = new(path[k], Nodes[j], path[k + 1]);
                         table.Add(lookup);
                     }
                 }
@@ -1206,7 +1226,10 @@ public class AgentManager : MonoBehaviour
                 {
                     Agents[i].Perform();
                 }
-                catch { }
+                catch
+                {
+                    // Ignored.
+                }
             }
         }
         else
@@ -1234,13 +1257,13 @@ public class AgentManager : MonoBehaviour
         }
         
         // Move agents that do not require physics.
-        MoveAgents(UpdateAgents);
+        MoveAgents(_updateAgents);
     }
 
     protected void FixedUpdate()
     {
         // Move agents that require physics.
-        MoveAgents(FixedUpdateAgents);
+        MoveAgents(_fixedUpdateAgents);
     }
 
     /// <summary>
@@ -1298,14 +1321,14 @@ public class AgentManager : MonoBehaviour
         };
             
         // Turn on alpha blending.
-        _lineMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-        _lineMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        _lineMaterial.SetInt(SrcBlend, (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        _lineMaterial.SetInt(DstBlend, (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
             
         // Turn backface culling off.
-        _lineMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
+        _lineMaterial.SetInt(Cull, (int)UnityEngine.Rendering.CullMode.Off);
             
         // Turn off depth writes.
-        _lineMaterial.SetInt("_ZWrite", 0);
+        _lineMaterial.SetInt(ZWrite, 0);
     }
 
     /// <summary>
@@ -1399,7 +1422,7 @@ public class AgentManager : MonoBehaviour
             if (navigation == NavigationState.All)
             {
                 GL.Color(Color.white);
-                foreach (Connection connection in connections)
+                foreach (Connection connection in Connections)
                 {
                     Vector3 a = connection.A;
                     a.y += navigationVisualOffset;
@@ -1855,7 +1878,7 @@ public class AgentManager : MonoBehaviour
         }
             
         // Display all percepts.
-        Percept[] percepts = SelectedAgent.Percepts.Where(p => p != null).ToArray();
+        Percept[] percepts = SelectedAgent.Percepts.Where(percept => percept != null).ToArray();
         if (percepts.Length > 0)
         {
             y = NextItem(y, h, p);
@@ -2007,7 +2030,7 @@ public class AgentManager : MonoBehaviour
             ChangeGizmosState();
         }
 
-        if (connections.Count > 0)
+        if (Connections.Count > 0)
         {
             // Button to change navigation mode.
             y = NextItem(y, h, p);
@@ -2103,7 +2126,7 @@ public class AgentManager : MonoBehaviour
         AStarNode best = null;
         
         // Add the starting position to the list of nodes.
-        List<AStarNode> aStarNodes = new List<AStarNode> { new AStarNode(current, goal) };
+        List<AStarNode> aStarNodes = new() { new AStarNode(current, goal) };
 
         // Loop until there are no options left meaning the path cannot be completed.
         while (aStarNodes.Any(n => n.IsOpen))
@@ -2121,13 +2144,13 @@ public class AgentManager : MonoBehaviour
             }
             
             // Loop through all nodes which connect to the current node.
-            foreach (Connection connection in connections.Where(c => c.A == node.position || c.B == node.position))
+            foreach (Connection connection in Connections.Where(c => c.A == node.Position || c.B == node.Position))
             {
                 // Get the other position in the connection so we do not work with the exact same node again and get stuck.
-                Vector3 position = connection.A == node.position ? connection.B : connection.A;
+                Vector3 position = connection.A == node.Position ? connection.B : connection.A;
                 
                 // Create the A* node.
-                AStarNode successor = new AStarNode(position, goal, node);
+                AStarNode successor = new(position, goal, node);
 
                 // If this node is the goal destination, A* is done so set it as the best and clear the node list so the loop ends.
                 if (position == goal)
@@ -2138,7 +2161,7 @@ public class AgentManager : MonoBehaviour
                 }
 
                 // If the node is not yet in the list, add it.
-                AStarNode existing = aStarNodes.FirstOrDefault(n => n.position == position);
+                AStarNode existing = aStarNodes.FirstOrDefault(n => n.Position == position);
                 if (existing == null)
                 {
                     aStarNodes.Add(successor);
@@ -2164,10 +2187,10 @@ public class AgentManager : MonoBehaviour
         }
 
         // Go from the last to node to the first adding all positions to the path.
-        List<Vector3> path = new List<Vector3>();
+        List<Vector3> path = new();
         while (best != null)
         {
-            path.Add(best.position);
+            path.Add(best.Position);
             best = best.Previous;
         }
 
@@ -2185,7 +2208,7 @@ public class AgentManager : MonoBehaviour
         string data = string.Empty;
         for (int i = 0; i < _navigationTable.Length; i++)
         {
-            data += $"{_navigationTable[i].current.x} {_navigationTable[i].current.y} {_navigationTable[i].current.z} {_navigationTable[i].goal.x} {_navigationTable[i].goal.y} {_navigationTable[i].goal.z} {_navigationTable[i].next.x} {_navigationTable[i].next.y} {_navigationTable[i].next.z}";
+            data += $"{_navigationTable[i].Current.x} {_navigationTable[i].Current.y} {_navigationTable[i].Current.z} {_navigationTable[i].Goal.x} {_navigationTable[i].Goal.y} {_navigationTable[i].Goal.z} {_navigationTable[i].Next.x} {_navigationTable[i].Next.y} {_navigationTable[i].Next.z}";
             if (i != _navigationTable.Length - 1)
             {
                 data += "\n";
@@ -2210,7 +2233,7 @@ public class AgentManager : MonoBehaviour
 
         // Write to the file.
         string fileName = $"{Folder}/{SceneManager.GetActiveScene().name}.txt";
-        StreamWriter writer = new StreamWriter(fileName, false);
+        StreamWriter writer = new(fileName, false);
         writer.Write(data);
         writer.Close();
     }
@@ -2237,7 +2260,7 @@ public class AgentManager : MonoBehaviour
             return;
         }
 
-        List<NavigationLookup> lookups = new List<NavigationLookup>();
+        List<NavigationLookup> lookups = new();
 
         // Read all lines from the file.
         string[] lines = File.ReadAllLines(fileName);
@@ -2246,32 +2269,32 @@ public class AgentManager : MonoBehaviour
         foreach (string line in lines)
         {
             string[] s = line.Split(' ');
-            NavigationLookup lookup = new NavigationLookup(
+            NavigationLookup lookup = new(
                 new Vector3(float.Parse(s[0]), float.Parse(s[1]), float.Parse(s[2])),
                 new Vector3(float.Parse(s[3]), float.Parse(s[4]), float.Parse(s[5])),
                 new Vector3(float.Parse(s[6]), float.Parse(s[7]), float.Parse(s[8]))
             );
 
             // Ensure all nodes are added.
-            if (!nodes.Contains(lookup.current))
+            if (!Nodes.Contains(lookup.Current))
             {
-                nodes.Add(lookup.current);
+                Nodes.Add(lookup.Current);
             }
             
-            if (!nodes.Contains(lookup.goal))
+            if (!Nodes.Contains(lookup.Goal))
             {
-                nodes.Add(lookup.goal);
+                Nodes.Add(lookup.Goal);
             }
             
-            if (!nodes.Contains(lookup.next))
+            if (!Nodes.Contains(lookup.Next))
             {
-                nodes.Add(lookup.next);
+                Nodes.Add(lookup.Next);
             }
 
             // Ensure a connection between the current and next nodes exists.
-            if (!connections.Any(c => c.A == lookup.current && c.B == lookup.next || c.A == lookup.next && c.B == lookup.current))
+            if (!Connections.Any(c => c.A == lookup.Current && c.B == lookup.Next || c.A == lookup.Next && c.B == lookup.Current))
             {
-                connections.Add(new Connection(lookup.current, lookup.next));
+                Connections.Add(new Connection(lookup.Current, lookup.Next));
             }
             
             // Add to the lookup table.

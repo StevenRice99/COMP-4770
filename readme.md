@@ -320,7 +320,7 @@
 
 # Details
 
-- Created using Unity 2020.3.31f1.
+- Created using Unity 2021.3.1f1.
 - Created using [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI").
 - Project setup using the [Universal Render Pipeline](https://unity.com/srp/universal-render-pipeline "Universal Render Pipeline").
 - Project setup using Unity's [Input System](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.1/manual/index.html "Input System").

@@ -428,7 +428,7 @@ namespace A2.Managers
             for (int i = 0; i < Agents.Count; i++)
             {
                 // There should never be any that are not microbes but check just in case.
-                if (!(Agents[i] is Microbe microbe))
+                if (Agents[i] is not Microbe microbe)
                 {
                     continue;
                 }

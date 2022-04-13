@@ -208,7 +208,7 @@ public abstract class Agent : MessageComponent
     /// <summary>
     /// The current move velocity if move acceleration is being used as a Vector3.
     /// </summary>
-    public Vector3 MoveVelocity3 => new Vector3(MoveVelocity.x, 0, MoveVelocity.y);
+    public Vector3 MoveVelocity3 => new(MoveVelocity.x, 0, MoveVelocity.y);
 
     /// <summary>
     /// The current move velocity if move acceleration is being used.
@@ -278,7 +278,7 @@ public abstract class Agent : MessageComponent
     /// <summary>
     /// All movement the agent is doing without path finding.
     /// </summary>
-    public List<MoveData> MovesData { get; private set; } = new List<MoveData>();
+    public List<MoveData> MovesData { get; private set; } = new();
 
     /// <summary>
     /// The current path an agent is following.
@@ -327,7 +327,7 @@ public abstract class Agent : MessageComponent
                 GL.Vertex(position);
                 GL.Vertex(position + transform.rotation * (new Vector3(moveData.MoveVector.x, position.y, moveData.MoveVector.y).normalized * 2));
 
-                if (moveData.MoveType == MoveType.Seek || moveData.MoveType == MoveType.Flee)
+                if (moveData.MoveType is MoveType.Seek or MoveType.Flee)
                 {
                     continue;
                 }
@@ -677,7 +677,7 @@ public abstract class Agent : MessageComponent
         AgentManager.Singleton.AddAgent(this);
         
         // Setup the wander guide.
-        GameObject go = new GameObject("Wander Root");
+        GameObject go = new("Wander Root");
         _wanderRoot = go.transform;
         _wanderRoot.parent = transform;
         _wanderRoot.localPosition = Vector3.zero;
@@ -806,7 +806,10 @@ public abstract class Agent : MessageComponent
         {
             AgentManager.Singleton.AddAgent(this);
         }
-        catch { }
+        catch
+        {
+            // Ignored.
+        }
     }
 
     protected virtual void OnDisable()
@@ -815,7 +818,10 @@ public abstract class Agent : MessageComponent
         {
             AgentManager.Singleton.RemoveAgent(this);
         }
-        catch { }
+        catch
+        {
+            // Ignored.
+        }
     }
 
     protected virtual void OnDestroy()
@@ -824,7 +830,10 @@ public abstract class Agent : MessageComponent
         {
             AgentManager.Singleton.RemoveAgent(this);
         }
-        catch { }
+        catch
+        {
+            // Ignored.
+        }
     }
 
     /// <summary>
@@ -841,7 +850,7 @@ public abstract class Agent : MessageComponent
         
         // Convert the position into a Vector2 for use with steering methods.
         Vector3 positionVector3 = transform.position;
-        Vector2 position = new Vector2(positionVector3.x, positionVector3.z);
+        Vector2 position = new(positionVector3.x, positionVector3.z);
 
         // If there is a path the agent is following, follow it.
         if (Path != null)
@@ -1005,7 +1014,7 @@ public abstract class Agent : MessageComponent
     /// </summary>
     private void Sense()
     {
-        List<Percept> perceptsRead = new List<Percept>();
+        List<Percept> perceptsRead = new();
         int sensed = 0;
             
         // Read from every sensor.

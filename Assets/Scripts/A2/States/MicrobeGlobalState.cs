@@ -18,7 +18,7 @@ namespace A2.States
         {
             base.Execute(agent);
 
-            if (!(agent is Microbe microbe))
+            if (agent is not Microbe microbe)
             {
                 return;
             }
@@ -102,7 +102,7 @@ namespace A2.States
                 // If the message is that this microbe is now being hunted.
                 case MicrobeManager.MicrobeEvents.Hunted:
                 {
-                    if (!(agent is Microbe microbe) || !(aiEvent.Sender is Microbe sender))
+                    if (agent is not Microbe microbe || aiEvent.Sender is not Microbe sender)
                     {
                         return false;
                     }
@@ -114,7 +114,7 @@ namespace A2.States
                 // If the message is that this microbe has been eaten.
                 case MicrobeManager.MicrobeEvents.Eaten:
                 {
-                    if (!(agent is Microbe microbe) || !(aiEvent.Sender is Microbe sender))
+                    if (agent is not Microbe microbe || aiEvent.Sender is not Microbe sender)
                     {
                         return false;
                     }
