@@ -281,6 +281,10 @@ public class AgentManager : MonoBehaviour
     public LayerMask obstacleLayers;
 
     [Min(0)]
+    [Tooltip("How far nodes can connect between with zero meaning no limit.")]
+    public float nodeDistance;
+
+    [Min(0)]
     [Tooltip("How wide is the agent radius for connecting nodes to ensure enough space for movement.")]
     public float navigationRadius;
 
@@ -1130,8 +1134,54 @@ public class AgentManager : MonoBehaviour
                 nodeArea.Generate();
             }
 
-            // Store all new lookup tables.
-            List<NavigationLookup> table = new();
+            // Setup all freely-placed nodes.
+            foreach (Node node in FindObjectsOfType<Node>())
+            {
+                Vector3 p = node.transform.position;
+                node.Finish();
+                
+                foreach (Vector3 v in Nodes)
+                {
+                    // Ensure the nodes are in range to form a connection.
+                    float d = Vector3.Distance(p, v);
+                    if (nodeDistance > 0 && d > nodeDistance)
+                    {
+                        continue;
+                    }
+                    
+                    // Ensure the nodes have line of sight on each other.
+                    if (navigationRadius <= 0)
+                    {
+                        if (Physics.Linecast(p, v, obstacleLayers))
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        Vector3 p1 = p;
+                        p1.y += navigationRadius;
+                        Vector3 p2 = v;
+                        p2.y += navigationRadius;
+                        Vector3 direction = (p2 - p1).normalized;
+                        if (Physics.SphereCast(p1, navigationRadius, direction, out _, d, obstacleLayers))
+                        {
+                            continue;
+                        }
+                    }
+                    
+                    // Ensure there is not already an entry for this connection in the list.
+                    if (Connections.Any(c => c.A == p && c.B == v || c.A == v && c.B == p))
+                    {
+                        continue;
+                    }
+                
+                    // Add the connection to the list.
+                    Connections.Add(new Connection(p, v));
+                }
+                
+                Nodes.Add(p);
+            }
 
             // If any nodes are not a part of any connections, remove them.
             for (int i = 0; i < Nodes.Count; i++)
@@ -1141,6 +1191,9 @@ public class AgentManager : MonoBehaviour
                     Nodes.RemoveAt(i--);
                 }
             }
+
+            // Store all new lookup tables.
+            List<NavigationLookup> table = new();
         
             // Loop through all nodes.
             for (int i = 0; i < Nodes.Count; i++)

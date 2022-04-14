@@ -70,7 +70,7 @@ public class NodeArea : NodeBase
     /// <summary>
     /// How far nodes can connect to each other from.
     /// </summary>
-    private float _nodeDistance;
+    private float _oldNodeDistance;
 
     /// <summary>
     /// The nodes.
@@ -141,7 +141,8 @@ public class NodeArea : NodeBase
         {
             // Run the node generator.
             generator.NodeArea = this;
-            _nodeDistance = generator.SetNodeDistance();
+            _oldNodeDistance = AgentManager.Singleton.nodeDistance;
+            AgentManager.Singleton.nodeDistance = generator.SetNodeDistance();
             generator.Generate();
 
             // Form connections between nodes.
@@ -157,7 +158,7 @@ public class NodeArea : NodeBase
 
                     // Ensure the nodes are in range to form a connection.
                     float d = Vector3.Distance(_nodes[x], _nodes[z]);
-                    if (_nodeDistance > 0 && d > _nodeDistance)
+                    if (AgentManager.Singleton.nodeDistance > 0 && d > AgentManager.Singleton.nodeDistance)
                     {
                         continue;
                     }
@@ -194,6 +195,8 @@ public class NodeArea : NodeBase
                 }
             }
         }
+
+        AgentManager.Singleton.nodeDistance = _oldNodeDistance;
 
         // Cleanup all generators.
         foreach (NodeGenerator g in generators)
