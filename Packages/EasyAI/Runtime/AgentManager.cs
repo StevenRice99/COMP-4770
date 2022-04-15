@@ -1469,7 +1469,7 @@ public class AgentManager : MonoBehaviour
         GL.Begin(GL.LINES);
 
         // Render navigation nodes if either all or only active nodes should be shown.
-        if (navigation == NavigationState.All || navigation == NavigationState.Active)
+        if (navigation is NavigationState.All or NavigationState.Active)
         {
             // Render all nodes as white if they should be.
             if (navigation == NavigationState.All)
@@ -1814,8 +1814,8 @@ public class AgentManager : MonoBehaviour
                 Agent.MoveType.Evade => "Evade",
                 _ => "Error"
             };
-            string toFrom = moveData.MoveType == Agent.MoveType.Seek || moveData.MoveType == Agent.MoveType.Pursuit ? " towards"
-                : moveData.MoveType == Agent.MoveType.Flee || moveData.MoveType == Agent.MoveType.Flee ? " from" : string.Empty;
+            string toFrom = moveData.MoveType is Agent.MoveType.Seek or Agent.MoveType.Pursuit ? " towards"
+                : moveData.MoveType is Agent.MoveType.Flee or Agent.MoveType.Flee ? " from" : string.Empty;
             Vector3 pos3 = moveData.Transform != null ? moveData.Transform.position : Vector3.zero;
             string pos = moveData.Transform != null ? $" ({pos3.x}, {pos3.z})" : $" ({moveData.Position.x}, {moveData.Position.y})";
             y = NextItem(y, h, p);
@@ -2249,6 +2249,10 @@ public class AgentManager : MonoBehaviour
 
         // Reverse the path so it is from start to goal and return it.
         path.Reverse();
+        
+        // Reduce the path if possible.
+        StringPull(path);
+        
         return path;
     }
 

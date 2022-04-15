@@ -365,7 +365,7 @@ namespace A2.Managers
                 MicrobeType.Green => microbes.Where(m => m.MicrobeType != MicrobeType.Green && m.MicrobeType != MicrobeType.Blue && m.MicrobeType != MicrobeType.Yellow).ToArray(),
                 MicrobeType.Blue => microbes.Where(m => m.MicrobeType != MicrobeType.Blue && m.MicrobeType != MicrobeType.Purple && m.MicrobeType != MicrobeType.Green).ToArray(),
                 MicrobeType.Purple => microbes.Where(m => m.MicrobeType != MicrobeType.Purple && m.MicrobeType != MicrobeType.Pink && m.MicrobeType != MicrobeType.Blue).ToArray(),
-                _ => microbes.Where(m => m.MicrobeType != MicrobeType.Pink || m.MicrobeType != MicrobeType.Red || m.MicrobeType != MicrobeType.Purple).ToArray()
+                _ => microbes.Where(m => m.MicrobeType is not (MicrobeType.Pink and (MicrobeType.Red and MicrobeType.Purple))).ToArray()
             };
 
             return microbes.Length == 0 ? null : microbes.OrderBy(m => Vector3.Distance(seeker.transform.position, m.transform.position)).First();
@@ -386,13 +386,13 @@ namespace A2.Managers
             // Microbes can mate with a type/color one up or down from theirs in additional to their own color. See readme for a food/mating table.
             microbes = seeker.MicrobeType switch
             {
-                MicrobeType.Red => microbes.Where(m => m.MicrobeType == MicrobeType.Red || m.MicrobeType == MicrobeType.Orange || m.MicrobeType == MicrobeType.Pink).ToArray(),
-                MicrobeType.Orange => microbes.Where(m => m.MicrobeType == MicrobeType.Orange || m.MicrobeType == MicrobeType.Yellow || m.MicrobeType == MicrobeType.Red).ToArray(),
-                MicrobeType.Yellow => microbes.Where(m => m.MicrobeType == MicrobeType.Yellow || m.MicrobeType == MicrobeType.Green || m.MicrobeType == MicrobeType.Orange).ToArray(),
-                MicrobeType.Green => microbes.Where(m => m.MicrobeType == MicrobeType.Green || m.MicrobeType == MicrobeType.Blue || m.MicrobeType == MicrobeType.Yellow).ToArray(),
-                MicrobeType.Blue => microbes.Where(m => m.MicrobeType == MicrobeType.Blue || m.MicrobeType == MicrobeType.Purple || m.MicrobeType == MicrobeType.Green).ToArray(),
-                MicrobeType.Purple => microbes.Where(m => m.MicrobeType == MicrobeType.Purple || m.MicrobeType == MicrobeType.Pink || m.MicrobeType == MicrobeType.Blue).ToArray(),
-                _ => microbes.Where(m => m.MicrobeType == MicrobeType.Pink || m.MicrobeType == MicrobeType.Red || m.MicrobeType == MicrobeType.Purple).ToArray()
+                MicrobeType.Red => microbes.Where(m => m.MicrobeType is MicrobeType.Red or MicrobeType.Orange or MicrobeType.Pink).ToArray(),
+                MicrobeType.Orange => microbes.Where(m => m.MicrobeType is MicrobeType.Orange or MicrobeType.Yellow or MicrobeType.Red).ToArray(),
+                MicrobeType.Yellow => microbes.Where(m => m.MicrobeType is MicrobeType.Yellow or MicrobeType.Green or MicrobeType.Orange).ToArray(),
+                MicrobeType.Green => microbes.Where(m => m.MicrobeType is MicrobeType.Green or MicrobeType.Blue or MicrobeType.Yellow).ToArray(),
+                MicrobeType.Blue => microbes.Where(m => m.MicrobeType is MicrobeType.Blue or MicrobeType.Purple or MicrobeType.Green).ToArray(),
+                MicrobeType.Purple => microbes.Where(m => m.MicrobeType is MicrobeType.Purple or MicrobeType.Pink or MicrobeType.Blue).ToArray(),
+                _ => microbes.Where(m => m.MicrobeType is MicrobeType.Pink or MicrobeType.Red or MicrobeType.Purple).ToArray()
             };
             
             return microbes.Length == 0 ? null : microbes.OrderBy(m => Vector3.Distance(seeker.transform.position, m.transform.position)).First();
@@ -441,7 +441,7 @@ namespace A2.Managers
                 {
                     if (Agents[i].Visuals != null)
                     {
-                        float scale = (microbe.ElapsedLifespan / microbe.LifeSpan) * (maxMicrobeSize - minMicrobeSize) + minMicrobeSize;
+                        float scale = microbe.ElapsedLifespan / microbe.LifeSpan * (maxMicrobeSize - minMicrobeSize) + minMicrobeSize;
                         Agents[i].Visuals.localScale = new Vector3(scale, scale, scale);
                     }
 

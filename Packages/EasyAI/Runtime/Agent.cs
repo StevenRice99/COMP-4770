@@ -995,8 +995,8 @@ public abstract class Agent : MessageComponent
     /// <returns>True if the distance between the agent and the target is within or beyond their acceptable distance for completion.</returns>
     private bool IsCompleteMove(MoveType moveType, Vector2 position, Vector2 target)
     {
-        return (moveType == MoveType.Seek || moveType == MoveType.Pursuit) && seekAcceptableDistance >= 0 && Vector2.Distance(position, target) <= seekAcceptableDistance ||
-               (moveType == MoveType.Flee || moveType == MoveType.Evade) && fleeAcceptableDistance >= 0 && Vector2.Distance(position, target) >= fleeAcceptableDistance;
+        return moveType is MoveType.Seek or MoveType.Pursuit && seekAcceptableDistance >= 0 && Vector2.Distance(position, target) <= seekAcceptableDistance ||
+               moveType is MoveType.Flee or MoveType.Evade && fleeAcceptableDistance >= 0 && Vector2.Distance(position, target) >= fleeAcceptableDistance;
     }
 
     /// <summary>
