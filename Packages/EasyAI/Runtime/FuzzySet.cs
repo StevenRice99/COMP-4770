@@ -4,11 +4,20 @@
 public abstract class FuzzySet
 {
     private float _dom;
+    
+    public float PeakPoint { get; }
 
-    protected FuzzySet(float representativeValue)
+    public float LeftOffset { get; }
+
+    public float RightOffset { get; }
+
+    protected FuzzySet(float representativeValue, float peak, float left, float right)
     {
         _dom = 0.0f;
         RepresentativeValue = representativeValue;
+        PeakPoint = peak;
+        LeftOffset = left;
+        RightOffset = right;
     }
 
     /// <summary>

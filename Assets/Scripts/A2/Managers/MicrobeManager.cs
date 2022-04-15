@@ -365,7 +365,7 @@ namespace A2.Managers
                 MicrobeType.Green => microbes.Where(m => m.MicrobeType != MicrobeType.Green && m.MicrobeType != MicrobeType.Blue && m.MicrobeType != MicrobeType.Yellow).ToArray(),
                 MicrobeType.Blue => microbes.Where(m => m.MicrobeType != MicrobeType.Blue && m.MicrobeType != MicrobeType.Purple && m.MicrobeType != MicrobeType.Green).ToArray(),
                 MicrobeType.Purple => microbes.Where(m => m.MicrobeType != MicrobeType.Purple && m.MicrobeType != MicrobeType.Pink && m.MicrobeType != MicrobeType.Blue).ToArray(),
-                _ => microbes.Where(m => m.MicrobeType is not (MicrobeType.Pink and (MicrobeType.Red and MicrobeType.Purple))).ToArray()
+                _ => microbes.Where(m => m.MicrobeType is not (MicrobeType.Pink or MicrobeType.Red or MicrobeType.Purple)).ToArray()
             };
 
             return microbes.Length == 0 ? null : microbes.OrderBy(m => Vector3.Distance(seeker.transform.position, m.transform.position)).First();

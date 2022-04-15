@@ -18,19 +18,8 @@ public class FuzzySetTriangle : FuzzySet
     /// <param name="peak">Peak value.</param>
     /// <param name="left">Left value.</param>
     /// <param name="right">Right value.</param>
-    public FuzzySetTriangle(float peak, float left, float right) : base(peak)
-    {
-        PeakPoint = peak;
-        LeftOffset = left;
-        RightOffset = right;
-    }
+    public FuzzySetTriangle(float peak, float left, float right) : base(peak, peak, left, right) { }
 
-    public float PeakPoint { get; }
-
-    public float LeftOffset { get; }
-
-    public float RightOffset { get; }
-    
     /// <summary>
     /// Returns the degree of membership in this set of the given value. This does not set
     /// FuzzySet.dom to the degree of membership of the value passed as the

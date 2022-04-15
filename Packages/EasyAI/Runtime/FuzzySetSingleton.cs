@@ -1,15 +1,6 @@
 ﻿public class FuzzySetSingleton : FuzzySet
 {
-    public FuzzySetSingleton(float mid, float left, float right) : base(mid)
-    {
-        MidPoint = mid;
-        LeftOffset = left;
-        RightOffset = right;
-    }
-
-    public float MidPoint { get; }
-    public float LeftOffset { get; }
-    public float RightOffset { get; }
+    public FuzzySetSingleton(float peak, float left, float right) : base(peak, peak, left, right) { }
 
     /// <summary>
     /// Returns the degree of membership in this set of the given value. This does not set
@@ -21,6 +12,6 @@
     /// <returns>Calculated value.</returns>
     public override float CalculateDom(float givenValue)
     {
-        return givenValue >= MidPoint - LeftOffset && givenValue <= MidPoint + RightOffset ? 1.0f : 0.0f;
+        return givenValue >= PeakPoint - LeftOffset && givenValue <= PeakPoint + RightOffset ? 1.0f : 0.0f;
     }
 }

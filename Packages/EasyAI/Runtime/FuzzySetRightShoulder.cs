@@ -2,16 +2,7 @@
 
 public class FuzzySetRightShoulder : FuzzySet
 {
-    public FuzzySetRightShoulder(float peak, float left, float right) : base((peak + right + peak) / 2)
-    {
-        PeakPoint = peak;
-        LeftOffset = left;
-        RightOffset = right;
-    }
-
-    public float PeakPoint { get; }
-    public float LeftOffset { get; }
-    public float RightOffset { get; }
+    public FuzzySetRightShoulder(float peak, float left, float right) : base((peak + right + peak) / 2, peak, left, right) { }
 
     /// <summary>
     /// Returns the degree of membership in this set of the given value. This does not set

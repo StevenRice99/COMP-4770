@@ -43,8 +43,6 @@ public class FzOr : FuzzyTerm
         return Terms.Select(term => term.GetDom()).Prepend(float.MinValue).Max();
     }
 
-    public override void ClearDom() { }
-
     /// <summary>
     /// Method for updating the DOM of a consequent when a rule fires.
     /// </summary>

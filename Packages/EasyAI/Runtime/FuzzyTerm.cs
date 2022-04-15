@@ -7,7 +7,7 @@ public abstract class FuzzyTerm
 
     public abstract float GetDom();
 
-    public abstract void ClearDom();
+    public virtual void ClearDom() { }
 
     /// <summary>
     /// Method for updating the DOM of a consequent when a rule fires.
