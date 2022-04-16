@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 /// <summary>
@@ -295,7 +297,7 @@ public class AgentManager : MonoBehaviour
     [SerializeField]
     [Min(0)]
     [Tooltip("How much height difference can there be between string pulls, set to zero for no limit.")]
-    private float pullMaxDifference = 0;
+    private float pullMaxDifference;
 
     [SerializeField]
     [Tooltip("Read and use a pre-generated navigation lookup table instead of generating it at start.")]
@@ -1385,11 +1387,11 @@ public class AgentManager : MonoBehaviour
         };
             
         // Turn on alpha blending.
-        _lineMaterial.SetInt(SrcBlend, (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-        _lineMaterial.SetInt(DstBlend, (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        _lineMaterial.SetInt(SrcBlend, (int)BlendMode.SrcAlpha);
+        _lineMaterial.SetInt(DstBlend, (int)BlendMode.OneMinusSrcAlpha);
             
         // Turn backface culling off.
-        _lineMaterial.SetInt(Cull, (int)UnityEngine.Rendering.CullMode.Off);
+        _lineMaterial.SetInt(Cull, (int)CullMode.Off);
             
         // Turn off depth writes.
         _lineMaterial.SetInt(ZWrite, 0);
@@ -2147,7 +2149,7 @@ public class AgentManager : MonoBehaviour
         if (GuiButton(x, y, w, h, "Quit"))
         {
 #if UNITY_EDITOR
-            UnityEditor.EditorApplication.ExitPlaymode();
+            EditorApplication.ExitPlaymode();
 #else
             Application.Quit();
 #endif
