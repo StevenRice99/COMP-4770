@@ -6509,7 +6509,7 @@ MonoBehaviour:
   nodeDistance: 0
   navigationRadius: 0.5
   navigationVisualOffset: 0.1
-  lookupTable: 0
+  lookupTable: 1
 --- !u!4 &460686381
 Transform:
   m_ObjectHideFlags: 0
@@ -28227,6 +28227,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Column Damaged
       objectReference: {fileID: 0}
+    - target: {fileID: 6118682674600926458, guid: 5d0771703745ba14eb92d48541bb7969, type: 3}
+      propertyPath: m_Size.y
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5d0771703745ba14eb92d48541bb7969, type: 3}
 --- !u!4 &2068560941 stripped
@@ -29326,7 +29330,7 @@ MonoBehaviour:
     y: -38
   floorCeiling:
     x: -1
-    y: 11
+    y: 10
   nodesPerStep: 4
 --- !u!4 &2139949937
 Transform:
