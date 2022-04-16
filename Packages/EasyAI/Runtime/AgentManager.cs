@@ -293,6 +293,11 @@ public class AgentManager : MonoBehaviour
     public float navigationVisualOffset = 0.1f;
 
     [SerializeField]
+    [Min(0)]
+    [Tooltip("How much height difference can there be between string pulls, set to zero for no limit.")]
+    private float pullMaxDifference = 0;
+
+    [SerializeField]
     [Tooltip("Read and use a pre-generated navigation lookup table instead of generating it at start.")]
     private bool lookupTable;
 
@@ -707,6 +712,12 @@ public class AgentManager : MonoBehaviour
             // Inner loop from two points ahead of the outer loop to check if a node can be skipped.
             for (int j = i + 2; j < path.Count; j++)
             {
+                // Do not string pull for multi-level paths as these could skip over objects that require stairs.
+                if (Math.Abs(path[i].y - path[j].y) > pullMaxDifference)
+                {
+                    continue;
+                }
+                
                 // If a node can be skipped as there is line of sight without it, remove it.
                 if (navigationRadius <= 0)
                 {
