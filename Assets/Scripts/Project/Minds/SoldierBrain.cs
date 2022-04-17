@@ -10,6 +10,15 @@ namespace Project.Minds
 {
     public class SoldierBrain : Mind
     {
+        private enum WeaponChoices
+        {
+            MachineGun,
+            Shotgun,
+            Sniper,
+            RocketLauncher,
+            Pistol
+        }
+        
         private static readonly List<SoldierBrain> TeamRed = new();
         
         private static readonly List<SoldierBrain> TeamBlue = new();
@@ -26,6 +35,12 @@ namespace Project.Minds
 
         public Transform flagPosition;
 
+        [SerializeField]
+        private MeshRenderer[] colorVisuals;
+
+        [SerializeField]
+        private MeshRenderer[] otherVisuals;
+
         public bool RedTeam { get; private set; }
 
         public int Health { get; private set; }
@@ -33,16 +48,14 @@ namespace Project.Minds
         public Weapon[] Weapons { get; private set; }
         
         public int WeaponIndex { get; private set; }
+
+        public bool Alive => _role != SoliderRole.Dead;
         
         private SoliderRole _role;
 
-        public bool Alive => _role != SoliderRole.Dead;
+        private bool CarryingFlag => RedTeam ? FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer == this : FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer == this;
 
-        [SerializeField]
-        private MeshRenderer[] colorVisuals;
-
-        [SerializeField]
-        private MeshRenderer[] otherVisuals;
+        private bool EnemyHasFlag => RedTeam ? FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer != null : FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer != null;
         
         public override Action[] Think()
         {
@@ -99,6 +112,8 @@ namespace Project.Minds
                 TeamBlue.Add(this);
             }
 
+            name = (RedTeam ? "Solider Red " : "Solider Blue ") + (RedTeam ? TeamRed.Count : TeamBlue.Count);
+
             foreach (MeshRenderer meshRenderer in colorVisuals)
             {
                 meshRenderer.material = RedTeam ? SoldierAgentManager.SoldierAgentManagerSingleton.red : SoldierAgentManager.SoldierAgentManagerSingleton.blue;
@@ -132,9 +147,7 @@ namespace Project.Minds
             _role = SoliderRole.Dead;
             ToggleMeshes();
             AssignRoles();
-            
             yield return new WaitForSeconds(SoldierAgentManager.SoldierAgentManagerSingleton.respawn);
-
             Spawn();
         }
 
@@ -145,8 +158,8 @@ namespace Project.Minds
             _role = SoliderRole.Collector;
             AssignRoles();
             Heal();
-            ToggleMeshes();
             SelectWeapon(0);
+            ToggleMeshes();
         }
 
         private SoldierBrain[] GetTeam()

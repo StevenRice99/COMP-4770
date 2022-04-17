@@ -9,6 +9,10 @@ namespace Project.Managers
         /// </summary>
         public static SoldierAgentManager SoldierAgentManagerSingleton => Singleton as SoldierAgentManager;
 
+        [SerializeField]
+        [Min(1)]
+        private int soldiersPerTeam = 1;
+
         [Min(1)]
         public int health = 100;
 
@@ -18,8 +22,21 @@ namespace Project.Managers
         [Range(0, 1)]
         public float sound;
 
+        [SerializeField]
+        private GameObject soldierPrefab;
+
         public Material red;
 
         public Material blue;
+        
+        protected override void Start()
+        {
+            base.Start();
+
+            for (int i = 0; i < soldiersPerTeam * 2; i++)
+            {
+                Instantiate(soldierPrefab);
+            }
+        }
     }
 }
