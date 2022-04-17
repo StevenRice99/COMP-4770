@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Project.Actuators.Weapons;
 using Project.Managers;
 using UnityEngine;
 
@@ -20,49 +21,55 @@ namespace Project.Minds
             Attacker,
             Defender
         }
+
+        public Transform shootPosition;
+
+        public Transform flagPosition;
+
+        public bool RedTeam { get; private set; }
+
+        public int Health { get; private set; }
+        
+        public Weapon[] Weapons { get; private set; }
+        
+        public int WeaponIndex { get; private set; }
         
         private SoliderRole _role;
 
-        private bool _redTeam;
-
-        private int _health;
-
-        private bool Alive => _role != SoliderRole.Dead;
+        public bool Alive => _role != SoliderRole.Dead;
         
         public override Action[] Think()
         {
             return null;
         }
 
-        public void Damage(int amount)
+        public void Damage(int amount, SoldierBrain shotBy)
         {
             if (_role == SoliderRole.Dead)
             {
                 return;
             }
             
-            _health -= amount;
-            if (_health > 0)
+            Health -= amount;
+            if (Health > 0)
             {
                 return;
             }
+            
+            // ADD KILL POINTS.
 
             StopAllCoroutines();
             StartCoroutine(Respawn());
         }
 
-        public void Heal(int amount)
+        public void Heal()
         {
             if (_role == SoliderRole.Dead)
             {
                 return;
             }
 
-            _health += amount;
-            if (_health > SoldierAgentManager.SoldierAgentManagerSingleton.health)
-            {
-                _health = SoldierAgentManager.SoldierAgentManagerSingleton.health;
-            }
+            Health = SoldierAgentManager.SoldierAgentManagerSingleton.health;
         }
 
         protected override void Start()
@@ -70,9 +77,16 @@ namespace Project.Minds
             base.Start();
             
             Agent.Wander = true;
-            
-            _redTeam = TeamRed.Count <= TeamBlue.Count;
-            if (_redTeam)
+
+            Weapons = GetComponentsInChildren<Weapon>();
+            for (int i = 0; i < Weapons.Length; i++)
+            {
+                Weapons[i].SoldierBrain = this;
+                Weapons[i].Index = i;
+            }
+
+            RedTeam = TeamRed.Count <= TeamBlue.Count;
+            if (RedTeam)
             {
                 TeamRed.Add(this);
             }
@@ -83,7 +97,7 @@ namespace Project.Minds
             
             // MOVE TO SPAWN POSITION.
             _role = GetRole();
-            _health = SoldierAgentManager.SoldierAgentManagerSingleton.health;
+            Health = SoldierAgentManager.SoldierAgentManagerSingleton.health;
         }
 
         private SoliderRole GetRole()
@@ -126,14 +140,14 @@ namespace Project.Minds
             yield return new WaitForSeconds(SoldierAgentManager.SoldierAgentManagerSingleton.respawn);
             
             // MOVE TO SPAWN POSITION.
-            _health = SoldierAgentManager.SoldierAgentManagerSingleton.health;
+            Health = SoldierAgentManager.SoldierAgentManagerSingleton.health;
             _role = GetRole();
         }
 
         private IEnumerable<SoldierBrain> GetTeam()
         {
             // ORDER BY DISTANCE TO ENEMY FLAG.
-            return (_redTeam ? TeamRed : TeamBlue).Where(s => s.Alive);
+            return (RedTeam ? TeamRed : TeamBlue).Where(s => s.Alive);
         }
     }
 }

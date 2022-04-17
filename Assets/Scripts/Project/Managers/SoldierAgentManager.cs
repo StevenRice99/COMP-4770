@@ -14,5 +14,8 @@ namespace Project.Managers
 
         [Min(0)]
         public float respawn = 10;
+
+        [Range(0, 1)]
+        public float sound = 0;
     }
 }
