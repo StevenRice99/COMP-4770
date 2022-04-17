@@ -1,9 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Project.Actuators.Weapons;
 using Project.Managers;
 using Project.Pickups;
+using Project.Weapons;
 using UnityEngine;
 
 namespace Project.Minds
@@ -104,10 +104,7 @@ namespace Project.Minds
                 meshRenderer.material = RedTeam ? SoldierAgentManager.SoldierAgentManagerSingleton.red : SoldierAgentManager.SoldierAgentManagerSingleton.blue;
             }
             
-            // MOVE TO SPAWN POSITION.
-            
-            AssignRoles();
-            Health = SoldierAgentManager.SoldierAgentManagerSingleton.health;
+            Spawn();
         }
 
         private void AssignRoles()
@@ -137,13 +134,19 @@ namespace Project.Minds
             AssignRoles();
             
             yield return new WaitForSeconds(SoldierAgentManager.SoldierAgentManagerSingleton.respawn);
-            
+
+            Spawn();
+        }
+
+        private void Spawn()
+        {
             // MOVE TO SPAWN POSITION.
             
-            ToggleMeshes();
-            Health = SoldierAgentManager.SoldierAgentManagerSingleton.health;
             _role = SoliderRole.Collector;
             AssignRoles();
+            Heal();
+            ToggleMeshes();
+            SelectWeapon(0);
         }
 
         private SoldierBrain[] GetTeam()
@@ -167,6 +170,22 @@ namespace Project.Minds
             foreach (MeshRenderer meshRenderer in otherVisuals)
             {
                 meshRenderer.enabled = Alive;
+            }
+
+            WeaponVisible();
+        }
+
+        private void SelectWeapon(int i)
+        {
+            WeaponIndex = Mathf.Clamp(i, 0, Weapons.Length - 1);
+            WeaponVisible();
+        }
+
+        private void WeaponVisible()
+        {
+            for (int i = 0; i < Weapons.Length; i++)
+            {
+                Weapons[i].Visible(Alive && i == WeaponIndex);
             }
         }
     }

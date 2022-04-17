@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Project.Actuators.Weapons
+namespace Project.Weapons
 {
     public class ProjectileWeapon : Weapon
     {

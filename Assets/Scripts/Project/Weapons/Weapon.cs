@@ -4,9 +4,9 @@ using Project.Managers;
 using Project.Minds;
 using UnityEngine;
 
-namespace Project.Actuators.Weapons
+namespace Project.Weapons
 {
-    public abstract class Weapon : Actuator
+    public abstract class Weapon : MonoBehaviour
     {
         protected struct AttackedInfo
         {
@@ -97,22 +97,24 @@ namespace Project.Actuators.Weapons
             _ammo = maxAmmo;
         }
         
-        public void StartDelay()
-        {
-            if (_ammo > 0)
-            {
-                _ammo--;
-            }
-            
-            StartCoroutine(ShotDelay());
-        }
-        
         public void Visible(bool visible)
         {
             foreach (MeshRenderer meshRenderer in _renderers)
             {
                 meshRenderer.enabled = visible;
             }
+        }
+        
+        public void Shoot()
+        {
+            if (Index != SoldierBrain.WeaponIndex || !_canShoot)
+            {
+                return;
+            }
+
+            Shoot(out Vector3[] positions);
+            ShootVisuals(positions);
+            StartDelay();
         }
 
         protected abstract void Shoot(out Vector3[] positions);
@@ -127,26 +129,21 @@ namespace Project.Actuators.Weapons
             _ammo = maxAmmo;
         }
 
-        protected override void Start()
+        private void Start()
         {
-            base.Start();
-            
             _renderers = GetComponentsInChildren<MeshRenderer>();
-            
             _shootSound = GetComponent<AudioSource>();
             _shootSound.volume = SoldierAgentManager.SoldierAgentManagerSingleton.sound;
         }
-        
-        protected override bool Act(Action action)
-        {
-            if (Index != SoldierBrain.WeaponIndex || !_canShoot || action is not ShootAction)
-            {
-                return false;
-            }
 
-            Shoot(out Vector3[] positions);
-            ShootVisuals(positions);
-            return true;
+        private void StartDelay()
+        {
+            if (_ammo > 0)
+            {
+                _ammo--;
+            }
+            
+            StartCoroutine(ShotDelay());
         }
         
         private IEnumerator ShotDelay()

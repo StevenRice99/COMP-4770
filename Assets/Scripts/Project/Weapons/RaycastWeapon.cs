@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Project.Minds;
 using UnityEngine;
 
-namespace Project.Actuators.Weapons
+namespace Project.Weapons
 {
     public class RaycastWeapon : Weapon
     {

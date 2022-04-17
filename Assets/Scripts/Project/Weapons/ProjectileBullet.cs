@@ -3,7 +3,7 @@ using System.Linq;
 using Project.Minds;
 using UnityEngine;
 
-namespace Project.Actuators.Weapons
+namespace Project.Weapons
 {
     [RequireComponent(typeof(Collider))]
     [RequireComponent(typeof(Rigidbody))]
