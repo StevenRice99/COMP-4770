@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Project.Actuators.Weapons;
 using Project.Managers;
+using Project.Pickups;
 using UnityEngine;
 
 namespace Project.Minds
@@ -16,7 +17,6 @@ namespace Project.Minds
         private enum SoliderRole : byte
         {
             Dead,
-            Deciding,
             Collector,
             Attacker,
             Defender
@@ -37,6 +37,12 @@ namespace Project.Minds
         private SoliderRole _role;
 
         public bool Alive => _role != SoliderRole.Dead;
+
+        [SerializeField]
+        private MeshRenderer[] colorVisuals;
+
+        [SerializeField]
+        private MeshRenderer[] otherVisuals;
         
         public override Action[] Think()
         {
@@ -75,8 +81,6 @@ namespace Project.Minds
         protected override void Start()
         {
             base.Start();
-            
-            Agent.Wander = true;
 
             Weapons = GetComponentsInChildren<Weapon>();
             for (int i = 0; i < Weapons.Length; i++)
@@ -94,60 +98,76 @@ namespace Project.Minds
             {
                 TeamBlue.Add(this);
             }
+
+            foreach (MeshRenderer meshRenderer in colorVisuals)
+            {
+                meshRenderer.material = RedTeam ? SoldierAgentManager.SoldierAgentManagerSingleton.red : SoldierAgentManager.SoldierAgentManagerSingleton.blue;
+            }
             
             // MOVE TO SPAWN POSITION.
-            _role = GetRole();
+            
+            AssignRoles();
             Health = SoldierAgentManager.SoldierAgentManagerSingleton.health;
         }
 
-        private SoliderRole GetRole()
+        private void AssignRoles()
         {
-            bool collector = false;
-            int attackDefend = 0;
-            foreach (SoldierBrain brain in GetTeam())
+            SoldierBrain[] team = GetTeam();
+            for (int i = 0; i < team.Length; i++)
             {
-                switch (brain._role)
+                if (i == 0)
                 {
-                    case SoliderRole.Collector:
-                        collector = true;
-                        continue;
-                    case SoliderRole.Attacker:
-                        attackDefend++;
-                        continue;
-                    default:
-                        attackDefend--;
-                        break;
+                    team[i]._role = SoliderRole.Collector;
+                }
+                else if (i <= team.Length / 2)
+                {
+                    team[i]._role = SoliderRole.Attacker;
+                }
+                else
+                {
+                    team[i]._role = SoliderRole.Defender;
                 }
             }
-
-            return !collector ? SoliderRole.Collector : attackDefend >= 0 ? SoliderRole.Defender : SoliderRole.Attacker;
         }
 
         private IEnumerator Respawn()
         {
             _role = SoliderRole.Dead;
-            
-            foreach (SoldierBrain brain in GetTeam())
-            {
-                brain._role = SoliderRole.Deciding;
-            }
-            
-            foreach (SoldierBrain brain in GetTeam())
-            {
-                brain.GetRole();
-            }
+            ToggleMeshes();
+            AssignRoles();
             
             yield return new WaitForSeconds(SoldierAgentManager.SoldierAgentManagerSingleton.respawn);
             
             // MOVE TO SPAWN POSITION.
+            
+            ToggleMeshes();
             Health = SoldierAgentManager.SoldierAgentManagerSingleton.health;
-            _role = GetRole();
+            _role = SoliderRole.Collector;
+            AssignRoles();
         }
 
-        private IEnumerable<SoldierBrain> GetTeam()
+        private SoldierBrain[] GetTeam()
         {
-            // ORDER BY DISTANCE TO ENEMY FLAG.
-            return (RedTeam ? TeamRed : TeamBlue).Where(s => s.Alive);
+            IEnumerable<SoldierBrain> team = (RedTeam ? TeamRed : TeamBlue).Where(s => s.Alive);
+            if (FlagPickup.RedFlag != null && FlagPickup.BlueFlag != null)
+            {
+                team = RedTeam ? team.OrderBy(s => Vector3.Distance(s.transform.position, FlagPickup.BlueFlag.transform.position)) : team.OrderBy(s => Vector3.Distance(s.transform.position, FlagPickup.RedFlag.transform.position));
+            }
+            
+            return team.ToArray();
+        }
+
+        private void ToggleMeshes()
+        {
+            foreach (MeshRenderer meshRenderer in colorVisuals)
+            {
+                meshRenderer.enabled = Alive;
+            }
+            
+            foreach (MeshRenderer meshRenderer in otherVisuals)
+            {
+                meshRenderer.enabled = Alive;
+            }
         }
     }
 }

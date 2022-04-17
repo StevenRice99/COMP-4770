@@ -16,6 +16,10 @@ namespace Project.Managers
         public float respawn = 10;
 
         [Range(0, 1)]
-        public float sound = 0;
+        public float sound;
+
+        public Material red;
+
+        public Material blue;
     }
 }
