@@ -98,6 +98,8 @@ namespace Project.Weapons
         
         public void Visible(bool visible)
         {
+            _renderers ??= GetComponentsInChildren<MeshRenderer>();
+            
             foreach (MeshRenderer meshRenderer in _renderers)
             {
                 meshRenderer.enabled = visible;
@@ -130,7 +132,6 @@ namespace Project.Weapons
 
         private void Start()
         {
-            _renderers = GetComponentsInChildren<MeshRenderer>();
             _shootSound = GetComponent<AudioSource>();
             _shootSound.volume = SoldierAgentManager.SoldierAgentManagerSingleton.sound;
         }

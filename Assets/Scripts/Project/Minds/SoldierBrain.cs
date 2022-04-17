@@ -8,6 +8,7 @@ using UnityEngine;
 
 namespace Project.Minds
 {
+    [RequireComponent(typeof(CharacterController))]
     public class SoldierBrain : Mind
     {
         private enum WeaponChoices
@@ -52,6 +53,8 @@ namespace Project.Minds
         public bool Alive => _role != SoliderRole.Dead;
         
         private SoliderRole _role;
+
+        private Collider[] _colliders;
 
         private bool CarryingFlag => RedTeam ? FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer == this : FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer == this;
 
@@ -114,6 +117,10 @@ namespace Project.Minds
 
             name = (RedTeam ? "Solider Red " : "Solider Blue ") + (RedTeam ? TeamRed.Count : TeamBlue.Count);
 
+            List<Collider> colliders = GetComponents<Collider>().ToList();
+            colliders.AddRange(GetComponentsInChildren<Collider>());
+            _colliders = colliders.Distinct().ToArray();
+
             foreach (MeshRenderer meshRenderer in colorVisuals)
             {
                 meshRenderer.material = RedTeam ? SoldierAgentManager.SoldierAgentManagerSingleton.red : SoldierAgentManager.SoldierAgentManagerSingleton.blue;
@@ -145,7 +152,7 @@ namespace Project.Minds
         private IEnumerator Respawn()
         {
             _role = SoliderRole.Dead;
-            ToggleMeshes();
+            ToggleAlive();
             AssignRoles();
             yield return new WaitForSeconds(SoldierAgentManager.SoldierAgentManagerSingleton.respawn);
             Spawn();
@@ -153,13 +160,28 @@ namespace Project.Minds
 
         private void Spawn()
         {
-            // MOVE TO SPAWN POSITION.
+            SpawnPoint[] points = SoldierAgentManager.SoldierAgentManagerSingleton.SpawnPoints.Where(p => p.redTeam == RedTeam).ToArray();
+            SpawnPoint[] open = points.Where(p => p.Open).ToArray();
+            SpawnPoint spawn = open.Length > 0 ? open[Random.Range(0, open.Length)] : points[Random.Range(0, points.Length)];
+
+            CharacterController controller = GetComponent<CharacterController>();
+            controller.enabled = false;
+
+            Transform spawnTr = spawn.transform;
+            Transform tr = transform;
+            tr.position = spawnTr.position;
+            tr.rotation = spawnTr.rotation;
+            
+            spawn.Use();
+            
+            // ReSharper disable once Unity.InefficientPropertyAccess
+            controller.enabled = true;
             
             _role = SoliderRole.Collector;
             AssignRoles();
             Heal();
             SelectWeapon(0);
-            ToggleMeshes();
+            ToggleAlive();
         }
 
         private SoldierBrain[] GetTeam()
@@ -173,7 +195,7 @@ namespace Project.Minds
             return team.ToArray();
         }
 
-        private void ToggleMeshes()
+        private void ToggleAlive()
         {
             foreach (MeshRenderer meshRenderer in colorVisuals)
             {
@@ -183,6 +205,11 @@ namespace Project.Minds
             foreach (MeshRenderer meshRenderer in otherVisuals)
             {
                 meshRenderer.enabled = Alive;
+            }
+
+            foreach (Collider col in _colliders)
+            {
+                col.enabled = Alive;
             }
 
             WeaponVisible();
