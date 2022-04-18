@@ -1,6 +1,6 @@
 ﻿using System.Collections;
+using Project.Agents;
 using Project.Managers;
-using Project.Minds;
 using UnityEngine;
 
 namespace Project.Pickups
@@ -23,7 +23,7 @@ namespace Project.Pickups
             
         private MeshRenderer[] _meshRenderers;
         
-        protected override void OnPickedUp(SoldierBrain soldierBrain, int[] ammo)
+        protected override void OnPickedUp(SoldierAgent soldier, int[] ammo)
         {
             if (!_ready)
             {
@@ -32,33 +32,33 @@ namespace Project.Pickups
 
             if (weaponIndex < 0)
             {
-                if (soldierBrain.Health >= SoldierAgentManager.SoldierAgentManagerSingleton.health)
+                if (soldier.Health >= SoldierAgentManager.SoldierAgentManagerSingleton.health)
                 {
                     return;
                 }
             
-                soldierBrain.Heal();
+                soldier.Heal();
                 StartCoroutine(ReadyDelay());
 
                 return;
             }
 
-            if (soldierBrain.Weapons.Length <= weaponIndex)
+            if (soldier.Weapons.Length <= weaponIndex)
             {
                 return;
             }
 
-            if (soldierBrain.Weapons[weaponIndex].maxAmmo < 0)
+            if (soldier.Weapons[weaponIndex].maxAmmo < 0)
             {
                 return;
             }
 
-            if (ammo[weaponIndex] >= soldierBrain.Weapons[weaponIndex].maxAmmo)
+            if (ammo[weaponIndex] >= soldier.Weapons[weaponIndex].maxAmmo)
             {
                 return;
             }
             
-            soldierBrain.Weapons[weaponIndex].Replenish();
+            soldier.Weapons[weaponIndex].Replenish();
             StartCoroutine(ReadyDelay());
         }
         

@@ -1,4 +1,4 @@
-﻿using Project.Minds;
+﻿using Project.Agents;
 using UnityEngine;
 
 namespace Project.Pickups
@@ -11,7 +11,7 @@ namespace Project.Pickups
 
         public static FlagPickup RedFlag;
 
-        public SoldierBrain carryingPlayer;
+        public SoldierAgent carryingPlayer;
 
         [SerializeField]
         [Tooltip("If this flag is for the red team or not.")]
@@ -29,27 +29,27 @@ namespace Project.Pickups
 
         private Coroutine _captureDelay;
 
-        protected override void OnPickedUp(SoldierBrain soldierBrain, int[] ammo)
+        protected override void OnPickedUp(SoldierAgent soldier, int[] ammo)
         {
             if (carryingPlayer != null)
             {
                 return;
             }
 
-            if (SameTeam(soldierBrain))
+            if (SameTeam(soldier))
             {
-                ReturnFlag(soldierBrain);
+                ReturnFlag(soldier);
                 return;
             }
 
-            PickupFlag(soldierBrain);
+            PickupFlag(soldier);
         }
 
-        private void PickupFlag(SoldierBrain soldierBrain)
+        private void PickupFlag(SoldierAgent soldier)
         {
-            carryingPlayer = soldierBrain;
+            carryingPlayer = soldier;
             Transform tr = transform;
-            tr.parent = soldierBrain.flagPosition;
+            tr.parent = soldier.flagPosition;
             tr.localPosition = Vector3.zero;
             tr.localRotation = Quaternion.identity;;
         }
@@ -77,7 +77,7 @@ namespace Project.Pickups
             transform.parent = null;
         }
 
-        private void ReturnFlag(SoldierBrain soldierBrain)
+        private void ReturnFlag(SoldierAgent soldier)
         {
             Transform tr = transform;
             if (tr.position == _spawnPosition)
@@ -100,9 +100,9 @@ namespace Project.Pickups
             ReturnFlag(null);
         }
 
-        private bool SameTeam(SoldierBrain soldierBrain)
+        private bool SameTeam(SoldierAgent soldier)
         {
-            return soldierBrain.RedTeam && this == RedFlag || !soldierBrain.RedTeam && this == BlueFlag;
+            return soldier.RedTeam && this == RedFlag || !soldier.RedTeam && this == BlueFlag;
         }
 
         private void Awake()

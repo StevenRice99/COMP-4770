@@ -8,40 +8,40 @@ public class RigidbodyAgent : Agent
     /// <summary>
     /// This agent's rigidbody.
     /// </summary>
-    private Rigidbody _rigidbody;
+    protected Rigidbody Rigidbody;
 
     protected override void Start()
     {
         base.Start();
         
         // Get the rigidbody.
-        _rigidbody = GetComponent<Rigidbody>();
-        if (_rigidbody == null)
+        Rigidbody = GetComponent<Rigidbody>();
+        if (Rigidbody == null)
         {
-            _rigidbody = gameObject.AddComponent<Rigidbody>();
+            Rigidbody = gameObject.AddComponent<Rigidbody>();
         }
 
-        if (_rigidbody == null)
+        if (Rigidbody == null)
         {
             return;
         }
 
         // Since rotation is all done with the root visuals transform, freeze rigidbody rotation.
-        _rigidbody.freezeRotation = true;
-        _rigidbody.drag = 0;
-        _rigidbody.angularDrag = 0;
-        _rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
-        _rigidbody.isKinematic = false;
+        Rigidbody.freezeRotation = true;
+        Rigidbody.drag = 0;
+        Rigidbody.angularDrag = 0;
+        Rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
+        Rigidbody.isKinematic = false;
     }
         
     public override void Move()
     {
-        if (_rigidbody == null)
+        if (Rigidbody == null)
         {
             return;
         }
         
         CalculateMoveVelocity(Time.fixedDeltaTime);
-        _rigidbody.velocity = new Vector3(MoveVelocity.x, _rigidbody.velocity.y, MoveVelocity.y);
+        Rigidbody.velocity = new Vector3(MoveVelocity.x, Rigidbody.velocity.y, MoveVelocity.y);
     }
 }

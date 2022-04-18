@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Project.Minds;
+using Project.Agents;
 using UnityEngine;
 
 namespace Project.Weapons
@@ -28,7 +28,7 @@ namespace Project.Weapons
         {
             positions = new Vector3[rounds];
 
-            Vector3 forward = SoldierBrain.headPosition.TransformDirection(Vector3.forward);
+            Vector3 forward = Soldier.headPosition.TransformDirection(Vector3.forward);
 
             List<AttackedInfo> attackedInfos = new();
 
@@ -41,14 +41,14 @@ namespace Project.Weapons
                 );
                 direction.Normalize();
                 
-                if (Physics.Raycast(SoldierBrain.headPosition.position, direction, out RaycastHit hit, Mathf.Infinity, layerMask))
+                if (Physics.Raycast(Soldier.headPosition.position, direction, out RaycastHit hit, Mathf.Infinity, layerMask))
                 {
                     positions[i] = hit.point;
-                    SoldierBrain attacked;
+                    SoldierAgent attacked;
                     Transform tr = hit.collider.transform;
                     do
                     {
-                        attacked = tr.GetComponent<SoldierBrain>();
+                        attacked = tr.GetComponent<SoldierAgent>();
                         tr = tr.parent;
                     } while (attacked == null && tr != null);
 
@@ -57,7 +57,7 @@ namespace Project.Weapons
                         continue;
                     }
 
-                    if (attacked.RedTeam != SoldierBrain.RedTeam)
+                    if (attacked.RedTeam != Soldier.RedTeam)
                     {
                         bool found = false;
                         for (int j = 0; j < attackedInfos.Count; j++)
@@ -83,12 +83,12 @@ namespace Project.Weapons
                     continue;
                 }
 
-                positions[i] = SoldierBrain.headPosition.position + direction * 1000;
+                positions[i] = Soldier.headPosition.position + direction * 1000;
             }
 
             foreach (AttackedInfo attackedInfo in attackedInfos)
             {
-                attackedInfo.Attacked.Damage(damage * attackedInfo.Hits, SoldierBrain);
+                attackedInfo.Attacked.Damage(damage * attackedInfo.Hits, Soldier);
             }
         }
 

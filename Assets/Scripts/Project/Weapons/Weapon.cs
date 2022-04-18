@@ -1,6 +1,6 @@
 ﻿using System.Collections;
+using Project.Agents;
 using Project.Managers;
-using Project.Minds;
 using UnityEngine;
 
 namespace Project.Weapons
@@ -9,7 +9,7 @@ namespace Project.Weapons
     {
         protected struct AttackedInfo
         {
-            public SoldierBrain Attacked;
+            public SoldierAgent Attacked;
 
             public int Hits;
         }
@@ -19,7 +19,7 @@ namespace Project.Weapons
 
         public int Index { get; set; }
 
-        public SoldierBrain SoldierBrain { get; set; }
+        public SoldierAgent Soldier { get; set; }
 
         [Tooltip("The sound to make upon bullet impact.")]
         public AudioClip impactSound;
@@ -113,7 +113,7 @@ namespace Project.Weapons
         
         public void Shoot()
         {
-            if (Index != SoldierBrain.WeaponIndex || !_canShoot)
+            if (Index != Soldier.WeaponIndex || !_canShoot)
             {
                 return;
             }
@@ -121,9 +121,9 @@ namespace Project.Weapons
             Shoot(out Vector3[] positions);
             ShootVisuals(positions);
             StartDelay();
-            foreach (SoldierBrain enemy in SoldierBrain.GetEnemies())
+            foreach (SoldierAgent enemy in Soldier.GetEnemies())
             {
-                enemy.Hear(SoldierBrain, soundRange);
+                enemy.Hear(Soldier, soundRange);
             }
         }
 

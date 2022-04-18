@@ -598,7 +598,7 @@ public abstract class Agent : MessageComponent
     /// <summary>
     /// Called by the AgentManager to have the agent sense, think, and act.
     /// </summary>
-    public void Perform()
+    public virtual void Perform()
     {
         if (globalState != null)
         {

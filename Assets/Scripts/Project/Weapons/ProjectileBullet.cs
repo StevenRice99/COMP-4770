@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Project.Minds;
+using Project.Agents;
 using UnityEngine;
 
 namespace Project.Weapons
@@ -10,7 +10,7 @@ namespace Project.Weapons
     public class ProjectileBullet : MonoBehaviour
     {
         [HideInInspector]
-        public SoldierBrain shotBy;
+        public SoldierAgent shotBy;
 
         [HideInInspector]
         public int weaponIndex;
@@ -43,11 +43,11 @@ namespace Project.Weapons
         
         private void HandleCollision(Collision collision)
         {
-            SoldierBrain attacked;
+            SoldierAgent attacked;
             Transform tr = collision.transform;
             do
             {
-                attacked = tr.GetComponent<SoldierBrain>();
+                attacked = tr.GetComponent<SoldierAgent>();
                 tr = tr.parent;
             } while (attacked == null && tr != null);
             
@@ -69,15 +69,13 @@ namespace Project.Weapons
             if (distance > 0)
             {
                 int layerMask = LayerMask.GetMask("Default", "HitBox");
-                
-                SoldierBrain[] soldierBrains = FindObjectsOfType<SoldierBrain>().Where(p => p != shotBy && p.RedTeam != shotBy.RedTeam && p != attacked).ToArray();
 
-                foreach (SoldierBrain soldierBrain in soldierBrains)
+                foreach (SoldierAgent soldier in FindObjectsOfType<SoldierAgent>().Where(p => p != shotBy && p.RedTeam != shotBy.RedTeam && p != attacked).ToArray())
                 {
-                    Collider[] hitBoxes = soldierBrain.GetComponentsInChildren<Collider>().Where(c => c.gameObject.layer == LayerMask.NameToLayer("HitBox")).ToArray();
+                    Collider[] hitBoxes = soldier.GetComponentsInChildren<Collider>().Where(c => c.gameObject.layer == LayerMask.NameToLayer("HitBox")).ToArray();
                     
-                    Vector3 position = soldierBrain.transform.position;
-                    List<Vector3> points = new() { position, new Vector3(position.x, position.y + 0.1f, position.z), soldierBrain.headPosition.position };
+                    Vector3 position = soldier.transform.position;
+                    List<Vector3> points = new() { position, new Vector3(position.x, position.y + 0.1f, position.z), soldier.headPosition.position };
                     points.AddRange(hitBoxes.Select(h => h.bounds).Select(b => b.ClosestPoint(transform.position)));
                 
                     foreach (Vector3 point in points.Where(p => Vector3.Distance(p, transform.position) <= distance).OrderBy(p => Vector3.Distance(p, transform.position)))

@@ -20,12 +20,12 @@ namespace Project.Weapons
         {
             positions = new[] { barrel.position };
             
-            GameObject bullet = Instantiate(bulletPrefab, SoldierBrain.headPosition.position, barrel.rotation);
+            GameObject bullet = Instantiate(bulletPrefab, Soldier.headPosition.position, barrel.rotation);
             bullet.name = $"{name} Bullet";
             Rigidbody rb = bullet.GetComponent<Rigidbody>();
             ProjectileBullet projectileBullet = bullet.GetComponent<ProjectileBullet>();
             projectileBullet.weaponIndex = Index;
-            projectileBullet.shotBy = SoldierBrain;
+            projectileBullet.shotBy = Soldier;
             projectileBullet.damage = damage;
             projectileBullet.distance = distance;
             projectileBullet.velocity = velocity;

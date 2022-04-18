@@ -1,11 +1,11 @@
-﻿using Project.Minds;
+﻿using Project.Agents;
 using UnityEngine;
 
 namespace Project.Pickups
 {
     public abstract class PickupBase : MonoBehaviour
     {
-        protected abstract void OnPickedUp(SoldierBrain soldierBrain, int[] ammo);
+        protected abstract void OnPickedUp(SoldierAgent soldier, int[] ammo);
         
         private void OnTriggerEnter(Collider other)
         {
@@ -19,7 +19,7 @@ namespace Project.Pickups
 
         private void DetectPickup(Component other)
         {
-            SoldierBrain soldierBrain = other.gameObject.GetComponent<SoldierBrain>();
+            SoldierAgent soldierBrain = other.gameObject.GetComponent<SoldierAgent>();
             if (soldierBrain == null)
             {
                 return;

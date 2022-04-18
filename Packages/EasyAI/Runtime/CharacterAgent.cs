@@ -8,7 +8,7 @@ public class CharacterAgent : TransformAgent
     /// <summary>
     /// This agent's character controller.
     /// </summary>
-    private CharacterController _characterController;
+    protected CharacterController CharacterController;
 
     /// <summary>
     /// Used to manually apply gravity.
@@ -20,10 +20,10 @@ public class CharacterAgent : TransformAgent
         base.Start();
             
         // Get the character controller.
-        _characterController = GetComponent<CharacterController>();
-        if (_characterController == null)
+        CharacterController = GetComponent<CharacterController>();
+        if (CharacterController == null)
         {
-            _characterController = gameObject.AddComponent<CharacterController>();
+            CharacterController = gameObject.AddComponent<CharacterController>();
         }
     }
 
@@ -32,13 +32,13 @@ public class CharacterAgent : TransformAgent
     /// </summary>
     public override void Move()
     {
-        if (_characterController == null)
+        if (CharacterController == null)
         {
             return;
         }
         
         // Reset gravity if grounded.
-        if (_characterController.isGrounded)
+        if (CharacterController.isGrounded)
         {
             _velocityY = 0;
         }
@@ -48,6 +48,6 @@ public class CharacterAgent : TransformAgent
 
         CalculateMoveVelocity(Time.deltaTime);
         MoveVelocity *= Time.deltaTime;
-        _characterController.Move(new Vector3(MoveVelocity.x, _velocityY, MoveVelocity.y));
+        CharacterController.Move(new Vector3(MoveVelocity.x, _velocityY, MoveVelocity.y));
     }
 }
