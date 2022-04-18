@@ -30,7 +30,17 @@ namespace Project.Agents
         {
             Detect();
 
-            Think(ChooseTarget());
+            TargetData? target = ChooseTarget();
+            if (target != null)
+            {
+                LookAtTarget(target.Value.Position);
+            }
+            else
+            {
+                StopLookAtTarget();
+            }
+
+            Think(target);
             
             Cleanup();
             
@@ -285,6 +295,7 @@ namespace Project.Agents
         private void SelectWeapon(int i)
         {
             WeaponIndex = Mathf.Clamp(i, 0, Weapons.Length - 1);
+            lookSpeed = Weapons[WeaponIndex].rotationSpeed;
             WeaponVisible();
         }
 
@@ -344,7 +355,7 @@ namespace Project.Agents
                 return null;
             }
             
-            EnemyMemory target = _enemiesDetected.OrderBy(e => e.HasFlag).ThenBy(e => e.Visible).ThenBy(e => e.DeltaTime).First();
+            EnemyMemory target = _enemiesDetected.OrderBy(e => e.HasFlag).ThenBy(e => e.Visible).ThenBy(e => e.DeltaTime).ThenBy(e => Vector3.Distance(transform.position, e.Position)).First();
             
             return new TargetData
             {

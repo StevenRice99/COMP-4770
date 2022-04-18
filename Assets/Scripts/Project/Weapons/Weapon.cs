@@ -48,6 +48,11 @@ namespace Project.Weapons
 
         [SerializeField]
         [Min(0)]
+        [Tooltip("How fast an agent can rotate when using this weapon.")]
+        public float rotationSpeed = 30;
+
+        [SerializeField]
+        [Min(0)]
         [Tooltip("How far away shots can be heard by agents.")]
         private float soundRange;
         

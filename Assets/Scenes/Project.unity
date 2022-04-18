@@ -6974,7 +6974,7 @@ MonoBehaviour:
   detailsWidth: 500
   controlsWidth: 120
   gizmos: 1
-  navigation: 1
+  navigation: 2
   selectedCamera: {fileID: 1784874880}
   groundLayers:
     serializedVersion: 2
@@ -6990,7 +6990,8 @@ MonoBehaviour:
   soldiersPerTeam: 6
   health: 100
   respawn: 10
-  sound: 0
+  memoryTime: 5
+  volume: 0
   soldierPrefab: {fileID: 4324690102972426135, guid: d5faa173f1b3a3c499da74513556f6fd, type: 3}
   red: {fileID: 2100000, guid: 3a41b7aa03ddf024fbc0c1ea0563750d, type: 2}
   blue: {fileID: 2100000, guid: 67b0eeef50c9fcf4a971927cb01ed4d3, type: 2}
