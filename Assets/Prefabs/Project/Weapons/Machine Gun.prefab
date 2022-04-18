@@ -54,7 +54,7 @@ MonoBehaviour:
   damage: 10
   delay: 0.1
   time: 0.1
-  rotationSpeed: 30
+  rotationSpeed: 5
   soundRange: 0
   material: {fileID: 2100000, guid: cbd379e569acb9f45b7df8c9dc155a0e, type: 2}
   rounds: 1

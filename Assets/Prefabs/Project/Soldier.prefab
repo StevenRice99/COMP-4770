@@ -421,7 +421,7 @@ MonoBehaviour:
   fleeAcceptableDistance: 10
   restVelocity: 0.1
   lookSpeed: 0
-  maxWanderTurn: 30
+  maxWanderTurn: 0
   globalState: {fileID: 0}
   state: {fileID: 0}
   sightHeight: 1.8
