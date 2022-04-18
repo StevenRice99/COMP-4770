@@ -28,7 +28,7 @@ namespace Project.Weapons
         {
             positions = new Vector3[rounds];
 
-            Vector3 forward = Soldier.headPosition.TransformDirection(Vector3.forward);
+            Vector3 forward = Soldier.shootPosition.TransformDirection(Vector3.forward);
 
             List<AttackedInfo> attackedInfos = new();
 
@@ -41,7 +41,7 @@ namespace Project.Weapons
                 );
                 direction.Normalize();
                 
-                if (Physics.Raycast(Soldier.headPosition.position, direction, out RaycastHit hit, Mathf.Infinity, layerMask))
+                if (Physics.Raycast(Soldier.shootPosition.position, direction, out RaycastHit hit, Mathf.Infinity, layerMask))
                 {
                     positions[i] = hit.point;
                     SoldierAgent attacked;
@@ -83,7 +83,7 @@ namespace Project.Weapons
                     continue;
                 }
 
-                positions[i] = Soldier.headPosition.position + direction * 1000;
+                positions[i] = Soldier.shootPosition.position + direction * 1000;
             }
 
             foreach (AttackedInfo attackedInfo in attackedInfos)
@@ -123,7 +123,7 @@ namespace Project.Weapons
                 time = delay;
             }
             
-            layerMask = LayerMask.GetMask("Default", "Projectile", "HitBox");
+            layerMask = LayerMask.GetMask("Default", "Obstacle", "Ground", "Projectile", "HitBox");
         }
         
         private IEnumerator FadeLine(LineRenderer lr)

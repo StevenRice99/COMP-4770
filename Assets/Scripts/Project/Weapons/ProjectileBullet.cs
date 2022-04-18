@@ -68,14 +68,14 @@ namespace Project.Weapons
             
             if (distance > 0)
             {
-                int layerMask = LayerMask.GetMask("Default", "HitBox");
+                int layerMask = LayerMask.GetMask("Default", "Obstacle", "Ground", "Projectile", "HitBox");
 
                 foreach (SoldierAgent soldier in FindObjectsOfType<SoldierAgent>().Where(p => p != shotBy && p.RedTeam != shotBy.RedTeam && p != attacked).ToArray())
                 {
                     Collider[] hitBoxes = soldier.GetComponentsInChildren<Collider>().Where(c => c.gameObject.layer == LayerMask.NameToLayer("HitBox")).ToArray();
                     
                     Vector3 position = soldier.transform.position;
-                    List<Vector3> points = new() { position, new Vector3(position.x, position.y + 0.1f, position.z), soldier.headPosition.position };
+                    List<Vector3> points = new() { position, new Vector3(position.x, position.y + 0.1f, position.z), soldier.shootPosition.position };
                     points.AddRange(hitBoxes.Select(h => h.bounds).Select(b => b.ClosestPoint(transform.position)));
                 
                     foreach (Vector3 point in points.Where(p => Vector3.Distance(p, transform.position) <= distance).OrderBy(p => Vector3.Distance(p, transform.position)))

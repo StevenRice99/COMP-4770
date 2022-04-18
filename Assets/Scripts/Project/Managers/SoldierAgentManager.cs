@@ -79,8 +79,9 @@ namespace Project.Managers
         {
             foreach (Agent agent in Agents)
             {
-                if (agent is not SoldierAgent soldier)
+                if (agent is not SoldierAgent { Alive: true } soldier)
                 {
+                    agent.StopLookAtTarget();
                     continue;
                 }
                 

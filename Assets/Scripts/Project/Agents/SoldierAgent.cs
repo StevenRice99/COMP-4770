@@ -28,9 +28,16 @@ namespace Project.Agents
         
         public override void Perform()
         {
+            if (_role == SoliderRole.Dead)
+            {
+                return;
+            }
+            
             Target = ChooseTarget();
 
             Think();
+
+            Shoot();
             
             Cleanup();
             
@@ -63,6 +70,8 @@ namespace Project.Agents
 
         public Transform headPosition;
 
+        public Transform shootPosition;
+
         public Transform flagPosition;
 
         [SerializeField]
@@ -93,6 +102,17 @@ namespace Project.Agents
 
         private bool EnemyHasFlag => RedTeam ? FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer != null : FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer != null;
 
+        public override void Move()
+        {
+            if (CharacterController == null || !CharacterController.enabled)
+            {
+                EnemiesDetected.Clear();
+                return;
+            }
+            
+            base.Move();
+        }
+        
         public void Damage(int amount, SoldierAgent shotBy)
         {
             if (_role == SoliderRole.Dead)
@@ -218,7 +238,12 @@ namespace Project.Agents
             _role = SoliderRole.Dead;
             ToggleAlive();
             AssignRoles();
+            EnemiesDetected.Clear();
+            Target = null;
+            StopLookAtTarget();
+            
             yield return new WaitForSeconds(SoldierAgentManager.SoldierAgentManagerSingleton.respawn);
+            
             Spawn();
         }
 
@@ -281,7 +306,23 @@ namespace Project.Agents
 
         private void Shoot()
         {
-            Weapons[WeaponIndex].Shoot();
+            if (!Weapons[WeaponIndex].CanShoot || !Physics.Raycast(shootPosition.position, shootPosition.forward, out RaycastHit hit, float.MaxValue, LayerMask.GetMask("Default", "Obstacle", "Ground", "Projectile", "HitBox")))
+            {
+                return;
+            }
+
+            SoldierAgent attacked;
+            Transform tr = hit.collider.transform;
+            do
+            {
+                attacked = tr.GetComponent<SoldierAgent>();
+                tr = tr.parent;
+            } while (attacked == null && tr != null);
+                
+            if (attacked != null)
+            {
+                Weapons[WeaponIndex].Shoot();
+            }
         }
 
         private void SelectWeapon(int i)
@@ -309,7 +350,7 @@ namespace Project.Agents
             for (int i = 0; i < EnemiesDetected.Count; i++)
             {
                 EnemiesDetected[i].DeltaTime += DeltaTime;
-                if (EnemiesDetected[i].DeltaTime > SoldierAgentManager.SoldierAgentManagerSingleton.memoryTime)
+                if (EnemiesDetected[i].DeltaTime > SoldierAgentManager.SoldierAgentManagerSingleton.memoryTime || EnemiesDetected[i].Enemy._role == SoliderRole.Dead)
                 {
                     EnemiesDetected.RemoveAt(i--);
                 }

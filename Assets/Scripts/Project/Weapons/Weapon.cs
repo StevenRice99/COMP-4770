@@ -58,7 +58,7 @@ namespace Project.Weapons
         
         private MeshRenderer[] _renderers;
 
-        private bool _canShoot = true;
+        public bool CanShoot { get; private set; } = true;
 
         private int _ammo;
 
@@ -118,7 +118,7 @@ namespace Project.Weapons
         
         public void Shoot()
         {
-            if (Index != Soldier.WeaponIndex || !_canShoot)
+            if (Index != Soldier.WeaponIndex || !CanShoot)
             {
                 return;
             }
@@ -162,9 +162,9 @@ namespace Project.Weapons
         
         private IEnumerator ShotDelay()
         {
-            _canShoot = false;
+            CanShoot = false;
             yield return new WaitForSeconds(delay);
-            _canShoot = true;
+            CanShoot = true;
         }
     }
 }
