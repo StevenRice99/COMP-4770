@@ -21,11 +21,11 @@ namespace Project.Pickups
         [Tooltip("The raycast for a dropped flag to hit the ground.")]
         private LayerMask raycastMask;
 
-        private Vector3 _spawnPosition;
-
-        private Quaternion _spawnRotation;
+        public Vector3 SpawnPosition { get; private set; }
 
         public int Captures { get; private set; }
+
+        private Quaternion _spawnRotation;
 
         private Coroutine _captureDelay;
 
@@ -67,7 +67,7 @@ namespace Project.Pickups
                 return;
             }
 
-            tr.position = _spawnPosition;
+            tr.position = SpawnPosition;
             tr.rotation = _spawnRotation;
         }
 
@@ -80,14 +80,15 @@ namespace Project.Pickups
         private void ReturnFlag(SoldierAgent soldier)
         {
             Transform tr = transform;
-            if (tr.position == _spawnPosition)
+            if (tr.position == SpawnPosition)
             {
                 return;
             }
             
             // ADD POINTS FOR RETURNING FLAG.
-            
-            tr.position = _spawnPosition;
+
+            UnlinkFlag();
+            tr.position = SpawnPosition;
             tr.rotation = _spawnRotation;
         }
 
@@ -114,7 +115,7 @@ namespace Project.Pickups
             }
 
             Transform tr = transform;
-            _spawnPosition = tr.position;
+            SpawnPosition = tr.position;
             _spawnRotation = tr.rotation;
 
             if (redFlag)
@@ -141,7 +142,7 @@ namespace Project.Pickups
             }
 
             FlagPickup otherFlag = redFlag ? BlueFlag : RedFlag;
-            if (Vector3.Distance(carryingPlayer.transform.position, otherFlag._spawnPosition) > CaptureDistance)
+            if (Vector3.Distance(carryingPlayer.transform.position, otherFlag.SpawnPosition) > CaptureDistance)
             {
                 return;
             }

@@ -98,10 +98,18 @@ namespace Project.Agents
 
         public readonly List<EnemyMemory> EnemiesDetected = new();
 
-        private bool CarryingFlag => RedTeam ? FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer == this : FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer == this;
+        private bool CarryingFlag => RedTeam ? FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer == this : FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer == this;
+
+        private bool TeamHasFlag => RedTeam ? FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer != null : FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer != null;
 
         private bool EnemyHasFlag => RedTeam ? FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer != null : FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer != null;
+        
+        private bool FLagAtBase => RedTeam ? FlagPickup.RedFlag != null && FlagPickup.RedFlag.transform.position == FlagPickup.RedFlag.SpawnPosition : FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.transform.position == FlagPickup.BlueFlag.SpawnPosition;
 
+        private Vector3 EnemyFlag => RedTeam ? FlagPickup.BlueFlag != null ? FlagPickup.BlueFlag.transform.position : Vector3.zero : FlagPickup.RedFlag != null ? FlagPickup.RedFlag.transform.position : Vector3.zero;
+        
+        private Vector3 Base => RedTeam ? FlagPickup.RedFlag != null ? FlagPickup.RedFlag.SpawnPosition : Vector3.zero : FlagPickup.BlueFlag != null ? FlagPickup.BlueFlag.SpawnPosition : Vector3.zero;
+        
         public override void Move()
         {
             if (CharacterController == null || !CharacterController.enabled)
@@ -211,6 +219,15 @@ namespace Project.Agents
         private void Think()
         {
             // ADD THINKING LOGIC.
+
+            if (CarryingFlag)
+            {
+                Navigate(Base);
+            }
+            else if (!TeamHasFlag)
+            {
+                Navigate(EnemyFlag);
+            }
         }
 
         private void AssignRoles()

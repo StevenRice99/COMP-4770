@@ -206,6 +206,11 @@ public abstract class Agent : MessageComponent
     public bool Wander { get; set; }
 
     /// <summary>
+    /// The path destination.
+    /// </summary>
+    public Vector3? Destination => Path?[^1];
+
+    /// <summary>
     /// The previous state the agent was in.
     /// </summary>
     public State PreviousState { get; private set; }
@@ -375,6 +380,11 @@ public abstract class Agent : MessageComponent
     /// <param name="goal">The position to navigate to.</param>
     public void Navigate(Vector3 goal)
     {
+        if (Destination == goal)
+        {
+            return;
+        }
+        
         Path = AgentManager.Singleton.LookupPath(transform.position, goal);
     }
 
@@ -625,7 +635,7 @@ public abstract class Agent : MessageComponent
         }
 
         // Can only sense, think, and act if there is a mind attached.
-        if (Minds != null && Minds.Length > 0)
+        if (Minds is { Length: > 0 })
         {
             // Sense the agent's surroundings.
             Sense();
