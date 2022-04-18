@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using Project.Agents;
+using Project.Pickups;
+using UnityEngine;
 
 namespace Project.Managers
 {
@@ -43,6 +46,81 @@ namespace Project.Managers
             for (int i = 0; i < soldiersPerTeam * 2; i++)
             {
                 Instantiate(soldierPrefab);
+            }
+        }
+
+        protected override void Update()
+        {
+            base.Update();
+
+            Detect();
+
+            foreach (Agent agent in Agents)
+            {
+                if (agent is not SoldierAgent soldier)
+                {
+                    continue;
+                }
+
+                if (soldier.Target != null)
+                {
+                    soldier.LookAtTarget(soldier.Target.Value.Position);
+                    soldier.headPosition.LookAt(soldier.Target.Value.Position);
+                    soldier.headPosition.localRotation = Quaternion.Euler(soldier.headPosition.localRotation.eulerAngles.x, 0, 0);
+                }
+                else
+                {
+                    soldier.StopLookAtTarget();
+                }
+            }
+        }
+        
+        private void Detect()
+        {
+            foreach (Agent agent in Agents)
+            {
+                if (agent is not SoldierAgent soldier)
+                {
+                    continue;
+                }
+                
+                foreach (SoldierAgent enemy in soldier.SeeEnemies())
+                {
+                    SoldierAgent.EnemyMemory memory = soldier.EnemiesDetected.FirstOrDefault(e => e.Enemy == enemy);
+                    if (memory != null)
+                    {
+                        memory.DeltaTime = 0;
+                        memory.Enemy = enemy;
+                        memory.Position = enemy.headPosition.position;
+                        memory.Visible = true;
+                        memory.HasFlag = FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer == enemy || FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer == enemy;
+                    }
+                    else
+                    {
+                        soldier.EnemiesDetected.Add(new SoldierAgent.EnemyMemory
+                        {
+                            DeltaTime = 0,
+                            Enemy = enemy,
+                            Position = enemy.headPosition.position,
+                            Visible = true,
+                            HasFlag = FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer == enemy || FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer == enemy
+                        });
+                    }
+
+                    if (soldier.Target == null || soldier.Target.Value.Enemy != enemy)
+                    {
+                        continue;
+                    }
+
+                    Vector3 position = enemy.headPosition.position;
+                    soldier.Target = new SoldierAgent.TargetData
+                    {
+                        Enemy = enemy,
+                        Position = position
+                    };
+                        
+                    enemy.LookAtTarget(position);
+                }
             }
         }
     }

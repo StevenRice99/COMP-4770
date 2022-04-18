@@ -351,13 +351,22 @@ public abstract class Agent : MessageComponent
             }
         }
 
-        // If the agent is looking towards a particular target (not just based on where it is moving), draw a line towards the target.
-        if (LookingToTarget)
+        if (!LookingToTarget)
         {
-            GL.Color(Color.yellow);
-            GL.Vertex(position + new Vector3(0, sightHeight, 0));
-            GL.Vertex(LookTarget);
+            return;
         }
+
+        // If the agent is looking towards a particular target (not just based on where it is moving), draw a line towards the target.
+        GL.Color(Color.yellow);
+        if (sightHeight > 0)
+        {
+            GL.Vertex(transform.position + new Vector3(0, sightHeight, 0));
+        }
+        else
+        {
+            GL.Vertex(position);
+        }
+        GL.Vertex(LookTarget);
     }
 
     /// <summary>

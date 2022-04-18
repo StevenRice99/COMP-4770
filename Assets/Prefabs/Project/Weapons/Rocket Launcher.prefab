@@ -54,6 +54,8 @@ MonoBehaviour:
   damage: 200
   delay: 3
   time: 30
+  rotationSpeed: 15
+  soundRange: 0
   velocity: 30
   distance: 10
   bulletPrefab: {fileID: 1370008487427224120, guid: e1e94f974bc68984ab69e7dde4453977, type: 3}

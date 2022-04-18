@@ -28,28 +28,16 @@ namespace Project.Agents
         
         public override void Perform()
         {
-            Detect();
+            Target = ChooseTarget();
 
-            TargetData? target = ChooseTarget();
-            if (target != null)
-            {
-                LookAtTarget(target.Value.Position);
-                headPosition.LookAt(target.Value.Position);
-                headPosition.localRotation = Quaternion.Euler(headPosition.localRotation.eulerAngles.x, 0, 0);
-            }
-            else
-            {
-                StopLookAtTarget();
-            }
-
-            Think(target);
+            Think();
             
             Cleanup();
             
             base.Perform();
         }
         
-        private class EnemyMemory
+        public class EnemyMemory
         {
             public SoldierAgent Enemy;
 
@@ -62,7 +50,7 @@ namespace Project.Agents
             public float DeltaTime;
         }
 
-        private struct TargetData
+        public struct TargetData
         {
             public SoldierAgent Enemy;
             
@@ -90,6 +78,8 @@ namespace Project.Agents
         public Weapon[] Weapons { get; private set; }
         
         public int WeaponIndex { get; private set; }
+        
+        public TargetData? Target { get; set; }
 
         public bool Alive => _role != SoliderRole.Dead;
         
@@ -97,7 +87,7 @@ namespace Project.Agents
 
         private Collider[] _colliders;
 
-        private readonly List<EnemyMemory> _enemiesDetected = new();
+        public readonly List<EnemyMemory> EnemiesDetected = new();
 
         private bool CarryingFlag => RedTeam ? FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer == this : FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer == this;
 
@@ -129,7 +119,7 @@ namespace Project.Agents
                 return;
             }
             
-            EnemyMemory memory = _enemiesDetected.FirstOrDefault(e => e.Enemy == enemy);
+            EnemyMemory memory = EnemiesDetected.FirstOrDefault(e => e.Enemy == enemy);
             if (memory != null)
             {
                 memory.DeltaTime = 0;
@@ -139,7 +129,7 @@ namespace Project.Agents
                 return;
             }
             
-            _enemiesDetected.Add(new EnemyMemory
+            EnemiesDetected.Add(new EnemyMemory
             {
                 DeltaTime = 0,
                 Position = enemy.headPosition.position,
@@ -198,7 +188,7 @@ namespace Project.Agents
             Spawn();
         }
 
-        private void Think(TargetData? targetData)
+        private void Think()
         {
             // ADD THINKING LOGIC.
         }
@@ -309,55 +299,31 @@ namespace Project.Agents
             }
         }
 
-        private IEnumerable<SoldierAgent> SeeEnemies()
+        public IEnumerable<SoldierAgent> SeeEnemies()
         {
             return GetEnemies().Where(enemy => !Physics.Linecast(headPosition.position, enemy.headPosition.position, AgentManager.Singleton.obstacleLayers)).ToArray();
         }
 
-        private void Detect()
-        {
-            foreach (SoldierAgent enemy in SeeEnemies())
-            {
-                EnemyMemory memory = _enemiesDetected.FirstOrDefault(e => e.Enemy == enemy);
-                if (memory != null)
-                {
-                    memory.DeltaTime = 0;
-                    memory.Position = enemy.headPosition.position;
-                    memory.Visible = true;
-                    memory.HasFlag = FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer == enemy || FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer == enemy;
-                    continue;
-                }
-                
-                _enemiesDetected.Add(new EnemyMemory
-                {
-                    DeltaTime = 0,
-                    Position = enemy.headPosition.position,
-                    Visible = true,
-                    HasFlag = FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer == enemy || FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer == enemy
-                });
-            }
-        }
-
         private void Cleanup()
         {
-            for (int i = 0; i < _enemiesDetected.Count; i++)
+            for (int i = 0; i < EnemiesDetected.Count; i++)
             {
-                _enemiesDetected[i].DeltaTime += DeltaTime;
-                if (_enemiesDetected[i].DeltaTime > SoldierAgentManager.SoldierAgentManagerSingleton.memoryTime)
+                EnemiesDetected[i].DeltaTime += DeltaTime;
+                if (EnemiesDetected[i].DeltaTime > SoldierAgentManager.SoldierAgentManagerSingleton.memoryTime)
                 {
-                    _enemiesDetected.RemoveAt(i--);
+                    EnemiesDetected.RemoveAt(i--);
                 }
             }
         }
 
         private TargetData? ChooseTarget()
         {
-            if (_enemiesDetected.Count == 0)
+            if (EnemiesDetected.Count == 0)
             {
                 return null;
             }
             
-            EnemyMemory target = _enemiesDetected.OrderBy(e => e.HasFlag).ThenBy(e => e.Visible).ThenBy(e => e.DeltaTime).ThenBy(e => Vector3.Distance(transform.position, e.Position)).First();
+            EnemyMemory target = EnemiesDetected.OrderBy(e => e.HasFlag).ThenBy(e => e.Visible).ThenBy(e => e.DeltaTime).ThenBy(e => Vector3.Distance(transform.position, e.Position)).First();
             
             return new TargetData
             {
