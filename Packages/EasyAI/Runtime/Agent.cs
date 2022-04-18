@@ -149,6 +149,11 @@ public abstract class Agent : MessageComponent
     [Tooltip("The current state the agent is in. Initialize it with the state to start in.")]
     private State state;
 
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("The height to draw visuals looking from.")]
+    private float sightHeight;
+
     /// <summary>
     /// The global state the agent is in.
     /// </summary>
@@ -350,7 +355,7 @@ public abstract class Agent : MessageComponent
         if (LookingToTarget)
         {
             GL.Color(Color.yellow);
-            GL.Vertex(position);
+            GL.Vertex(position + new Vector3(0, sightHeight, 0));
             GL.Vertex(LookTarget);
         }
     }

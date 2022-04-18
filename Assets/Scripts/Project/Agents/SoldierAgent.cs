@@ -34,6 +34,8 @@ namespace Project.Agents
             if (target != null)
             {
                 LookAtTarget(target.Value.Position);
+                headPosition.LookAt(target.Value.Position);
+                headPosition.localRotation = Quaternion.Euler(headPosition.localRotation.eulerAngles.x, 0, 0);
             }
             else
             {
@@ -131,7 +133,7 @@ namespace Project.Agents
             if (memory != null)
             {
                 memory.DeltaTime = 0;
-                memory.Position = enemy.transform.position;
+                memory.Position = enemy.headPosition.position;
                 memory.Visible = false;
                 memory.HasFlag = false;
                 return;
@@ -140,7 +142,7 @@ namespace Project.Agents
             _enemiesDetected.Add(new EnemyMemory
             {
                 DeltaTime = 0,
-                Position = enemy.transform.position,
+                Position = enemy.headPosition.position,
                 Visible = false,
                 HasFlag = false
             });
@@ -320,7 +322,7 @@ namespace Project.Agents
                 if (memory != null)
                 {
                     memory.DeltaTime = 0;
-                    memory.Position = enemy.transform.position;
+                    memory.Position = enemy.headPosition.position;
                     memory.Visible = true;
                     memory.HasFlag = FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer == enemy || FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer == enemy;
                     continue;
@@ -329,7 +331,7 @@ namespace Project.Agents
                 _enemiesDetected.Add(new EnemyMemory
                 {
                     DeltaTime = 0,
-                    Position = enemy.transform.position,
+                    Position = enemy.headPosition.position,
                     Visible = true,
                     HasFlag = FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer == enemy || FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer == enemy
                 });
