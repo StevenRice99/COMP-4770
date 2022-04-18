@@ -45,6 +45,11 @@ namespace Project.Weapons
         [Min(0)]
         [Tooltip("How long bullet trails or projectiles last for.")]
         protected float time;
+
+        [SerializeField]
+        [Min(0)]
+        [Tooltip("How far away shots can be heard by agents.")]
+        private float soundRange;
         
         private MeshRenderer[] _renderers;
 
@@ -65,7 +70,7 @@ namespace Project.Weapons
             };
             AudioSource impact = impactObj.AddComponent<AudioSource>();
             impact.clip = impactSound;
-            impact.volume = SoldierAgentManager.SoldierAgentManagerSingleton.sound / numImpacts;
+            impact.volume = SoldierAgentManager.SoldierAgentManagerSingleton.volume / numImpacts;
             impact.spatialBlend = 1;
             impact.dopplerLevel = _shootSound.dopplerLevel;
             impact.spread = _shootSound.spread;
@@ -116,6 +121,10 @@ namespace Project.Weapons
             Shoot(out Vector3[] positions);
             ShootVisuals(positions);
             StartDelay();
+            foreach (SoldierBrain enemy in SoldierBrain.GetEnemies())
+            {
+                enemy.Hear(SoldierBrain, soundRange);
+            }
         }
 
         protected abstract void Shoot(out Vector3[] positions);
@@ -133,7 +142,7 @@ namespace Project.Weapons
         private void Start()
         {
             _shootSound = GetComponent<AudioSource>();
-            _shootSound.volume = SoldierAgentManager.SoldierAgentManagerSingleton.sound;
+            _shootSound.volume = SoldierAgentManager.SoldierAgentManagerSingleton.volume;
         }
 
         private void StartDelay()

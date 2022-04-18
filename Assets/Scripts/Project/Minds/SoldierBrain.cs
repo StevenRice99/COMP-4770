@@ -11,6 +11,13 @@ namespace Project.Minds
     [RequireComponent(typeof(CharacterController))]
     public class SoldierBrain : Mind
     {
+        private enum SoliderRole : byte
+        {
+            Dead,
+            Collector,
+            Attacker,
+            Defender
+        }
         private enum WeaponChoices
         {
             MachineGun,
@@ -20,19 +27,31 @@ namespace Project.Minds
             Pistol
         }
         
+        private class EnemyMemory
+        {
+            public SoldierBrain Enemy;
+
+            public bool HasFlag;
+
+            public bool Visible;
+
+            public Vector3 Position;
+
+            public float DeltaTime;
+        }
+
+        private struct TargetData
+        {
+            public SoldierBrain Enemy;
+            
+            public Vector3 Position;
+        }
+        
         private static readonly List<SoldierBrain> TeamRed = new();
         
         private static readonly List<SoldierBrain> TeamBlue = new();
 
-        private enum SoliderRole : byte
-        {
-            Dead,
-            Collector,
-            Attacker,
-            Defender
-        }
-
-        public Transform shootPosition;
+        public Transform headPosition;
 
         public Transform flagPosition;
 
@@ -56,12 +75,20 @@ namespace Project.Minds
 
         private Collider[] _colliders;
 
+        private readonly List<EnemyMemory> _enemiesDetected = new();
+
         private bool CarryingFlag => RedTeam ? FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer == this : FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer == this;
 
         private bool EnemyHasFlag => RedTeam ? FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer != null : FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer != null;
         
         public override Action[] Think()
         {
+            Detect();
+
+            Think(ChooseTarget());
+            
+            Cleanup();
+            
             return null;
         }
 
@@ -84,6 +111,32 @@ namespace Project.Minds
             StartCoroutine(Respawn());
         }
 
+        public void Hear(SoldierBrain enemy, float distance)
+        {
+            if (Vector3.Distance(headPosition.position, enemy.headPosition.position) > distance)
+            {
+                return;
+            }
+            
+            EnemyMemory memory = _enemiesDetected.FirstOrDefault(e => e.Enemy == enemy);
+            if (memory != null)
+            {
+                memory.DeltaTime = 0;
+                memory.Position = enemy.transform.position;
+                memory.Visible = false;
+                memory.HasFlag = false;
+                return;
+            }
+            
+            _enemiesDetected.Add(new EnemyMemory
+            {
+                DeltaTime = 0,
+                Position = enemy.transform.position,
+                Visible = false,
+                HasFlag = false
+            });
+        }
+
         public void Heal()
         {
             if (_role == SoliderRole.Dead)
@@ -92,6 +145,11 @@ namespace Project.Minds
             }
 
             Health = SoldierAgentManager.SoldierAgentManagerSingleton.health;
+        }
+
+        public IEnumerable<SoldierBrain> GetEnemies()
+        {
+            return (RedTeam ? TeamBlue : TeamRed).Where(s => s.Alive);
         }
 
         protected override void Start()
@@ -127,6 +185,11 @@ namespace Project.Minds
             }
             
             Spawn();
+        }
+
+        private void Think(TargetData? targetData)
+        {
+            // ADD THINKING LOGIC.
         }
 
         private void AssignRoles()
@@ -215,6 +278,11 @@ namespace Project.Minds
             WeaponVisible();
         }
 
+        private void Shoot()
+        {
+            Weapons[WeaponIndex].Shoot();
+        }
+
         private void SelectWeapon(int i)
         {
             WeaponIndex = Mathf.Clamp(i, 0, Weapons.Length - 1);
@@ -227,6 +295,64 @@ namespace Project.Minds
             {
                 Weapons[i].Visible(Alive && i == WeaponIndex);
             }
+        }
+
+        private IEnumerable<SoldierBrain> SeeEnemies()
+        {
+            return GetEnemies().Where(enemy => !Physics.Linecast(headPosition.position, enemy.headPosition.position, AgentManager.Singleton.obstacleLayers)).ToArray();
+        }
+
+        private void Detect()
+        {
+            IEnumerable<SoldierBrain> enemiesSeen = SeeEnemies();
+            foreach (SoldierBrain enemy in enemiesSeen)
+            {
+                EnemyMemory memory = _enemiesDetected.FirstOrDefault(e => e.Enemy == enemy);
+                if (memory != null)
+                {
+                    memory.DeltaTime = 0;
+                    memory.Position = enemy.transform.position;
+                    memory.Visible = true;
+                    memory.HasFlag = FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer == enemy || FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer == enemy;
+                    continue;
+                }
+                
+                _enemiesDetected.Add(new EnemyMemory
+                {
+                    DeltaTime = 0,
+                    Position = enemy.transform.position,
+                    Visible = true,
+                    HasFlag = FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer == enemy || FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer == enemy
+                });
+            }
+        }
+
+        private void Cleanup()
+        {
+            for (int i = 0; i < _enemiesDetected.Count; i++)
+            {
+                _enemiesDetected[i].DeltaTime += Agent.DeltaTime;
+                if (_enemiesDetected[i].DeltaTime > SoldierAgentManager.SoldierAgentManagerSingleton.memoryTime)
+                {
+                    _enemiesDetected.RemoveAt(i--);
+                }
+            }
+        }
+
+        private TargetData? ChooseTarget()
+        {
+            if (_enemiesDetected.Count == 0)
+            {
+                return null;
+            }
+            
+            EnemyMemory target = _enemiesDetected.OrderBy(e => e.HasFlag).ThenBy(e => e.Visible).ThenBy(e => e.DeltaTime).First();
+            
+            return new TargetData
+            {
+                Enemy = target.Enemy,
+                Position = target.Position
+            };
         }
     }
 }

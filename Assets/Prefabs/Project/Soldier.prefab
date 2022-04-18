@@ -406,7 +406,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea90b1b5a3204ba4a96517120d4bef0b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shootPosition: {fileID: 4324690102738061577}
+  headPosition: {fileID: 4324690102738061577}
   flagPosition: {fileID: 4324690102426246913}
   colorVisuals:
   - {fileID: 4324690101913368734}

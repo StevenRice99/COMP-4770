@@ -28,7 +28,7 @@ namespace Project.Weapons
         {
             positions = new Vector3[rounds];
 
-            Vector3 forward = SoldierBrain.shootPosition.TransformDirection(Vector3.forward);
+            Vector3 forward = SoldierBrain.headPosition.TransformDirection(Vector3.forward);
 
             List<AttackedInfo> attackedInfos = new();
 
@@ -41,7 +41,7 @@ namespace Project.Weapons
                 );
                 direction.Normalize();
                 
-                if (Physics.Raycast(SoldierBrain.shootPosition.position, direction, out RaycastHit hit, Mathf.Infinity, layerMask))
+                if (Physics.Raycast(SoldierBrain.headPosition.position, direction, out RaycastHit hit, Mathf.Infinity, layerMask))
                 {
                     positions[i] = hit.point;
                     SoldierBrain attacked;
@@ -83,7 +83,7 @@ namespace Project.Weapons
                     continue;
                 }
 
-                positions[i] = SoldierBrain.shootPosition.position + direction * 1000;
+                positions[i] = SoldierBrain.headPosition.position + direction * 1000;
             }
 
             foreach (AttackedInfo attackedInfo in attackedInfos)

@@ -77,7 +77,7 @@ namespace Project.Weapons
                     Collider[] hitBoxes = soldierBrain.GetComponentsInChildren<Collider>().Where(c => c.gameObject.layer == LayerMask.NameToLayer("HitBox")).ToArray();
                     
                     Vector3 position = soldierBrain.transform.position;
-                    List<Vector3> points = new() { position, new Vector3(position.x, position.y + 0.1f, position.z), soldierBrain.shootPosition.position };
+                    List<Vector3> points = new() { position, new Vector3(position.x, position.y + 0.1f, position.z), soldierBrain.headPosition.position };
                     points.AddRange(hitBoxes.Select(h => h.bounds).Select(b => b.ClosestPoint(transform.position)));
                 
                     foreach (Vector3 point in points.Where(p => Vector3.Distance(p, transform.position) <= distance).OrderBy(p => Vector3.Distance(p, transform.position)))

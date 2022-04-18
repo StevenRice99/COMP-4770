@@ -19,8 +19,11 @@ namespace Project.Managers
         [Min(0)]
         public float respawn = 10;
 
+        [Min(0)]
+        public float memoryTime = 5;
+
         [Range(0, 1)]
-        public float sound;
+        public float volume;
 
         [SerializeField]
         private GameObject soldierPrefab;
