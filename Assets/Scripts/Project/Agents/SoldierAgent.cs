@@ -46,6 +46,8 @@ namespace Project.Agents
             public SoldierAgent Enemy;
             
             public Vector3 Position;
+
+            public bool Visible;
         }
         
         private static readonly List<SoldierAgent> TeamRed = new();
@@ -437,7 +439,8 @@ namespace Project.Agents
             return new TargetData
             {
                 Enemy = target.Enemy,
-                Position = target.Position
+                Position = target.Position,
+                Visible = target.Visible
             };
         }
 

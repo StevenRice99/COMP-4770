@@ -176,7 +176,8 @@ namespace Project.Managers
                     soldier.Target = new SoldierAgent.TargetData
                     {
                         Enemy = enemy,
-                        Position = enemy.headPosition.position
+                        Position = enemy.headPosition.position,
+                        Visible = true
                     };
                 }
             }
