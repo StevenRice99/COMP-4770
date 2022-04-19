@@ -276,9 +276,8 @@ namespace Project.Agents
             controller.enabled = false;
 
             Transform spawnTr = spawn.transform;
-            Transform tr = transform;
-            tr.position = spawnTr.position;
-            tr.rotation = spawnTr.rotation;
+            transform.position = spawnTr.position;
+            Visuals.rotation = spawnTr.rotation;
             
             spawn.Use();
             
