@@ -73,6 +73,8 @@ namespace Project.Managers
 
             Detect();
 
+            int layerMask = LayerMask.GetMask("Default", "Obstacle", "Ground", "Projectile", "HitBox");
+
             foreach (Agent agent in Agents)
             {
                 if (agent is not SoldierAgent { Alive: true } soldier)
@@ -89,6 +91,25 @@ namespace Project.Managers
                     soldier.headPosition.localRotation = Quaternion.Euler(soldier.headPosition.localRotation.eulerAngles.x, 0, 0);
                     soldier.weaponPosition.LookAt(position);
                     soldier.weaponPosition.localRotation = Quaternion.Euler(soldier.weaponPosition.localRotation.eulerAngles.x, 0, 0);
+                    
+                    if (!soldier.Weapons[soldier.WeaponIndex].CanShoot || !Physics.Raycast(soldier.shootPosition.position, soldier.shootPosition.forward, out RaycastHit hit, float.MaxValue, layerMask))
+                    {
+                        continue;
+                    }
+
+                    SoldierAgent attacked;
+                    Transform tr = hit.collider.transform;
+                    do
+                    {
+                        attacked = tr.GetComponent<SoldierAgent>();
+                        if (attacked != null)
+                        {
+                            soldier.Weapons[soldier.WeaponIndex].Shoot();
+                            break;
+                        }
+                        tr = tr.parent;
+                    } while (tr != null);
+                    
                     continue;
                 }
 

@@ -38,8 +38,6 @@ namespace Project.Agents
             Target = ChooseTarget();
 
             Think();
-
-            Shoot();
             
             Cleanup();
             
@@ -326,11 +324,21 @@ namespace Project.Agents
         private SoldierAgent[] GetTeam()
         {
             IEnumerable<SoldierAgent> team = (RedTeam ? TeamRed : TeamBlue).Where(s => s.Alive);
-            if (FlagPickup.RedFlag != null && FlagPickup.BlueFlag != null)
+            if (RedTeam)
             {
-                team = RedTeam ? team.OrderBy(s => Vector3.Distance(s.transform.position, FlagPickup.BlueFlag.transform.position)) : team.OrderBy(s => Vector3.Distance(s.transform.position, FlagPickup.RedFlag.transform.position));
+                if (FlagPickup.BlueFlag != null)
+                {
+                    team = team.OrderBy(s => Vector3.Distance(s.transform.position, FlagPickup.BlueFlag.transform.position));
+                }
             }
-            
+            else
+            {
+                if (FlagPickup.RedFlag != null)
+                {
+                    team = team.OrderBy(s => Vector3.Distance(s.transform.position, FlagPickup.RedFlag.transform.position));
+                }
+            }
+
             return team.ToArray();
         }
 
@@ -352,27 +360,6 @@ namespace Project.Agents
             }
 
             WeaponVisible();
-        }
-
-        private void Shoot()
-        {
-            if (!Weapons[WeaponIndex].CanShoot || !Physics.Raycast(shootPosition.position, shootPosition.forward, out RaycastHit hit, float.MaxValue, LayerMask.GetMask("Default", "Obstacle", "Ground", "Projectile", "HitBox")))
-            {
-                return;
-            }
-
-            SoldierAgent attacked;
-            Transform tr = hit.collider.transform;
-            do
-            {
-                attacked = tr.GetComponent<SoldierAgent>();
-                tr = tr.parent;
-            } while (attacked == null && tr != null);
-                
-            if (attacked != null)
-            {
-                Weapons[WeaponIndex].Shoot();
-            }
         }
 
         private void SelectWeapon(int i)
