@@ -8,7 +8,7 @@ namespace Project.Managers
     public class SoldierAgentManager : AgentManager
     {
         /// <summary>
-        /// Getter to cast the AgentManager singleton into a SoldierManager.
+        /// Getter to cast the AgentManager singleton into a SoldierAgentManager.
         /// </summary>
         public static SoldierAgentManager SoldierAgentManagerSingleton => Singleton as SoldierAgentManager;
 
@@ -21,6 +21,9 @@ namespace Project.Managers
 
         [Min(0)]
         public float respawn = 10;
+
+        [Min(0)]
+        public float pickupTimer = 10;
 
         [Min(0)]
         public float memoryTime = 5;
@@ -57,8 +60,9 @@ namespace Project.Managers
 
             foreach (Agent agent in Agents)
             {
-                if (agent is not SoldierAgent soldier)
+                if (agent is not SoldierAgent { Alive: true } soldier)
                 {
+                    agent.StopLookAtTarget();
                     continue;
                 }
 
@@ -84,7 +88,6 @@ namespace Project.Managers
             {
                 if (agent is not SoldierAgent { Alive: true } soldier)
                 {
-                    agent.StopLookAtTarget();
                     continue;
                 }
                 
@@ -116,11 +119,10 @@ namespace Project.Managers
                         continue;
                     }
 
-                    Vector3 position = enemy.headPosition.position;
                     soldier.Target = new SoldierAgent.TargetData
                     {
                         Enemy = enemy,
-                        Position = position
+                        Position = enemy.headPosition.position
                     };
                 }
             }

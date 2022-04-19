@@ -60,7 +60,7 @@ namespace Project.Weapons
 
         public bool CanShoot { get; private set; } = true;
 
-        private int _ammo;
+        public int Ammo { get; private set; }
 
         private AudioSource _shootSound;
 
@@ -103,7 +103,7 @@ namespace Project.Weapons
 
         public void Replenish()
         {
-            _ammo = maxAmmo;
+            Ammo = maxAmmo;
         }
         
         public void Visible(bool visible)
@@ -141,7 +141,7 @@ namespace Project.Weapons
 
         protected virtual void Awake()
         {
-            _ammo = maxAmmo;
+            Ammo = maxAmmo;
         }
 
         private void Start()
@@ -152,9 +152,9 @@ namespace Project.Weapons
 
         private void StartDelay()
         {
-            if (_ammo > 0)
+            if (Ammo > 0)
             {
-                _ammo--;
+                Ammo--;
             }
             
             StartCoroutine(ShotDelay());

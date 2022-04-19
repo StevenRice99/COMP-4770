@@ -1,4 +1,5 @@
-﻿using Project.Agents;
+﻿using System.Linq;
+using Project.Agents;
 using UnityEngine;
 
 namespace Project.Pickups
@@ -19,14 +20,11 @@ namespace Project.Pickups
 
         private void DetectPickup(Component other)
         {
-            SoldierAgent soldierBrain = other.gameObject.GetComponent<SoldierAgent>();
-            if (soldierBrain == null)
+            SoldierAgent soldier = other.gameObject.GetComponent<SoldierAgent>();
+            if (soldier != null && soldier.Alive)
             {
-                return;
+                OnPickedUp(soldier, soldier.Weapons.Select(w => w.Ammo).ToArray());
             }
-
-            // soldierBrain.weapons.Select(w => w.ammo).ToArray()
-            OnPickedUp(soldierBrain, new int[1]);
         }
     }
 }

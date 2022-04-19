@@ -9,8 +9,6 @@ namespace Project.Pickups
     {
         private const float Speed = 180;
         
-        private const int Delay = 10;
-        
         [SerializeField]
         [Tooltip("Set to below 0 to be a health pickup, otherwise the weapon index of the player.")]
         private int weaponIndex = -1;
@@ -43,17 +41,7 @@ namespace Project.Pickups
                 return;
             }
 
-            if (soldier.Weapons.Length <= weaponIndex)
-            {
-                return;
-            }
-
-            if (soldier.Weapons[weaponIndex].maxAmmo < 0)
-            {
-                return;
-            }
-
-            if (ammo[weaponIndex] >= soldier.Weapons[weaponIndex].maxAmmo)
+            if (soldier.Weapons.Length <= weaponIndex || soldier.Weapons[weaponIndex].maxAmmo < 0 || ammo[weaponIndex] >= soldier.Weapons[weaponIndex].maxAmmo)
             {
                 return;
             }
@@ -76,7 +64,9 @@ namespace Project.Pickups
         {
             _ready = false;
             ToggleMeshes();
-            yield return new WaitForSeconds(Delay);
+            
+            yield return new WaitForSeconds(SoldierAgentManager.SoldierAgentManagerSingleton.pickupTimer);
+            
             _ready = true;
             ToggleMeshes();
         }
