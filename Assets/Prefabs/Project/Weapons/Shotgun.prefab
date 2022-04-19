@@ -55,7 +55,7 @@ MonoBehaviour:
   delay: 1
   time: 0.1
   rotationSpeed: 30
-  soundRange: 0
+  soundRange: 20
   material: {fileID: 2100000, guid: 68c53c23fb1bf1a43af07979e79c5102, type: 2}
   rounds: 10
   spread: 0.085
@@ -73,7 +73,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 6dd7024f00606b44eb5884197a66a893, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0

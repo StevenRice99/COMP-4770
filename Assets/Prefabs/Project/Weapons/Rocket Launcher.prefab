@@ -55,7 +55,7 @@ MonoBehaviour:
   delay: 3
   time: 30
   rotationSpeed: 3
-  soundRange: 0
+  soundRange: 1000
   velocity: 30
   distance: 10
   bulletPrefab: {fileID: 1370008487427224120, guid: e1e94f974bc68984ab69e7dde4453977, type: 3}
@@ -70,7 +70,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 281e15cc92254794eaf05caf4d044b76, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
