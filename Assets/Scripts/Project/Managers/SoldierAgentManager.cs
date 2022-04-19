@@ -67,11 +67,14 @@ namespace Project.Managers
                     soldier.LookAtTarget(soldier.Target.Value.Position);
                     soldier.headPosition.LookAt(soldier.Target.Value.Position);
                     soldier.headPosition.localRotation = Quaternion.Euler(soldier.headPosition.localRotation.eulerAngles.x, 0, 0);
+                    soldier.weaponPosition.LookAt(soldier.Target.Value.Position);
+                    soldier.weaponPosition.localRotation = Quaternion.Euler(soldier.weaponPosition.localRotation.eulerAngles.x, 0, 0);
+                    continue;
                 }
-                else
-                {
-                    soldier.StopLookAtTarget();
-                }
+
+                soldier.StopLookAtTarget();
+                soldier.headPosition.localRotation = Quaternion.identity;
+                soldier.weaponPosition.localRotation = Quaternion.identity;
             }
         }
         
@@ -119,8 +122,6 @@ namespace Project.Managers
                         Enemy = enemy,
                         Position = position
                     };
-                        
-                    enemy.LookAtTarget(position);
                 }
             }
         }

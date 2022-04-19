@@ -74,6 +74,8 @@ namespace Project.Agents
 
         public Transform flagPosition;
 
+        public Transform weaponPosition;
+
         [SerializeField]
         private MeshRenderer[] colorVisuals;
 

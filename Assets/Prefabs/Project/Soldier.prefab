@@ -428,6 +428,7 @@ MonoBehaviour:
   headPosition: {fileID: 4324690103535426265}
   shootPosition: {fileID: 6347862280369580931}
   flagPosition: {fileID: 4324690102426246913}
+  weaponPosition: {fileID: 4324690102149299456}
   colorVisuals:
   - {fileID: 4324690101913368734}
   - {fileID: 4324690103535426271}
