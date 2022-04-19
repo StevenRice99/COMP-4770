@@ -29,6 +29,9 @@ namespace Project.Managers
         [Min(0)]
         public float memoryTime = 5;
 
+        [Min(0)]
+        public float maxWaitTime = 5;
+
         [Range(0, 1)]
         public float volume;
 

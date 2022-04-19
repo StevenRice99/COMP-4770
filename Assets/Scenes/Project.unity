@@ -8300,11 +8300,12 @@ MonoBehaviour:
   navigationVisualOffset: 0.1
   pullMaxDifference: 0
   lookupTable: 1
-  soldiersPerTeam: 6
+  soldiersPerTeam: 15
   health: 100
   respawn: 10
   pickupTimer: 10
   memoryTime: 5
+  maxWaitTime: 5
   volume: 0
   soldierPrefab: {fileID: 4324690102972426135, guid: d5faa173f1b3a3c499da74513556f6fd, type: 3}
   red: {fileID: 2100000, guid: 3a41b7aa03ddf024fbc0c1ea0563750d, type: 2}

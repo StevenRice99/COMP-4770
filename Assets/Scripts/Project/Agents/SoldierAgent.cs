@@ -101,6 +101,10 @@ namespace Project.Agents
 
         private Collider[] _colliders;
 
+        private bool _findNewPoint = true;
+
+        private Coroutine _pointDelay;
+
         public readonly List<EnemyMemory> EnemiesDetected = new();
 
         private bool CarryingFlag => RedTeam ? FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer == this : FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer == this;
@@ -112,6 +116,8 @@ namespace Project.Agents
         private bool FLagAtBase => RedTeam ? FlagPickup.RedFlag != null && FlagPickup.RedFlag.transform.position == FlagPickup.RedFlag.SpawnPosition : FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.transform.position == FlagPickup.BlueFlag.SpawnPosition;
 
         private Vector3 EnemyFlag => RedTeam ? FlagPickup.BlueFlag != null ? FlagPickup.BlueFlag.transform.position : Vector3.zero : FlagPickup.RedFlag != null ? FlagPickup.RedFlag.transform.position : Vector3.zero;
+
+        private Vector3 TeamFlag => RedTeam ? FlagPickup.RedFlag != null ? FlagPickup.RedFlag.transform.position : Vector3.zero : FlagPickup.BlueFlag != null ? FlagPickup.BlueFlag.transform.position : Vector3.zero;
         
         private Vector3 Base => RedTeam ? FlagPickup.RedFlag != null ? FlagPickup.RedFlag.SpawnPosition : Vector3.zero : FlagPickup.BlueFlag != null ? FlagPickup.BlueFlag.SpawnPosition : Vector3.zero;
         
@@ -255,16 +261,22 @@ namespace Project.Agents
                 case SoliderRole.Collector:
                     Navigate(EnemyFlag);
                     break;
-                case SoliderRole.Attacker:
-                    if (Destination == null)
-                    {
-                        Navigate(SoldierAgentManager.SoldierAgentManagerSingleton.GetPoint(RedTeam, false));
-                    }
+                case SoliderRole.Defender when TeamFlag != Base:
+                    Navigate(TeamFlag);
+                    _findNewPoint = true;
                     break;
-                case SoliderRole.Defender:
+                default:
                     if (Destination == null)
                     {
-                        Navigate(SoldierAgentManager.SoldierAgentManagerSingleton.GetPoint(RedTeam, true));
+                        if (_findNewPoint)
+                        {
+                            _findNewPoint = false;
+                            Navigate(SoldierAgentManager.SoldierAgentManagerSingleton.GetPoint(RedTeam, _role == SoliderRole.Defender));
+                        }
+                        else if (_pointDelay == null)
+                        {
+                            _pointDelay = StartCoroutine(PointDelay());
+                        }
                     }
                     break;
             }
@@ -309,6 +321,7 @@ namespace Project.Agents
             Heal();
             SelectWeapon(0);
             ToggleAlive();
+            _findNewPoint = true;
         }
 
         private SoldierAgent[] GetTeam()
@@ -409,6 +422,13 @@ namespace Project.Agents
                 Enemy = target.Enemy,
                 Position = target.Position
             };
+        }
+
+        private IEnumerator PointDelay()
+        {
+            yield return new WaitForSeconds(Random.Range(0, SoldierAgentManager.SoldierAgentManagerSingleton.maxWaitTime));
+            _findNewPoint = true;
+            _pointDelay = null;
         }
     }
 }
