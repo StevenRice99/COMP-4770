@@ -7695,7 +7695,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   nodeDistance: 0
-  navigationRadius: 0
+  navigationRadius: 0.5
   navigationVisualOffset: 0.1
   pullMaxDifference: 0
   lookupTable: 1

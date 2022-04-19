@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3442418139001929484}
   - component: {fileID: 3442418139001929485}
   - component: {fileID: 3442418139001929487}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Health Pickup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -70,7 +70,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3442418139767333462}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Visuals
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -104,7 +104,7 @@ GameObject:
   - component: {fileID: 3442418140168986061}
   - component: {fileID: 3442418140168986063}
   - component: {fileID: 3442418140168986060}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Cross Vertical
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -187,7 +187,7 @@ GameObject:
   - component: {fileID: 3442418140611396016}
   - component: {fileID: 3442418140611396018}
   - component: {fileID: 3442418140611396019}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Cylinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -272,7 +272,7 @@ GameObject:
   - component: {fileID: 3442418140950140829}
   - component: {fileID: 3442418140950140831}
   - component: {fileID: 3442418140950140828}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Cross Horizontal
   m_TagString: Untagged
   m_Icon: {fileID: 0}

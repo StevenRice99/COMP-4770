@@ -387,6 +387,14 @@ public abstract class Agent : MessageComponent
         
         Path = AgentManager.Singleton.LookupPath(transform.position, goal);
     }
+    
+    /// <summary>
+    /// Clear the path.
+    /// </summary>
+    public void ClearPath()
+    {
+        Path = null;
+    }
 
     /// <summary>
     /// Set a transform to move based upon.

@@ -257,7 +257,9 @@ namespace Project.Agents
             AssignRoles();
             EnemiesDetected.Clear();
             Target = null;
+            ClearPath();
             StopLookAtTarget();
+            MoveVelocity = Vector2.zero;
             
             yield return new WaitForSeconds(SoldierAgentManager.SoldierAgentManagerSingleton.respawn);
             
