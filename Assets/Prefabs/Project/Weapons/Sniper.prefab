@@ -78,14 +78,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec0b954595e347788878a2b6b2b24cdf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxAmmo: 20
+  maxAmmo: 5
   impactSound: {fileID: 8300000, guid: 2e071f5b8b8467d45a5e6e24c23c6ad4, type: 3}
   impactEffectPrefab: {fileID: 100002, guid: 00fedc70b62a31e448e8ccc298257b56, type: 3}
   barrel: {fileID: 487012298830572160}
   damage: 100
   delay: 1.5
   time: 1.5
-  rotationSpeed: 5
+  rotationSpeed: 3
   soundRange: 0
   material: {fileID: 2100000, guid: 4926e86b2d4c76c4d897e1282977b902, type: 2}
   rounds: 1

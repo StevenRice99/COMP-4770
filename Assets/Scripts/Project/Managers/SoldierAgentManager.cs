@@ -95,54 +95,6 @@ namespace Project.Managers
         {
             base.Update();
 
-            Detect();
-
-            int layerMask = LayerMask.GetMask("Default", "Obstacle", "Ground", "Projectile", "HitBox");
-
-            foreach (Agent agent in Agents)
-            {
-                if (agent is not SoldierAgent { Alive: true } soldier)
-                {
-                    agent.StopLookAtTarget();
-                    continue;
-                }
-
-                if (soldier.Target != null)
-                {
-                    Vector3 position = soldier.Target.Value.Position;
-                    soldier.LookAtTarget(position);
-                    soldier.headPosition.LookAt(position);
-                    soldier.headPosition.localRotation = Quaternion.Euler(soldier.headPosition.localRotation.eulerAngles.x, 0, 0);
-                    soldier.weaponPosition.LookAt(position);
-                    soldier.weaponPosition.localRotation = Quaternion.Euler(soldier.weaponPosition.localRotation.eulerAngles.x, 0, 0);
-                    
-                    if (!soldier.Weapons[soldier.WeaponIndex].CanShoot || !Physics.Raycast(soldier.shootPosition.position, soldier.shootPosition.forward, out RaycastHit hit, float.MaxValue, layerMask))
-                    {
-                        continue;
-                    }
-
-                    Transform tr = hit.collider.transform;
-                    do
-                    {
-                        if (tr.GetComponent<SoldierAgent>() != null)
-                        {
-                            soldier.Weapons[soldier.WeaponIndex].Shoot();
-                            break;
-                        }
-                        tr = tr.parent;
-                    } while (tr != null);
-                    
-                    continue;
-                }
-
-                soldier.StopLookAtTarget();
-                soldier.headPosition.localRotation = Quaternion.identity;
-                soldier.weaponPosition.localRotation = Quaternion.identity;
-            }
-        }
-        
-        private void Detect()
-        {
             foreach (Agent agent in Agents)
             {
                 if (agent is not SoldierAgent { Alive: true } soldier)
@@ -185,6 +137,53 @@ namespace Project.Managers
                         Visible = true
                     };
                 }
+            }
+
+            int layerMask = LayerMask.GetMask("Default", "Obstacle", "Ground", "Projectile", "HitBox");
+
+            foreach (Agent agent in Agents)
+            {
+                if (agent is not SoldierAgent { Alive: true } soldier)
+                {
+                    agent.StopLookAtTarget();
+                    continue;
+                }
+
+                if (soldier.Target != null)
+                {
+                    Vector3 position = soldier.Target.Value.Position;
+                    soldier.LookAtTarget(position);
+                    soldier.headPosition.LookAt(position);
+                    soldier.headPosition.localRotation = Quaternion.Euler(soldier.headPosition.localRotation.eulerAngles.x, 0, 0);
+                    soldier.weaponPosition.LookAt(position);
+                    soldier.weaponPosition.localRotation = Quaternion.Euler(soldier.weaponPosition.localRotation.eulerAngles.x, 0, 0);
+                    
+                    if (!soldier.Weapons[soldier.WeaponIndex].CanShoot || !Physics.Raycast(soldier.shootPosition.position, soldier.shootPosition.forward, out RaycastHit hit, float.MaxValue, layerMask))
+                    {
+                        continue;
+                    }
+
+                    Transform tr = hit.collider.transform;
+                    do
+                    {
+                        SoldierAgent attacked = tr.GetComponent<SoldierAgent>();
+                        if (attacked != null)
+                        {
+                            if (attacked.RedTeam != soldier.RedTeam)
+                            {
+                                soldier.Weapons[soldier.WeaponIndex].Shoot();
+                            }
+                            break;
+                        }
+                        tr = tr.parent;
+                    } while (tr != null);
+                    
+                    continue;
+                }
+
+                soldier.StopLookAtTarget();
+                soldier.headPosition.localRotation = Quaternion.identity;
+                soldier.weaponPosition.localRotation = Quaternion.identity;
             }
         }
     }

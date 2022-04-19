@@ -50,17 +50,7 @@ namespace Project.Weapons
                 attacked = tr.GetComponent<SoldierAgent>();
                 tr = tr.parent;
             } while (attacked == null && tr != null);
-            
-            if (attacked == shotBy)
-            {
-                return;
-            }
-            
-            foreach (Collider c in GetComponentsInChildren<Collider>())
-            {
-                c.enabled = false;
-            }
-            
+
             if (attacked != null && attacked.RedTeam != shotBy.RedTeam)
             {
                 attacked.Damage(damage, shotBy);

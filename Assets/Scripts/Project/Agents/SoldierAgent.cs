@@ -480,6 +480,11 @@ namespace Project.Agents
             SelectWeapon(0);
             ToggleAlive();
             _findNewPoint = true;
+
+            foreach (Weapon weapon in Weapons)
+            {
+                weapon.Replenish();
+            }
         }
 
         private SoldierAgent[] GetTeam()
