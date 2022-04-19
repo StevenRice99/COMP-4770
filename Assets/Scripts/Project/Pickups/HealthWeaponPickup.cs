@@ -11,19 +11,19 @@ namespace Project.Pickups
         
         [SerializeField]
         [Tooltip("Set to below 0 to be a health pickup, otherwise the weapon index of the player.")]
-        private int weaponIndex = -1;
+        public int weaponIndex = -1;
 
         [SerializeField]
         [Tooltip("The visuals object to rotate.")]
         private Transform visuals;
         
-        private bool _ready = true;
+        public bool Ready { get; private set; } = true;
             
         private MeshRenderer[] _meshRenderers;
         
         protected override void OnPickedUp(SoldierAgent soldier, int[] ammo)
         {
-            if (!_ready)
+            if (!Ready)
             {
                 return;
             }
@@ -62,12 +62,12 @@ namespace Project.Pickups
 
         private IEnumerator ReadyDelay()
         {
-            _ready = false;
+            Ready = false;
             ToggleMeshes();
             
             yield return new WaitForSeconds(SoldierAgentManager.SoldierAgentManagerSingleton.pickupTimer);
             
-            _ready = true;
+            Ready = true;
             ToggleMeshes();
         }
 
@@ -75,7 +75,7 @@ namespace Project.Pickups
         {
             foreach (MeshRenderer meshRenderer in _meshRenderers)
             {
-                meshRenderer.enabled = _ready;
+                meshRenderer.enabled = Ready;
             }
         }
     }

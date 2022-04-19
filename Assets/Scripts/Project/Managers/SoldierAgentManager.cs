@@ -29,6 +29,9 @@ namespace Project.Managers
         [Min(0)]
         public float memoryTime = 5;
 
+        [Min(1)]
+        public int lowHealth = 50;
+
         [Min(0)]
         public float maxWaitTime = 5;
 
@@ -46,11 +49,25 @@ namespace Project.Managers
 
         private StrategicPoint[] _strategicPoints;
 
+        private HealthWeaponPickup[] _healthWeaponPickups;
+
         public Vector3 GetPoint(bool redTeam, bool defensive)
         {
             StrategicPoint[] points = _strategicPoints.Where(s => s.redTeam == redTeam && s.defensive == defensive).ToArray();
             StrategicPoint[] open = points.Where(s => s.Open).ToArray();
             return open.Length > 0 ? open[Random.Range(0, open.Length)].transform.position : points[Random.Range(0, points.Length)].transform.position;
+        }
+
+        public Vector3 GetHealth(Vector3 soldierPosition)
+        {
+            return GetWeapon(soldierPosition, -1);
+        }
+
+        public Vector3 GetWeapon(Vector3 soldierPosition, int weaponIndex)
+        {
+            HealthWeaponPickup[] all = _healthWeaponPickups.Where(p => p.weaponIndex == weaponIndex).ToArray();
+            HealthWeaponPickup[] ready = all.Where(p => p.Ready).ToArray();
+            return ready.Length > 0 ? ready.OrderBy(p => Vector3.Distance(soldierPosition, p.transform.position)).First().transform.position : all.OrderBy(p => Vector3.Distance(soldierPosition, p.transform.position)).First().transform.position;
         }
         
         protected override void Start()
@@ -60,6 +77,8 @@ namespace Project.Managers
             SpawnPoints = FindObjectsOfType<SpawnPoint>();
 
             _strategicPoints = FindObjectsOfType<StrategicPoint>();
+
+            _healthWeaponPickups = FindObjectsOfType<HealthWeaponPickup>();
 
             for (int i = 0; i < soldiersPerTeam * 2; i++)
             {
@@ -97,12 +116,10 @@ namespace Project.Managers
                         continue;
                     }
 
-                    SoldierAgent attacked;
                     Transform tr = hit.collider.transform;
                     do
                     {
-                        attacked = tr.GetComponent<SoldierAgent>();
-                        if (attacked != null)
+                        if (tr.GetComponent<SoldierAgent>() != null)
                         {
                             soldier.Weapons[soldier.WeaponIndex].Shoot();
                             break;

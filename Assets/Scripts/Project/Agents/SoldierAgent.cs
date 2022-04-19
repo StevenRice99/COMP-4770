@@ -14,36 +14,20 @@ namespace Project.Agents
     {
         private enum SoliderRole : byte
         {
-            Dead,
-            Collector,
-            Attacker,
-            Defender
+            Dead = 0,
+            Collector = 1,
+            Attacker = 2,
+            Defender = 3
         }
         private enum WeaponChoices
         {
-            MachineGun,
-            Shotgun,
-            Sniper,
-            RocketLauncher,
-            Pistol
+            MachineGun = 0,
+            Shotgun = 1,
+            Sniper = 2,
+            RocketLauncher = 3,
+            Pistol = 4
         }
-        
-        public override void Perform()
-        {
-            if (_role == SoliderRole.Dead)
-            {
-                return;
-            }
-            
-            Target = ChooseTarget();
 
-            Think();
-            
-            Cleanup();
-            
-            base.Perform();
-        }
-        
         public class EnemyMemory
         {
             public SoldierAgent Enemy;
@@ -118,15 +102,30 @@ namespace Project.Agents
         
         private Vector3 Base => RedTeam ? FlagPickup.RedFlag != null ? FlagPickup.RedFlag.SpawnPosition : Vector3.zero : FlagPickup.BlueFlag != null ? FlagPickup.BlueFlag.SpawnPosition : Vector3.zero;
         
-        public override void Move()
+        public override void Perform()
         {
-            if (CharacterController == null || !CharacterController.enabled)
+            if (_role == SoliderRole.Dead)
             {
-                EnemiesDetected.Clear();
                 return;
             }
             
-            base.Move();
+            Target = ChooseTarget();
+
+            ChooseDestination();
+
+            ChooseWeapon();
+            
+            Cleanup();
+            
+            base.Perform();
+        }
+        
+        public override void Move()
+        {
+            if (CharacterController != null && CharacterController.enabled)
+            {
+                base.Move();
+            }
         }
         
         public void Damage(int amount, SoldierAgent shotBy)
@@ -142,7 +141,7 @@ namespace Project.Agents
                 return;
             }
             
-            // ADD KILL POINTS.
+            // TODO: ADD KILL POINTS.
 
             StopAllCoroutines();
             StartCoroutine(Respawn());
@@ -245,7 +244,7 @@ namespace Project.Agents
             Spawn();
         }
 
-        private void Think()
+        private void ChooseDestination()
         {
             if (CarryingFlag)
             {
@@ -257,26 +256,58 @@ namespace Project.Agents
             {
                 case SoliderRole.Collector:
                     Navigate(EnemyFlag);
-                    break;
+                    return;
+                
                 case SoliderRole.Defender when !FlagAtBase:
                     Navigate(TeamFlag);
                     _findNewPoint = true;
-                    break;
+                    return;
+                
                 default:
-                    if (Destination == null)
+                    if (Health <= SoldierAgentManager.SoldierAgentManagerSingleton.lowHealth)
                     {
-                        if (_findNewPoint)
-                        {
-                            _findNewPoint = false;
-                            Navigate(SoldierAgentManager.SoldierAgentManagerSingleton.GetPoint(RedTeam, _role == SoliderRole.Defender));
-                        }
-                        else if (_pointDelay == null)
-                        {
-                            _pointDelay = StartCoroutine(PointDelay());
-                        }
+                        Navigate(SoldierAgentManager.SoldierAgentManagerSingleton.GetHealth(transform.position));
+                        _findNewPoint = true;
+                        return;
                     }
-                    break;
+
+                    if (Destination != null)
+                    {
+                        return;
+                    }
+
+                    if (_findNewPoint)
+                    {
+                        _findNewPoint = false;
+                        Navigate(SoldierAgentManager.SoldierAgentManagerSingleton.GetPoint(RedTeam, _role == SoliderRole.Defender));
+                        return;
+                    }
+
+                    _pointDelay ??= StartCoroutine(PointDelay());
+                    return;
             }
+        }
+
+        private void ChooseWeapon()
+        {
+            if (_role == SoliderRole.Defender)
+            {
+                ChooseWeaponDefense();
+            }
+            else
+            {
+                ChooseWeaponOffense();
+            }
+        }
+
+        private void ChooseWeaponOffense()
+        {
+            // TODO.
+        }
+
+        private void ChooseWeaponDefense()
+        {
+            // TODO.
         }
 
         private IEnumerator Respawn()
