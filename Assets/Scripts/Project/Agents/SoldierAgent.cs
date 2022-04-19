@@ -90,6 +90,8 @@ namespace Project.Agents
 
         public readonly List<EnemyMemory> EnemiesDetected = new();
 
+        private int[] _weaponPriority = new int[(int) WeaponChoices.Pistol];
+
         private bool CarryingFlag => RedTeam ? FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer == this : FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer == this;
 
         private bool TeamHasFlag => RedTeam ? FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer != null : FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer != null;
@@ -113,9 +115,11 @@ namespace Project.Agents
             
             Target = ChooseTarget();
 
-            ChooseDestination();
+            PrioritizeWeapons();
 
             ChooseWeapon();
+
+            ChooseDestination();
             
             Cleanup();
             
@@ -268,9 +272,45 @@ namespace Project.Agents
                 default:
                     if (Health <= SoldierAgentManager.SoldierAgentManagerSingleton.lowHealth)
                     {
-                        Navigate(SoldierAgentManager.SoldierAgentManagerSingleton.GetHealth(transform.position));
-                        _findNewPoint = true;
-                        return;
+                        Vector3? destination = SoldierAgentManager.SoldierAgentManagerSingleton.GetHealth(transform.position);
+                        if (destination != null)
+                        {
+                            Navigate(destination.Value);
+                            _findNewPoint = true;
+                            return;
+                        }
+                    }
+
+                    if (Target is not { Visible: true })
+                    {
+                        if (Health < SoldierAgentManager.SoldierAgentManagerSingleton.health)
+                        {
+                            Vector3? destination = SoldierAgentManager.SoldierAgentManagerSingleton.GetHealth(transform.position);
+                            if (destination != null)
+                            {
+                                Navigate(destination.Value);
+                                _findNewPoint = true;
+                                return;
+                            }
+                        }
+                        
+                        foreach (int w in _weaponPriority)
+                        {
+                            if (Weapons[w].maxAmmo < 0 || Weapons[w].Ammo >= Weapons[w].maxAmmo)
+                            {
+                                continue;
+                            }
+                            
+                            Vector3? destination = SoldierAgentManager.SoldierAgentManagerSingleton.GetWeapon(transform.position, w);
+                            if (destination == null)
+                            {
+                                continue;
+                            }
+
+                            Navigate(destination.Value);
+                            _findNewPoint = true;
+                            return;
+                        }
                     }
 
                     if (Destination != null)
@@ -290,26 +330,114 @@ namespace Project.Agents
             }
         }
 
-        private void ChooseWeapon()
+        private void PrioritizeWeapons()
         {
+            if (Target == null)
+            {
+                if (_role == SoliderRole.Defender)
+                {
+                    _weaponPriority = new[]
+                    {
+                        (int) WeaponChoices.Sniper,
+                        (int) WeaponChoices.RocketLauncher,
+                        (int) WeaponChoices.MachineGun,
+                        (int) WeaponChoices.Shotgun,
+                        (int) WeaponChoices.Pistol,
+                    };
+                }
+                else
+                {
+                    _weaponPriority = new[]
+                    {
+                        (int) WeaponChoices.Shotgun,
+                        (int) WeaponChoices.MachineGun,
+                        (int) WeaponChoices.RocketLauncher,
+                        (int) WeaponChoices.Sniper,
+                        (int) WeaponChoices.Pistol,
+                    };
+                }
+                return;
+            }
+
+            float distance = Vector3.Distance(shootPosition.position, Target.Value.Position);
+            if (distance >= SoldierAgentManager.SoldierAgentManagerSingleton.distanceFar)
+            {
+                if (_role == SoliderRole.Defender)
+                {
+                    _weaponPriority = new[]
+                    {
+                        (int) WeaponChoices.Sniper,
+                        (int) WeaponChoices.RocketLauncher,
+                        (int) WeaponChoices.MachineGun,
+                        (int) WeaponChoices.Pistol,
+                        (int) WeaponChoices.Shotgun
+                    };
+                }
+                else
+                {
+                    _weaponPriority = new[]
+                    {
+                        (int) WeaponChoices.RocketLauncher,
+                        (int) WeaponChoices.MachineGun,
+                        (int) WeaponChoices.Sniper,
+                        (int) WeaponChoices.Pistol,
+                        (int) WeaponChoices.Shotgun
+                    };
+                }
+                
+                return;
+            }
+
+            if (distance <= SoldierAgentManager.SoldierAgentManagerSingleton.distanceClose)
+            {
+                _weaponPriority = new[]
+                {
+                    (int) WeaponChoices.Shotgun,
+                    (int) WeaponChoices.MachineGun,
+                    (int) WeaponChoices.Pistol,
+                    (int) WeaponChoices.RocketLauncher,
+                    (int) WeaponChoices.Sniper
+                };
+                
+                return;
+            }
+            
             if (_role == SoliderRole.Defender)
             {
-                ChooseWeaponDefense();
+                _weaponPriority = new[]
+                {
+                    (int) WeaponChoices.MachineGun,
+                    (int) WeaponChoices.RocketLauncher,
+                    (int) WeaponChoices.Shotgun,
+                    (int) WeaponChoices.Sniper,
+                    (int) WeaponChoices.Pistol
+                };
             }
             else
             {
-                ChooseWeaponOffense();
+                _weaponPriority = new[]
+                {
+                    (int) WeaponChoices.MachineGun,
+                    (int) WeaponChoices.RocketLauncher,
+                    (int) WeaponChoices.Sniper,
+                    (int) WeaponChoices.Shotgun,
+                    (int) WeaponChoices.Pistol
+                };
             }
         }
 
-        private void ChooseWeaponOffense()
+        private void ChooseWeapon()
         {
-            // TODO.
-        }
+            foreach (int w in _weaponPriority)
+            {
+                if (Weapons[w].Ammo <= 0 && Weapons[w].maxAmmo >= 0)
+                {
+                    continue;
+                }
 
-        private void ChooseWeaponDefense()
-        {
-            // TODO.
+                SelectWeapon(w);
+                return;
+            }
         }
 
         private IEnumerator Respawn()

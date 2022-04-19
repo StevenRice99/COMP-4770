@@ -35,6 +35,12 @@ namespace Project.Managers
         [Min(0)]
         public float maxWaitTime = 5;
 
+        [Min(0)]
+        public float distanceClose = 10;
+
+        [Min(0)]
+        public float distanceFar = 20;
+
         [Range(0, 1)]
         public float volume;
 
@@ -58,16 +64,15 @@ namespace Project.Managers
             return open.Length > 0 ? open[Random.Range(0, open.Length)].transform.position : points[Random.Range(0, points.Length)].transform.position;
         }
 
-        public Vector3 GetHealth(Vector3 soldierPosition)
+        public Vector3? GetHealth(Vector3 soldierPosition)
         {
             return GetWeapon(soldierPosition, -1);
         }
 
-        public Vector3 GetWeapon(Vector3 soldierPosition, int weaponIndex)
+        public Vector3? GetWeapon(Vector3 soldierPosition, int weaponIndex)
         {
-            HealthWeaponPickup[] all = _healthWeaponPickups.Where(p => p.weaponIndex == weaponIndex).ToArray();
-            HealthWeaponPickup[] ready = all.Where(p => p.Ready).ToArray();
-            return ready.Length > 0 ? ready.OrderBy(p => Vector3.Distance(soldierPosition, p.transform.position)).First().transform.position : all.OrderBy(p => Vector3.Distance(soldierPosition, p.transform.position)).First().transform.position;
+            HealthWeaponPickup[] ready = _healthWeaponPickups.Where(p => p.weaponIndex == weaponIndex && p.Ready).ToArray();
+            return ready.Length > 0 ? ready.OrderBy(p => Vector3.Distance(soldierPosition, p.transform.position)).First().transform.position : null;
         }
         
         protected override void Start()
