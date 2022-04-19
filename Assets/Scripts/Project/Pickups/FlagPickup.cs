@@ -97,8 +97,10 @@ namespace Project.Pickups
             Captures++;
             
             // ADD POINTS FOR CAPTURING FLAG.
-            
+
+            SoldierAgent soldier = carryingPlayer;
             ReturnFlag(null);
+            soldier.AssignRoles();
         }
 
         private bool SameTeam(SoldierAgent soldier)

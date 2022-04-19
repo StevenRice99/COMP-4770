@@ -40,12 +40,23 @@ namespace Project.Managers
         public Material blue;
         
         public SpawnPoint[] SpawnPoints { get; private set; }
+
+        private StrategicPoint[] _strategicPoints;
+
+        public Vector3 GetPoint(bool redTeam, bool defensive)
+        {
+            StrategicPoint[] points = _strategicPoints.Where(s => s.redTeam == redTeam && s.defensive == defensive).ToArray();
+            StrategicPoint[] open = points.Where(s => s.Open).ToArray();
+            return open.Length > 0 ? open[Random.Range(0, open.Length)].transform.position : points[Random.Range(0, points.Length)].transform.position;
+        }
         
         protected override void Start()
         {
             base.Start();
 
             SpawnPoints = FindObjectsOfType<SpawnPoint>();
+
+            _strategicPoints = FindObjectsOfType<StrategicPoint>();
 
             for (int i = 0; i < soldiersPerTeam * 2; i++)
             {
@@ -69,10 +80,11 @@ namespace Project.Managers
 
                 if (soldier.Target != null)
                 {
-                    soldier.LookAtTarget(soldier.Target.Value.Position);
-                    soldier.headPosition.LookAt(soldier.Target.Value.Position);
+                    Vector3 position = soldier.Target.Value.Position;
+                    soldier.LookAtTarget(position);
+                    soldier.headPosition.LookAt(position);
                     soldier.headPosition.localRotation = Quaternion.Euler(soldier.headPosition.localRotation.eulerAngles.x, 0, 0);
-                    soldier.weaponPosition.LookAt(soldier.Target.Value.Position);
+                    soldier.weaponPosition.LookAt(position);
                     soldier.weaponPosition.localRotation = Quaternion.Euler(soldier.weaponPosition.localRotation.eulerAngles.x, 0, 0);
                     continue;
                 }

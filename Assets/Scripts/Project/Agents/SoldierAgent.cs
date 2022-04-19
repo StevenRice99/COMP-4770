@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Project.Managers;
@@ -6,6 +7,7 @@ using Project.Pickups;
 using Project.Positions;
 using Project.Weapons;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Project.Agents
 {
@@ -150,7 +152,7 @@ namespace Project.Agents
                 return;
             }
             
-            EnemyMemory memory = EnemiesDetected.FirstOrDefault(e => e.Enemy == enemy);
+            EnemyMemory memory = EnemiesDetected.FirstOrDefault(e => e.Enemy == enemy && !e.Visible);
             if (memory != null)
             {
                 memory.DeltaTime = 0;
@@ -182,6 +184,27 @@ namespace Project.Agents
         public IEnumerable<SoldierAgent> GetEnemies()
         {
             return (RedTeam ? TeamBlue : TeamRed).Where(s => s.Alive);
+        }
+
+        public void AssignRoles()
+        {
+            SoldierAgent[] team = GetTeam();
+            for (int i = 0; i < team.Length; i++)
+            {
+                ClearPath();
+                if (i == 0)
+                {
+                    team[i]._role = SoliderRole.Collector;
+                }
+                else if (i <= team.Length / 2)
+                {
+                    team[i]._role = SoliderRole.Attacker;
+                }
+                else
+                {
+                    team[i]._role = SoliderRole.Defender;
+                }
+            }
         }
 
         protected override void Start()
@@ -221,35 +244,29 @@ namespace Project.Agents
 
         private void Think()
         {
-            // ADD THINKING LOGIC.
-
             if (CarryingFlag)
             {
                 Navigate(Base);
+                return;
             }
-            else if (!TeamHasFlag)
-            {
-                Navigate(EnemyFlag);
-            }
-        }
 
-        private void AssignRoles()
-        {
-            SoldierAgent[] team = GetTeam();
-            for (int i = 0; i < team.Length; i++)
+            switch (_role)
             {
-                if (i == 0)
-                {
-                    team[i]._role = SoliderRole.Collector;
-                }
-                else if (i <= team.Length / 2)
-                {
-                    team[i]._role = SoliderRole.Attacker;
-                }
-                else
-                {
-                    team[i]._role = SoliderRole.Defender;
-                }
+                case SoliderRole.Collector:
+                    Navigate(EnemyFlag);
+                    break;
+                case SoliderRole.Attacker:
+                    if (Destination == null)
+                    {
+                        Navigate(SoldierAgentManager.SoldierAgentManagerSingleton.GetPoint(RedTeam, false));
+                    }
+                    break;
+                case SoliderRole.Defender:
+                    if (Destination == null)
+                    {
+                        Navigate(SoldierAgentManager.SoldierAgentManagerSingleton.GetPoint(RedTeam, true));
+                    }
+                    break;
             }
         }
 
