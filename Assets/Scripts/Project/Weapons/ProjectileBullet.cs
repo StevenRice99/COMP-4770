@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Project.Agents;
 using UnityEngine;
@@ -23,28 +24,33 @@ namespace Project.Weapons
 
         [HideInInspector]
         public float distance;
+
+        private Rigidbody _rb;
         
         private void Start()
         {
-            Rigidbody rb = GetComponent<Rigidbody>();
-            rb.AddRelativeForce(Vector3.forward * velocity, ForceMode.VelocityChange);
-            rb.useGravity = false;
-        }
-        
-        private void OnCollisionEnter(Collision collision)
-        {
-            HandleCollision(collision);
+            Collider col = GetComponent<Collider>();
+            foreach (Collider hitBox in shotBy.Colliders)
+            {
+                if (hitBox != null && hitBox.enabled)
+                {
+                    Physics.IgnoreCollision(col, hitBox, true);
+                }
+            }
+            
+            _rb = GetComponent<Rigidbody>();
+            _rb.AddRelativeForce(Vector3.forward * velocity, ForceMode.VelocityChange);
+            _rb.useGravity = false;
         }
 
-        private void OnCollisionStay(Collision collision)
+        private void OnCollisionEnter(Collision collision)
         {
-            HandleCollision(collision);
+            HandleCollision(collision.transform);
         }
         
-        private void HandleCollision(Collision collision)
+        private void HandleCollision(Transform tr)
         {
             SoldierAgent attacked;
-            Transform tr = collision.transform;
             do
             {
                 attacked = tr.GetComponent<SoldierAgent>();
@@ -75,7 +81,7 @@ namespace Project.Weapons
                             continue;
                         }
                         
-                        attacked.Damage(Mathf.Max((int) (damage * (1 - Vector3.Distance(point, transform.position) / distance)), 1), shotBy);
+                        soldier.Damage(Mathf.Max((int) (damage * (1 - Vector3.Distance(point, transform.position) / distance)), 1), shotBy);
                         break;
                     }
                 }

@@ -67,6 +67,14 @@ namespace Project.Managers
         public int MostKills { get; private set; }
         
         public int LeastDeaths { get; private set; }
+        
+        public int ScoreRed { get; set; }
+        
+        public int ScoreBlue { get; set; }
+        
+        public int KillsRed { get; set; }
+        
+        public int KillsBlue { get; set; }
 
         private bool _best = true;
 
@@ -275,6 +283,11 @@ namespace Project.Managers
                 pickup.StopAllCoroutines();
                 pickup.Ready = true;
             }
+
+            KillsRed = 0;
+            KillsBlue = 0;
+            ScoreRed = 0;
+            ScoreBlue = 0;
         }
     }
 }

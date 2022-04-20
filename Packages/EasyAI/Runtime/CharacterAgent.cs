@@ -47,7 +47,7 @@ public class CharacterAgent : TransformAgent
         _velocityY += Physics.gravity.y * Time.deltaTime;
 
         CalculateMoveVelocity(Time.deltaTime);
-        MoveVelocity *= Time.deltaTime;
-        CharacterController.Move(new Vector3(MoveVelocity.x, _velocityY, MoveVelocity.y));
+        Vector2 scaled = MoveVelocity * Time.deltaTime;
+        CharacterController.Move(new Vector3(scaled.x, _velocityY, scaled.y));
     }
 }

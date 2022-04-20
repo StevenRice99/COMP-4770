@@ -24,8 +24,6 @@ namespace Project.Pickups
 
         public Vector3 SpawnPosition { get; private set; }
 
-        public int Captures { get; private set; }
-
         private Quaternion _spawnRotation;
 
         private Coroutine _captureDelay;
@@ -99,7 +97,14 @@ namespace Project.Pickups
 
         private void CaptureFlag()
         {
-            Captures++;
+            if (redFlag)
+            {
+                SoldierAgentManager.SoldierAgentManagerSingleton.ScoreBlue++;
+            }
+            else
+            {
+                SoldierAgentManager.SoldierAgentManagerSingleton.ScoreRed++;
+            }
 
             carryingPlayer.Captures++;
 

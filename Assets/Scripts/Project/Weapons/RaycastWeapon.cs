@@ -96,7 +96,7 @@ namespace Project.Weapons
         {
             foreach (Vector3 v in positions)
             {
-                GameObject bullet = new($"{name} Bullet");
+                GameObject bullet = new($"{name} Trail");
                 LineRenderer lr = bullet.AddComponent<LineRenderer>();
                 lr.material = material;
                 lr.startColor = lr.endColor = material.color;

@@ -56,7 +56,7 @@ MonoBehaviour:
   time: 30
   rotationSpeed: 3
   soundRange: 1000
-  velocity: 30
+  velocity: 50
   distance: 10
   bulletPrefab: {fileID: 1370008487427224120, guid: e1e94f974bc68984ab69e7dde4453977, type: 3}
 --- !u!82 &-5774090611548339809

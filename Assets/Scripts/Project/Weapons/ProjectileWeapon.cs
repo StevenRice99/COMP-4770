@@ -20,18 +20,15 @@ namespace Project.Weapons
         {
             positions = new[] { barrel.position };
             
-            GameObject bullet = Instantiate(bulletPrefab, Soldier.headPosition.position, barrel.rotation);
-            bullet.name = $"{name} Bullet";
-            Rigidbody rb = bullet.GetComponent<Rigidbody>();
-            ProjectileBullet projectileBullet = bullet.GetComponent<ProjectileBullet>();
+            GameObject projectile = Instantiate(bulletPrefab, Soldier.shootPosition.position, barrel.rotation);
+            projectile.name = $"{name} Projectile";
+            ProjectileBullet projectileBullet = projectile.GetComponent<ProjectileBullet>();
             projectileBullet.weaponIndex = Index;
             projectileBullet.shotBy = Soldier;
             projectileBullet.damage = damage;
             projectileBullet.distance = distance;
             projectileBullet.velocity = velocity;
-            rb.useGravity = false;
-            rb.AddRelativeForce(Vector3.forward * velocity, ForceMode.VelocityChange);
-            Destroy(bullet, time);
+            Destroy(projectile, time);
         }
     }
 }

@@ -90,7 +90,7 @@ namespace Project.Agents
         
         private SoliderRole _role;
 
-        private Collider[] _colliders;
+        public Collider[] Colliders { get; private set; }
 
         private bool _findNewPoint = true;
 
@@ -122,9 +122,18 @@ namespace Project.Agents
         public override float DisplayDetails(float x, float y, float w, float h, float p)
         {
             y = AgentManager.NextItem(y, h, p);
-            AgentManager.GuiBox(x, y, w, h, p, 10);
+            AgentManager.GuiBox(x, y, w, h, p, 13);
+            
+            AgentManager.GuiLabel(x, y, w, h, p, $"Team Captures - Red: {SoldierAgentManager.SoldierAgentManagerSingleton.ScoreRed} | Blue: {SoldierAgentManager.SoldierAgentManagerSingleton.ScoreBlue}");
+            y = AgentManager.NextItem(y, h, p);
+            
+            AgentManager.GuiLabel(x, y, w, h, p, $"Team Kills - Red: {SoldierAgentManager.SoldierAgentManagerSingleton.KillsRed} | Blue: {SoldierAgentManager.SoldierAgentManagerSingleton.KillsBlue}");
+            y = AgentManager.NextItem(y, h, p);
+            
+            AgentManager.GuiLabel(x, y, w, h, p, "--------------------------------------------------------------------------------------------------------------------------");
+            y = AgentManager.NextItem(y, h, p);
 
-            AgentManager.GuiLabel(x, y, w, h, p, $"Rank: {SoldierAgentManager.SoldierAgentManagerSingleton.Sorted.IndexOf(this) + 1} / {SoldierAgentManager.SoldierAgentManagerSingleton.Sorted.Count}");
+            AgentManager.GuiLabel(x, y, w, h, p, $"Soldier Performance: {SoldierAgentManager.SoldierAgentManagerSingleton.Sorted.IndexOf(this) + 1} / {SoldierAgentManager.SoldierAgentManagerSingleton.Sorted.Count}");
             y = AgentManager.NextItem(y, h, p);
 
             AgentManager.GuiLabel(x, y, w, h, p, _role == SoliderRole.Dead ? "Respawning" : $"Role: {_role}");
@@ -208,6 +217,15 @@ namespace Project.Agents
             Health = 0;
             Deaths++;
             shotBy.Kills++;
+
+            if (RedTeam)
+            {
+                SoldierAgentManager.SoldierAgentManagerSingleton.KillsRed++;
+            }
+            else
+            {
+                SoldierAgentManager.SoldierAgentManagerSingleton.KillsBlue++;
+            }
 
             SoldierAgentManager.SoldierAgentManagerSingleton.UpdateSorted();
 
@@ -333,7 +351,7 @@ namespace Project.Agents
 
             List<Collider> colliders = GetComponents<Collider>().ToList();
             colliders.AddRange(GetComponentsInChildren<Collider>());
-            _colliders = colliders.Distinct().ToArray();
+            Colliders = colliders.Distinct().ToArray();
 
             foreach (MeshRenderer meshRenderer in colorVisuals)
             {
@@ -582,7 +600,7 @@ namespace Project.Agents
                 meshRenderer.enabled = Alive;
             }
 
-            foreach (Collider col in _colliders)
+            foreach (Collider col in Colliders)
             {
                 col.enabled = Alive;
             }
