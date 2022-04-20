@@ -9304,7 +9304,7 @@ MonoBehaviour:
   controlsWidth: 120
   gizmos: 0
   navigation: 0
-  selectedCamera: {fileID: 1784874880}
+  selectedCamera: {fileID: 1559026829}
   groundLayers:
     serializedVersion: 2
     m_Bits: 8
@@ -30704,11 +30704,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 910c54013f544f90b4fc5addb5143d4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  offset: 1
+  offset: 2
   lookSpeed: 0
   moveSpeed: 5
   depth: 5
-  height: 5
+  height: 1
   minDistance: 3
 --- !u!1001 &1561245119
 PrefabInstance:

@@ -86,7 +86,7 @@ namespace A1.Managers
         }
 
         /// <summary>
-        /// Render buttons to regenerate the floor or change its size..
+        /// Render buttons to regenerate the floor or change its size.
         /// </summary>
         /// <param name="x">X rendering position. In most cases this should remain unchanged.</param>
         /// <param name="y">Y rendering position. Update this with every component added and return it.</param>

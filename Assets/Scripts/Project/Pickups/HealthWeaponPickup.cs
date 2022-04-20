@@ -17,7 +17,7 @@ namespace Project.Pickups
         [Tooltip("The visuals object to rotate.")]
         private Transform visuals;
         
-        public bool Ready { get; private set; } = true;
+        public bool Ready { get; set; } = true;
             
         private MeshRenderer[] _meshRenderers;
         

@@ -1,4 +1,5 @@
 ﻿using Project.Agents;
+using Project.Managers;
 using UnityEngine;
 
 namespace Project.Pickups
@@ -28,6 +29,25 @@ namespace Project.Pickups
         private Quaternion _spawnRotation;
 
         private Coroutine _captureDelay;
+
+        public void ReturnFlag(SoldierAgent soldier)
+        {
+            Transform tr = transform;
+            if (tr.position == SpawnPosition)
+            {
+                return;
+            }
+
+            if (soldier != null)
+            {
+                soldier.Returns++;
+                SoldierAgentManager.SoldierAgentManagerSingleton.UpdateSorted();
+            }
+
+            UnlinkFlag();
+            tr.position = SpawnPosition;
+            tr.rotation = _spawnRotation;
+        }
 
         protected override void OnPickedUp(SoldierAgent soldier, int[] ammo)
         {
@@ -77,30 +97,17 @@ namespace Project.Pickups
             transform.parent = null;
         }
 
-        private void ReturnFlag(SoldierAgent soldier)
-        {
-            Transform tr = transform;
-            if (tr.position == SpawnPosition)
-            {
-                return;
-            }
-            
-            // ADD POINTS FOR RETURNING FLAG.
-
-            UnlinkFlag();
-            tr.position = SpawnPosition;
-            tr.rotation = _spawnRotation;
-        }
-
         private void CaptureFlag()
         {
             Captures++;
-            
-            // ADD POINTS FOR CAPTURING FLAG.
+
+            carryingPlayer.Captures++;
 
             SoldierAgent soldier = carryingPlayer;
             ReturnFlag(null);
             soldier.AssignRoles();
+            
+            SoldierAgentManager.SoldierAgentManagerSingleton.UpdateSorted();
         }
 
         private bool SameTeam(SoldierAgent soldier)

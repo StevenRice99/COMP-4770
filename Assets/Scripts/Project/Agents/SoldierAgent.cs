@@ -68,15 +68,23 @@ namespace Project.Agents
         [SerializeField]
         private MeshRenderer[] otherVisuals;
 
-        public bool RedTeam { get; private set; }
-
-        public int Health { get; private set; }
+        public int Health { get; set; }
         
-        public Weapon[] Weapons { get; private set; }
-        
-        public int WeaponIndex { get; private set; }
+        public int WeaponIndex { get; set; }
         
         public TargetData? Target { get; set; }
+        
+        public int Kills { get; set; }
+        
+        public int Deaths { get; set; }
+        
+        public int Captures { get; set; }
+        
+        public int Returns { get; set; }
+
+        public bool RedTeam { get; private set; }
+        
+        public Weapon[] Weapons { get; private set; }
 
         public bool Alive => _role != SoliderRole.Dead;
         
@@ -101,6 +109,50 @@ namespace Project.Agents
         private Vector3 TeamFlag => RedTeam ? FlagPickup.RedFlag != null ? FlagPickup.RedFlag.transform.position : Vector3.zero : FlagPickup.BlueFlag != null ? FlagPickup.BlueFlag.transform.position : Vector3.zero;
         
         private Vector3 Base => RedTeam ? FlagPickup.RedFlag != null ? FlagPickup.RedFlag.SpawnPosition : Vector3.zero : FlagPickup.BlueFlag != null ? FlagPickup.BlueFlag.SpawnPosition : Vector3.zero;
+        
+        /// <summary>
+        /// Override for custom detail rendering on the automatic GUI.
+        /// </summary>
+        /// <param name="x">X rendering position. In most cases this should remain unchanged.</param>
+        /// <param name="y">Y rendering position. Update this with every component added and return it.</param>
+        /// <param name="w">Width of components. In most cases this should remain unchanged.</param>
+        /// <param name="h">Height of components. In most cases this should remain unchanged.</param>
+        /// <param name="p">Padding of components. In most cases this should remain unchanged.</param>
+        /// <returns>The updated Y position after all custom rendering has been done.</returns>
+        public override float DisplayDetails(float x, float y, float w, float h, float p)
+        {
+            y = AgentManager.NextItem(y, h, p);
+            AgentManager.GuiBox(x, y, w, h, p, 7);
+
+            AgentManager.GuiLabel(x, y, w, h, p, _role == SoliderRole.Dead ? "Respawning" : $"Role: {_role}");
+            y = AgentManager.NextItem(y, h, p);
+
+            AgentManager.GuiLabel(x, y, w, h, p, $"Health: {Health} / {SoldierAgentManager.SoldierAgentManagerSingleton.health}");
+            y = AgentManager.NextItem(y, h, p);
+
+            AgentManager.GuiLabel(x, y, w, h, p, _role == SoliderRole.Dead ? "Weapon: None" : WeaponIndex switch
+            {
+                (int) WeaponChoices.MachineGun => $"Weapon: Machine Gun | Ammo: {Weapons[WeaponIndex].Ammo} / {Weapons[WeaponIndex].maxAmmo}",
+                (int) WeaponChoices.Shotgun => $"Weapon: Shotgun | Ammo: {Weapons[WeaponIndex].Ammo} / {Weapons[WeaponIndex].maxAmmo}",
+                (int) WeaponChoices.Sniper => $"Weapon: Sniper | Ammo: {Weapons[WeaponIndex].Ammo} / {Weapons[WeaponIndex].maxAmmo}",
+                (int) WeaponChoices.RocketLauncher => $"Weapon: Rocket Launcher | Ammo: {Weapons[WeaponIndex].Ammo} / {Weapons[WeaponIndex].maxAmmo}",
+                _ => "Weapon: Pistol"
+            });
+            y = AgentManager.NextItem(y, h, p);
+
+            AgentManager.GuiLabel(x, y, w, h, p, $"Captures: {Captures} | Most: {SoldierAgentManager.SoldierAgentManagerSingleton.MostCaptures}");
+            y = AgentManager.NextItem(y, h, p);
+
+            AgentManager.GuiLabel(x, y, w, h, p, $"Returns: {Returns} | Most: {SoldierAgentManager.SoldierAgentManagerSingleton.MostReturns}");
+            y = AgentManager.NextItem(y, h, p);
+
+            AgentManager.GuiLabel(x, y, w, h, p, $"Kills: {Kills} | Most: {SoldierAgentManager.SoldierAgentManagerSingleton.MostKills}");
+            y = AgentManager.NextItem(y, h, p);
+            
+            AgentManager.GuiLabel(x, y, w, h, p, $"Deaths: {Deaths} | Least: {SoldierAgentManager.SoldierAgentManagerSingleton.LeastDeaths}");
+            
+            return y;
+        }
         
         public override void Perform()
         {
@@ -142,8 +194,12 @@ namespace Project.Agents
             {
                 return;
             }
-            
-            // TODO: ADD KILL POINTS.
+
+            Health = 0;
+            Deaths++;
+            shotBy.Kills++;
+
+            SoldierAgentManager.SoldierAgentManagerSingleton.UpdateSorted();
 
             StopAllCoroutines();
             StartCoroutine(Respawn());
@@ -208,6 +264,37 @@ namespace Project.Agents
                 {
                     team[i]._role = SoliderRole.Defender;
                 }
+            }
+        }
+
+        public void Spawn()
+        {
+            SpawnPoint[] points = SoldierAgentManager.SoldierAgentManagerSingleton.SpawnPoints.Where(p => p.redTeam == RedTeam).ToArray();
+            SpawnPoint[] open = points.Where(p => p.Open).ToArray();
+            SpawnPoint spawn = open.Length > 0 ? open[Random.Range(0, open.Length)] : points[Random.Range(0, points.Length)];
+
+            CharacterController controller = GetComponent<CharacterController>();
+            controller.enabled = false;
+
+            Transform spawnTr = spawn.transform;
+            transform.position = spawnTr.position;
+            Visuals.rotation = spawnTr.rotation;
+            
+            spawn.Use();
+            
+            // ReSharper disable once Unity.InefficientPropertyAccess
+            controller.enabled = true;
+            
+            _role = SoliderRole.Collector;
+            AssignRoles();
+            Heal();
+            SelectWeapon(0);
+            ToggleAlive();
+            _findNewPoint = true;
+
+            foreach (Weapon weapon in Weapons)
+            {
+                weapon.Replenish();
             }
         }
 
@@ -314,7 +401,7 @@ namespace Project.Agents
                         return;
                     }
 
-                    if (_findNewPoint)
+                    if (_findNewPoint || (_role == SoliderRole.Attacker && Target is { Visible: true }))
                     {
                         _findNewPoint = false;
                         Navigate(SoldierAgentManager.SoldierAgentManagerSingleton.GetPoint(RedTeam, _role == SoliderRole.Defender));
@@ -450,37 +537,6 @@ namespace Project.Agents
             yield return new WaitForSeconds(SoldierAgentManager.SoldierAgentManagerSingleton.respawn);
             
             Spawn();
-        }
-
-        private void Spawn()
-        {
-            SpawnPoint[] points = SoldierAgentManager.SoldierAgentManagerSingleton.SpawnPoints.Where(p => p.redTeam == RedTeam).ToArray();
-            SpawnPoint[] open = points.Where(p => p.Open).ToArray();
-            SpawnPoint spawn = open.Length > 0 ? open[Random.Range(0, open.Length)] : points[Random.Range(0, points.Length)];
-
-            CharacterController controller = GetComponent<CharacterController>();
-            controller.enabled = false;
-
-            Transform spawnTr = spawn.transform;
-            transform.position = spawnTr.position;
-            Visuals.rotation = spawnTr.rotation;
-            
-            spawn.Use();
-            
-            // ReSharper disable once Unity.InefficientPropertyAccess
-            controller.enabled = true;
-            
-            _role = SoliderRole.Collector;
-            AssignRoles();
-            Heal();
-            SelectWeapon(0);
-            ToggleAlive();
-            _findNewPoint = true;
-
-            foreach (Weapon weapon in Weapons)
-            {
-                weapon.Replenish();
-            }
         }
 
         private SoldierAgent[] GetTeam()

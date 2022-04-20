@@ -5,9 +5,9 @@ namespace Project.Positions
 {
     public class SpawnPoint : Position
     {
-        private bool _used;
+        public bool Used { get; set; }
 
-        public bool Open => !_used && Count == 0;
+        public bool Open => !Used && Count == 0;
 
         public void Use()
         {
@@ -17,9 +17,9 @@ namespace Project.Positions
 
         private IEnumerator UseDelay()
         {
-            _used = true;
+            Used = true;
             yield return new WaitForSeconds(1);
-            _used = false;
+            Used = false;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Project.Agents;
 using Project.Pickups;
 using Project.Positions;
@@ -56,6 +57,18 @@ namespace Project.Managers
         private StrategicPoint[] _strategicPoints;
 
         private HealthWeaponPickup[] _healthWeaponPickups;
+        
+        public List<SoldierAgent> Sorted { get; private set; }
+        
+        public int MostCaptures { get; private set; }
+        
+        public int MostReturns { get; private set; }
+        
+        public int MostKills { get; private set; }
+        
+        public int LeastDeaths { get; private set; }
+
+        private bool _best = true;
 
         public Vector3 GetPoint(bool redTeam, bool defensive)
         {
@@ -74,6 +87,15 @@ namespace Project.Managers
             HealthWeaponPickup[] ready = _healthWeaponPickups.Where(p => p.weaponIndex == weaponIndex && p.Ready).ToArray();
             return ready.Length > 0 ? ready.OrderBy(p => Vector3.Distance(soldierPosition, p.transform.position)).First().transform.position : null;
         }
+
+        public void UpdateSorted()
+        {
+            Sorted = Sorted.OrderByDescending(s => s.Captures).ThenByDescending(s => s.Kills).ThenBy(s => s.Deaths).ThenByDescending(s => s.Returns).ToList();
+            MostCaptures = Sorted.OrderByDescending(s => s.Captures).First().Captures;
+            MostReturns = Sorted.OrderByDescending(s => s.Returns).First().Returns;
+            MostKills = Sorted.OrderByDescending(s => s.Kills).First().Kills;
+            LeastDeaths = Sorted.OrderBy(s => s.Deaths).First().Deaths;
+        }
         
         protected override void Start()
         {
@@ -89,6 +111,8 @@ namespace Project.Managers
             {
                 Instantiate(soldierPrefab);
             }
+
+            Sorted = FindObjectsOfType<SoldierAgent>().ToList();
         }
 
         protected override void Update()
@@ -184,6 +208,72 @@ namespace Project.Managers
                 soldier.StopLookAtTarget();
                 soldier.headPosition.localRotation = Quaternion.identity;
                 soldier.weaponPosition.localRotation = Quaternion.identity;
+            }
+
+            if (_best)
+            {
+                SoldierAgent bestAlive = Sorted.FirstOrDefault(s => s.Alive);
+                SetSelectedAgent(bestAlive != null ? bestAlive : Sorted[0]);
+            }
+            
+            if (selectedCamera != null)
+            {
+                transform.position = selectedCamera.transform.position;
+            }
+        }
+        
+        /// <summary>
+        /// Render buttons to reset the level or follow the best agent.
+        /// </summary>
+        /// <param name="x">X rendering position. In most cases this should remain unchanged.</param>
+        /// <param name="y">Y rendering position. Update this with every component added and return it.</param>
+        /// <param name="w">Width of components. In most cases this should remain unchanged.</param>
+        /// <param name="h">Height of components. In most cases this should remain unchanged.</param>
+        /// <param name="p">Padding of components. In most cases this should remain unchanged.</param>
+        /// <returns>The updated Y position after all custom rendering has been done.</returns>
+        protected override float CustomRendering(float x, float y, float w, float h, float p)
+        {
+            // Regenerate the floor button.
+            if (GuiButton(x, y, w, h, "Reset"))
+            {
+                Reset();
+            }
+            
+            y = NextItem(y, h, p);
+            if (GuiButton(x, y, w, h, _best ? "Manual" : "Best"))
+            {
+                _best = !_best;
+            }
+            
+            return NextItem(y, h, p);
+        }
+
+        private void Reset()
+        {
+            if (FlagPickup.RedFlag != null)
+            {
+                FlagPickup.RedFlag.ReturnFlag(null);
+            }
+            
+            if (FlagPickup.BlueFlag != null)
+            {
+                FlagPickup.BlueFlag.ReturnFlag(null);
+            }
+
+            foreach (SpawnPoint spawnPoint in SpawnPoints)
+            {
+                spawnPoint.Used = false;
+            }
+            
+            foreach (SoldierAgent soldier in Sorted)
+            {
+                soldier.Spawn();
+            }
+            
+            foreach (HealthWeaponPickup pickup in _healthWeaponPickups)
+            {
+                pickup.StopAllCoroutines();
+                pickup.Ready = true;
             }
         }
     }
