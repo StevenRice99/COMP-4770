@@ -122,7 +122,10 @@ namespace Project.Agents
         public override float DisplayDetails(float x, float y, float w, float h, float p)
         {
             y = AgentManager.NextItem(y, h, p);
-            AgentManager.GuiBox(x, y, w, h, p, 7);
+            AgentManager.GuiBox(x, y, w, h, p, 10);
+
+            AgentManager.GuiLabel(x, y, w, h, p, $"Rank: {SoldierAgentManager.SoldierAgentManagerSingleton.Sorted.IndexOf(this) + 1} / {SoldierAgentManager.SoldierAgentManagerSingleton.Sorted.Count}");
+            y = AgentManager.NextItem(y, h, p);
 
             AgentManager.GuiLabel(x, y, w, h, p, _role == SoliderRole.Dead ? "Respawning" : $"Role: {_role}");
             y = AgentManager.NextItem(y, h, p);
@@ -138,6 +141,13 @@ namespace Project.Agents
                 (int) WeaponChoices.RocketLauncher => $"Weapon: Rocket Launcher | Ammo: {Weapons[WeaponIndex].Ammo} / {Weapons[WeaponIndex].maxAmmo}",
                 _ => "Weapon: Pistol"
             });
+            y = AgentManager.NextItem(y, h, p);
+            
+            AgentManager.GuiLabel(x, y, w, h, p, Target == null || Target.Value.Enemy == null ? "Fighting: Nobody" : $"Fighting: {Target.Value.Enemy.name}");
+            y = AgentManager.NextItem(y, h, p);
+
+            int visible = EnemiesDetected.Count(e => e.Visible);
+            AgentManager.GuiLabel(x, y, w, h, p, $"See: {visible} | Hear: {EnemiesDetected.Count - visible}");
             y = AgentManager.NextItem(y, h, p);
 
             AgentManager.GuiLabel(x, y, w, h, p, $"Captures: {Captures} | Most: {SoldierAgentManager.SoldierAgentManagerSingleton.MostCaptures}");

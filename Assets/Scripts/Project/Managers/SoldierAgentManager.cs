@@ -240,7 +240,7 @@ namespace Project.Managers
             }
             
             y = NextItem(y, h, p);
-            if (GuiButton(x, y, w, h, _best ? "Manual" : "Best"))
+            if (GuiButton(x, y, w, h, _best ? "Manual Selection" : "Follow Best"))
             {
                 _best = !_best;
             }
