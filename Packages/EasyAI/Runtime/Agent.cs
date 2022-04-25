@@ -248,7 +248,7 @@ public abstract class Agent : MessageComponent
     /// <summary>
     /// Get the currently selected mind of the agent.
     /// </summary>
-    public Mind SelectedMind => Minds != null && Minds.Length > 0 ? Minds[_selectedMindIndex] : null;
+    public Mind SelectedMind => Minds is { Length: > 0 } ? Minds[_selectedMindIndex] : null;
     
     /// <summary>
     /// The mind of this agent.
@@ -894,7 +894,7 @@ public abstract class Agent : MessageComponent
             
                 if (AgentManager.Singleton.navigationRadius <= 0)
                 {
-                    if (!Physics.Linecast(transform.position, Path[Path.Count - 1], AgentManager.Singleton.obstacleLayers))
+                    if (!Physics.Linecast(transform.position, Path[^1], AgentManager.Singleton.obstacleLayers))
                     {
                         canReachEnd = true;
                     }
@@ -903,7 +903,7 @@ public abstract class Agent : MessageComponent
                 {
                     Vector3 p1 = transform.position;
                     p1.y += AgentManager.Singleton.navigationRadius;
-                    Vector3 p2 = Path[Path.Count - 1];
+                    Vector3 p2 = Path[^1];
                     p2.y += AgentManager.Singleton.navigationRadius;
                     if (!Physics.SphereCast(p1, AgentManager.Singleton.navigationRadius, (p2 - p1).normalized, out _, Vector3.Distance(p1, p2), AgentManager.Singleton.obstacleLayers))
                     {
@@ -913,7 +913,7 @@ public abstract class Agent : MessageComponent
                 
                 if (canReachEnd)
                 {
-                    Path = new List<Vector3> { Path[Path.Count - 1] };
+                    Path = new List<Vector3> { Path[^1] };
                 }
             }
 

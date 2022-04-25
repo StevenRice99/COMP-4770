@@ -9054,7 +9054,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!114 &448259074
 MonoBehaviour:
@@ -9263,7 +9263,6 @@ GameObject:
   m_Component:
   - component: {fileID: 460686381}
   - component: {fileID: 460686382}
-  - component: {fileID: 460686383}
   m_Layer: 0
   m_Name: Soldier Agent Manager
   m_TagString: Untagged
@@ -9302,7 +9301,7 @@ MonoBehaviour:
   maxMessages: 100
   detailsWidth: 500
   controlsWidth: 120
-  gizmos: 0
+  gizmos: 1
   navigation: 0
   selectedCamera: {fileID: 1559026829}
   groundLayers:
@@ -9329,14 +9328,6 @@ MonoBehaviour:
   soldierPrefab: {fileID: 4324690102972426135, guid: d5faa173f1b3a3c499da74513556f6fd, type: 3}
   red: {fileID: 2100000, guid: 3a41b7aa03ddf024fbc0c1ea0563750d, type: 2}
   blue: {fileID: 2100000, guid: 67b0eeef50c9fcf4a971927cb01ed4d3, type: 2}
---- !u!81 &460686383
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 460686379}
-  m_Enabled: 1
 --- !u!1001 &463446138
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -30690,7 +30681,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1559026831
 MonoBehaviour:
@@ -33144,7 +33135,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 --- !u!114 &1678594201
 MonoBehaviour:
@@ -33471,7 +33462,7 @@ Transform:
   - {fileID: 432653903}
   - {fileID: 837359497}
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1700074712
 GameObject:
@@ -34972,7 +34963,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!1001 &1785912188
 PrefabInstance:
@@ -39669,6 +39660,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3442418139001929484, guid: 8cb62c45dd3b3ed4bacf53f109370f67, type: 3}
   m_PrefabInstance: {fileID: 2006961189}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2009456178
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2009456179}
+  - component: {fileID: 2009456181}
+  - component: {fileID: 2009456180}
+  m_Layer: 0
+  m_Name: Audio Location
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2009456179
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2009456178}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2009456180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2009456178}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc009d14be9f4cd3a9997c4d687a89c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!81 &2009456181
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2009456178}
+  m_Enabled: 1
 --- !u!1001 &2010544057
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -42918,7 +42962,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2139949938
 MonoBehaviour:

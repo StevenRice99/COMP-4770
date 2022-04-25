@@ -10,8 +10,18 @@ using Random = UnityEngine.Random;
 
 namespace Project.Agents
 {
+    /// <summary>
+    /// Agent used to control the soldiers in the project.
+    /// </summary>
     public class SoldierAgent : CharacterAgent
     {
+        /// <summary>
+        /// The behaviour of soldiers is dependent upon their role on the team.
+        /// Dead - Nothing as they are dead.
+        /// Collector - One on each team who's main goal is to collect the enemy flag and return it.
+        /// Attacker - Move between locations on the enemy's side of the map.
+        /// Defender - Move between locations on their side of the map and move to return their flag if it has been taken.
+        /// </summary>
         private enum SoliderRole : byte
         {
             Dead = 0,
@@ -19,6 +29,10 @@ namespace Project.Agents
             Attacker = 2,
             Defender = 3
         }
+        
+        /// <summary>
+        /// The indexes of weapons the soldier can use.
+        /// </summary>
         private enum WeaponChoices
         {
             MachineGun = 0,
@@ -28,6 +42,9 @@ namespace Project.Agents
             Pistol = 4
         }
 
+        /// <summary>
+        /// The data a soldier holds.
+        /// </summary>
         public class EnemyMemory
         {
             public SoldierAgent Enemy;
@@ -41,6 +58,9 @@ namespace Project.Agents
             public float DeltaTime;
         }
 
+        /// <summary>
+        /// The data on the current target of a soldier.
+        /// </summary>
         public struct TargetData
         {
             public SoldierAgent Enemy;
@@ -50,64 +70,139 @@ namespace Project.Agents
             public bool Visible;
         }
         
+        /// <summary>
+        /// All soldiers on the red team.
+        /// </summary>
         private static readonly List<SoldierAgent> TeamRed = new();
         
+        /// <summary>
+        /// All soldiers on the blue team.
+        /// </summary>
         private static readonly List<SoldierAgent> TeamBlue = new();
 
+        [Tooltip("The position of the solder's head.")]
         public Transform headPosition;
 
+        [Tooltip("The position of where to cast rays and spawn projectiles from.")]
         public Transform shootPosition;
 
+        [Tooltip("The position of where to hold the flag when carrying it.")]
         public Transform flagPosition;
 
+        [Tooltip("The position of where weapons are held at by the soldier.")]
         public Transform weaponPosition;
 
         [SerializeField]
+        [Tooltip("All visuals which change color based on the soldier's team.")]
         private MeshRenderer[] colorVisuals;
 
         [SerializeField]
+        [Tooltip("All remaining visuals that do not change color based on the soldier's team.")]
         private MeshRenderer[] otherVisuals;
 
+        /// <summary>
+        /// The health of the soldier.
+        /// </summary>
         public int Health { get; set; }
         
+        /// <summary>
+        /// The currently selected weapon of the soldier.
+        /// </summary>
         public int WeaponIndex { get; set; }
         
+        /// <summary>
+        /// The target of the soldier.
+        /// </summary>
         public TargetData? Target { get; set; }
         
+        /// <summary>
+        /// How many kills this soldier has.
+        /// </summary>
         public int Kills { get; set; }
         
+        /// <summary>
+        /// How many deaths this soldier has.
+        /// </summary>
         public int Deaths { get; set; }
         
+        /// <summary>
+        /// How many flag captures this soldier has.
+        /// </summary>
         public int Captures { get; set; }
         
+        /// <summary>
+        /// How many flag returns this soldier has.
+        /// </summary>
         public int Returns { get; set; }
 
+        /// <summary>
+        /// If this soldier is on the red team or not.
+        /// </summary>
         public bool RedTeam { get; private set; }
         
+        /// <summary>
+        /// The weapons of this soldier.
+        /// </summary>
         public Weapon[] Weapons { get; private set; }
 
+        /// <summary>
+        /// If the soldier is alive or not.
+        /// </summary>
         public bool Alive => _role != SoliderRole.Dead;
         
+        /// <summary>
+        /// The soldier's current role on the team.
+        /// </summary>
         private SoliderRole _role;
 
+        /// <summary>
+        /// The colliders that are attached to this soldier.
+        /// </summary>
         public Collider[] Colliders { get; private set; }
 
+        /// <summary>
+        /// If the soldier should find a new location to move to.
+        /// </summary>
         private bool _findNewPoint = true;
 
+        /// <summary>
+        /// The coroutine to keep track of when timing if a new point should be searched for.
+        /// </summary>
         private Coroutine _pointDelay;
 
+        /// <summary>
+        /// The enemies which this soldier currently has detected.
+        /// </summary>
         public readonly List<EnemyMemory> EnemiesDetected = new();
 
+        /// <summary>
+        /// Which weapons the soldier has a preference to currently use.
+        /// </summary>
         private int[] _weaponPriority = new int[(int) WeaponChoices.Pistol];
 
+        /// <summary>
+        /// If this soldier is carrying the flag.
+        /// </summary>
         private bool CarryingFlag => RedTeam ? FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.carryingPlayer == this : FlagPickup.RedFlag != null && FlagPickup.RedFlag.carryingPlayer == this;
 
+        /// <summary>
+        /// If this soldier's flag is at its base.
+        /// </summary>
         private bool FlagAtBase => RedTeam ? FlagPickup.RedFlag != null && FlagPickup.RedFlag.transform.position == FlagPickup.RedFlag.SpawnPosition : FlagPickup.BlueFlag != null && FlagPickup.BlueFlag.transform.position == FlagPickup.BlueFlag.SpawnPosition;
 
+        /// <summary>
+        /// The location of the enemy flag.
+        /// </summary>
         private Vector3 EnemyFlag => RedTeam ? FlagPickup.BlueFlag != null ? FlagPickup.BlueFlag.transform.position : Vector3.zero : FlagPickup.RedFlag != null ? FlagPickup.RedFlag.transform.position : Vector3.zero;
 
+        /// <summary>
+        /// The location of the team's flag.
+        /// </summary>
         private Vector3 TeamFlag => RedTeam ? FlagPickup.RedFlag != null ? FlagPickup.RedFlag.transform.position : Vector3.zero : FlagPickup.BlueFlag != null ? FlagPickup.BlueFlag.transform.position : Vector3.zero;
         
+        /// <summary>
+        /// The location of this soldier's base.
+        /// </summary>
         private Vector3 Base => RedTeam ? FlagPickup.RedFlag != null ? FlagPickup.RedFlag.SpawnPosition : Vector3.zero : FlagPickup.BlueFlag != null ? FlagPickup.BlueFlag.SpawnPosition : Vector3.zero;
         
         /// <summary>
@@ -124,24 +219,30 @@ namespace Project.Agents
             y = AgentManager.NextItem(y, h, p);
             AgentManager.GuiBox(x, y, w, h, p, 13);
             
+            // Display overall flags captured for each team.
             AgentManager.GuiLabel(x, y, w, h, p, $"Team Captures - Red: {SoldierAgentManager.SoldierAgentManagerSingleton.ScoreRed} | Blue: {SoldierAgentManager.SoldierAgentManagerSingleton.ScoreBlue}");
             y = AgentManager.NextItem(y, h, p);
             
+            // Display overall kills for each team.
             AgentManager.GuiLabel(x, y, w, h, p, $"Team Kills - Red: {SoldierAgentManager.SoldierAgentManagerSingleton.KillsRed} | Blue: {SoldierAgentManager.SoldierAgentManagerSingleton.KillsBlue}");
             y = AgentManager.NextItem(y, h, p);
             
             AgentManager.GuiLabel(x, y, w, h, p, "--------------------------------------------------------------------------------------------------------------------------");
             y = AgentManager.NextItem(y, h, p);
 
+            // Display the position of this soldier relative to all others.
             AgentManager.GuiLabel(x, y, w, h, p, $"Soldier Performance: {SoldierAgentManager.SoldierAgentManagerSingleton.Sorted.IndexOf(this) + 1} / {SoldierAgentManager.SoldierAgentManagerSingleton.Sorted.Count}");
             y = AgentManager.NextItem(y, h, p);
 
+            // Display the role of this soldier.
             AgentManager.GuiLabel(x, y, w, h, p, _role == SoliderRole.Dead ? "Respawning" : $"Role: {_role}");
             y = AgentManager.NextItem(y, h, p);
 
+            // Display the health of this soldier.
             AgentManager.GuiLabel(x, y, w, h, p, $"Health: {Health} / {SoldierAgentManager.SoldierAgentManagerSingleton.health}");
             y = AgentManager.NextItem(y, h, p);
 
+            // Display the weapon this soldier is using.
             AgentManager.GuiLabel(x, y, w, h, p, _role == SoliderRole.Dead ? "Weapon: None" : WeaponIndex switch
             {
                 (int) WeaponChoices.MachineGun => $"Weapon: Machine Gun | Ammo: {Weapons[WeaponIndex].Ammo} / {Weapons[WeaponIndex].maxAmmo}",
@@ -152,68 +253,95 @@ namespace Project.Agents
             });
             y = AgentManager.NextItem(y, h, p);
             
+            // Display the enemy this soldier is fighting.
             AgentManager.GuiLabel(x, y, w, h, p, Target == null || Target.Value.Enemy == null ? "Fighting: Nobody" : $"Fighting: {Target.Value.Enemy.name}");
             y = AgentManager.NextItem(y, h, p);
 
+            // Display all enemies this soldier has detected.
             int visible = EnemiesDetected.Count(e => e.Visible);
             AgentManager.GuiLabel(x, y, w, h, p, $"See: {visible} | Hear: {EnemiesDetected.Count - visible}");
             y = AgentManager.NextItem(y, h, p);
 
+            // Display how many flag captures this soldier has.
             AgentManager.GuiLabel(x, y, w, h, p, $"Captures: {Captures} | Most: {SoldierAgentManager.SoldierAgentManagerSingleton.MostCaptures}");
             y = AgentManager.NextItem(y, h, p);
 
+            // Display how many flag returns this soldier has.
             AgentManager.GuiLabel(x, y, w, h, p, $"Returns: {Returns} | Most: {SoldierAgentManager.SoldierAgentManagerSingleton.MostReturns}");
             y = AgentManager.NextItem(y, h, p);
 
+            // Display how many kills this soldier has.
             AgentManager.GuiLabel(x, y, w, h, p, $"Kills: {Kills} | Most: {SoldierAgentManager.SoldierAgentManagerSingleton.MostKills}");
             y = AgentManager.NextItem(y, h, p);
             
+            // Display how many deaths this soldier has.
             AgentManager.GuiLabel(x, y, w, h, p, $"Deaths: {Deaths} | Least: {SoldierAgentManager.SoldierAgentManagerSingleton.LeastDeaths}");
             
             return y;
         }
         
+        /// <summary>
+        /// Override to have the soldier perform its actions.
+        /// </summary>
         public override void Perform()
         {
+            // Do nothing when dead.
             if (_role == SoliderRole.Dead)
             {
                 return;
             }
             
+            // Choose a target.
             Target = ChooseTarget();
 
+            // Choose the optimal weapon to use.
             PrioritizeWeapons();
-
             ChooseWeapon();
 
+            // Chose to move somewhere.
             ChooseDestination();
             
+            // Remove detected enemies that have exceeded their maximum memory time.
             Cleanup();
             
             base.Perform();
         }
         
+        /// <summary>
+        /// Character controller movement.
+        /// </summary>
         public override void Move()
         {
+            // Only move when the controller is enabled to avoid throwing an error as it needs to be disabled when dead.
             if (CharacterController != null && CharacterController.enabled)
             {
                 base.Move();
             }
         }
         
+        /// <summary>
+        /// Receive damage from another soldier.
+        /// </summary>
+        /// <param name="amount">How much damage was taken.</param>
+        /// <param name="shotBy">What soldier shot.</param>
         public void Damage(int amount, SoldierAgent shotBy)
         {
+            // If already dead, do nothing.
             if (_role == SoliderRole.Dead)
             {
                 return;
             }
             
+            // Reduce health.
             Health -= amount;
+            
+            // Nothing more to do if still alive.
             if (Health > 0)
             {
                 return;
             }
 
+            // Otherwise died so reset health and increment death and kills.
             Health = 0;
             Deaths++;
             shotBy.Kills++;
@@ -227,19 +355,28 @@ namespace Project.Agents
                 SoldierAgentManager.SoldierAgentManagerSingleton.KillsBlue++;
             }
 
+            // Reassign team roles as a team member has died.
             SoldierAgentManager.SoldierAgentManagerSingleton.UpdateSorted();
 
+            // Start the respawn counter.
             StopAllCoroutines();
             StartCoroutine(Respawn());
         }
 
+        /// <summary>
+        /// Add an enemy to memory that was heard.
+        /// </summary>
+        /// <param name="enemy">The enemy which was heard.</param>
+        /// <param name="distance">How far away before the sound is considered out of range.</param>
         public void Hear(SoldierAgent enemy, float distance)
         {
+            // Do not "hear" an enemy if the shot was out of range.
             if (Vector3.Distance(headPosition.position, enemy.headPosition.position) > distance)
             {
                 return;
             }
             
+            // See if this item already exists in memory and if it does, simply update values.
             EnemyMemory memory = EnemiesDetected.FirstOrDefault(e => e.Enemy == enemy && !e.Visible);
             if (memory != null)
             {
@@ -250,17 +387,23 @@ namespace Project.Agents
                 return;
             }
             
+            // Otherwise add the instance into memory.
             EnemiesDetected.Add(new EnemyMemory
             {
                 DeltaTime = 0,
+                Enemy = enemy,
                 Position = enemy.headPosition.position,
                 Visible = false,
                 HasFlag = false
             });
         }
 
+        /// <summary>
+        /// Heal this soldier.
+        /// </summary>
         public void Heal()
         {
+            // Cannot heal if dead.
             if (_role == SoliderRole.Dead)
             {
                 return;
@@ -269,25 +412,41 @@ namespace Project.Agents
             Health = SoldierAgentManager.SoldierAgentManagerSingleton.health;
         }
 
+        /// <summary>
+        /// Get all enemies.
+        /// </summary>
+        /// <returns>An enumerable of all enemies.</returns>
         public IEnumerable<SoldierAgent> GetEnemies()
         {
             return (RedTeam ? TeamBlue : TeamRed).Where(s => s.Alive);
         }
 
+        /// <summary>
+        /// Assign roles to the team.
+        /// </summary>
         public void AssignRoles()
         {
+            // Get the soldiers on this team, ordered by how close they are to the enemy flag.
             SoldierAgent[] team = GetTeam();
+            
+            // Loop through every team member.
             for (int i = 0; i < team.Length; i++)
             {
-                ClearPath();
+                // Clear any current movement data.
+                team[i].ClearPath();
+                team[i]._findNewPoint = true;
+                
+                // The closest soldier to the enemy flag becomes the collector.
                 if (i == 0)
                 {
                     team[i]._role = SoliderRole.Collector;
                 }
+                // The nearest half become attackers.
                 else if (i <= team.Length / 2)
                 {
                     team[i]._role = SoliderRole.Attacker;
                 }
+                // The furthest become defenders.
                 else
                 {
                     team[i]._role = SoliderRole.Defender;
@@ -295,25 +454,39 @@ namespace Project.Agents
             }
         }
 
+        /// <summary>
+        /// Spawn the soldier in.
+        /// </summary>
         public void Spawn()
         {
+            // Get spawn points on their side of the map.
             SpawnPoint[] points = SoldierAgentManager.SoldierAgentManagerSingleton.SpawnPoints.Where(p => p.redTeam == RedTeam).ToArray();
+            
+            // Get all open spawn points.
             SpawnPoint[] open = points.Where(p => p.Open).ToArray();
+            
+            // If there are open spawn points, spawn at one of them, otherwise, default to any spawn point.
             SpawnPoint spawn = open.Length > 0 ? open[Random.Range(0, open.Length)] : points[Random.Range(0, points.Length)];
 
-            CharacterController controller = GetComponent<CharacterController>();
-            controller.enabled = false;
+            // Since there is a character controller attached, it needs to be disabled to move the soldier to the spawn.
+            CharacterController.enabled = false;
 
+            // Move to the spawn point.
             Transform spawnTr = spawn.transform;
             transform.position = spawnTr.position;
             Visuals.rotation = spawnTr.rotation;
             
+            // Set that the spawn point has been used so other soldiers avoid using it.
             spawn.Use();
             
+            // Reenable the character controller.
             // ReSharper disable once Unity.InefficientPropertyAccess
-            controller.enabled = true;
+            CharacterController.enabled = true;
             
+            // Set a dummy role to indicate the soldier is no longer dead.
             _role = SoliderRole.Collector;
+            
+            // Get new roles, heal, start with the machine gun, and reset to find a new point.
             AssignRoles();
             Heal();
             SelectWeapon(0);
@@ -326,10 +499,21 @@ namespace Project.Agents
             }
         }
 
+        /// <summary>
+        /// Detect which enemies are visible.
+        /// </summary>
+        /// <returns>All enemies in line of sight.</returns>
+        public IEnumerable<SoldierAgent> SeeEnemies()
+        {
+            return GetEnemies().Where(enemy => !Physics.Linecast(headPosition.position, enemy.headPosition.position, AgentManager.Singleton.obstacleLayers)).ToArray();
+        }
+
         protected override void Start()
         {
+            // Perform default setup.
             base.Start();
 
+            // Setup all weapons.
             Weapons = GetComponentsInChildren<Weapon>();
             for (int i = 0; i < Weapons.Length; i++)
             {
@@ -337,6 +521,7 @@ namespace Project.Agents
                 Weapons[i].Index = i;
             }
 
+            // Assign team.
             RedTeam = TeamRed.Count <= TeamBlue.Count;
             if (RedTeam)
             {
@@ -347,22 +532,30 @@ namespace Project.Agents
                 TeamBlue.Add(this);
             }
 
+            // Assign name.
             name = (RedTeam ? "Red " : "Blue ") + (RedTeam ? TeamRed.Count : TeamBlue.Count);
 
+            // Get all attached colliders.
             List<Collider> colliders = GetComponents<Collider>().ToList();
             colliders.AddRange(GetComponentsInChildren<Collider>());
             Colliders = colliders.Distinct().ToArray();
 
+            // Assign team colors.
             foreach (MeshRenderer meshRenderer in colorVisuals)
             {
                 meshRenderer.material = RedTeam ? SoldierAgentManager.SoldierAgentManagerSingleton.red : SoldierAgentManager.SoldierAgentManagerSingleton.blue;
             }
             
+            // Spawn in.
             Spawn();
         }
 
+        /// <summary>
+        /// Choose where to move to.
+        /// </summary>
         private void ChooseDestination()
         {
+            // If carrying the flag, attempt to move directly back to base.
             if (CarryingFlag)
             {
                 Navigate(Base);
@@ -371,16 +564,19 @@ namespace Project.Agents
 
             switch (_role)
             {
+                // If the flag collector, move to collect the enemy flag.
                 case SoliderRole.Collector:
                     Navigate(EnemyFlag);
                     return;
                 
+                // If a defender and the flag has been taken, move to it to kill the enemy flag carried and return it.
                 case SoliderRole.Defender when !FlagAtBase:
                     Navigate(TeamFlag);
                     _findNewPoint = true;
                     return;
                 
                 default:
+                    // If the soldier has low health, move to a health pack to heal.
                     if (Health <= SoldierAgentManager.SoldierAgentManagerSingleton.lowHealth)
                     {
                         Vector3? destination = SoldierAgentManager.SoldierAgentManagerSingleton.GetHealth(transform.position);
@@ -392,8 +588,10 @@ namespace Project.Agents
                         }
                     }
 
+                    // Decisions when the soldier's current target enemy is not visible.
                     if (Target is not { Visible: true })
                     {
+                        // If not at full health, move to a health pack to heal.
                         if (Health < SoldierAgentManager.SoldierAgentManagerSingleton.health)
                         {
                             Vector3? destination = SoldierAgentManager.SoldierAgentManagerSingleton.GetHealth(transform.position);
@@ -405,6 +603,7 @@ namespace Project.Agents
                             }
                         }
                         
+                        // In order of the most prioritized weapons of the soldier, if a weapon needs more ammo, move to pickup ammo.
                         foreach (int w in _weaponPriority)
                         {
                             if (Weapons[w].maxAmmo < 0 || Weapons[w].Ammo >= Weapons[w].maxAmmo)
@@ -424,11 +623,13 @@ namespace Project.Agents
                         }
                     }
 
+                    // If already moving to a position, do not search for a new one.
                     if (Destination != null)
                     {
                         return;
                     }
 
+                    // Find a point to move to, either in the offense or defense side depending on the soldier's role.
                     if (_findNewPoint || (_role == SoliderRole.Attacker && Target is { Visible: true }))
                     {
                         _findNewPoint = false;
@@ -436,15 +637,21 @@ namespace Project.Agents
                         return;
                     }
 
+                    // Do not search for a new point for a given amount of time upon reaching it.
                     _pointDelay ??= StartCoroutine(PointDelay());
                     return;
             }
         }
 
+        /// <summary>
+        /// Prioritize what weapons to use in a given situation.
+        /// </summary>
         private void PrioritizeWeapons()
         {
+            // If there is no target to choose a weapon based off of, predict what weapon type will be needed.
             if (Target == null)
             {
+                // Defenders predict needing to use long range weapons like snipers.
                 if (_role == SoliderRole.Defender)
                 {
                     _weaponPriority = new[]
@@ -455,24 +662,29 @@ namespace Project.Agents
                         (int) WeaponChoices.Shotgun,
                         (int) WeaponChoices.Pistol,
                     };
+                    
+                    return;
                 }
-                else
+
+                // Attackers and the collector predict needing to use short range weapons like shotguns.
+                _weaponPriority = new[]
                 {
-                    _weaponPriority = new[]
-                    {
-                        (int) WeaponChoices.Shotgun,
-                        (int) WeaponChoices.MachineGun,
-                        (int) WeaponChoices.RocketLauncher,
-                        (int) WeaponChoices.Sniper,
-                        (int) WeaponChoices.Pistol,
-                    };
-                }
+                    (int) WeaponChoices.Shotgun,
+                    (int) WeaponChoices.MachineGun,
+                    (int) WeaponChoices.RocketLauncher,
+                    (int) WeaponChoices.Sniper,
+                    (int) WeaponChoices.Pistol,
+                };
                 return;
             }
 
+            // Determine how far away from the target enemy the soldier is.
             float distance = Vector3.Distance(shootPosition.position, Target.Value.Position);
+            
+            // Target is far away, use long range weapons.
             if (distance >= SoldierAgentManager.SoldierAgentManagerSingleton.distanceFar)
             {
+                // Defenders use the sniper first.
                 if (_role == SoliderRole.Defender)
                 {
                     _weaponPriority = new[]
@@ -483,22 +695,24 @@ namespace Project.Agents
                         (int) WeaponChoices.Pistol,
                         (int) WeaponChoices.Shotgun
                     };
-                }
-                else
-                {
-                    _weaponPriority = new[]
-                    {
-                        (int) WeaponChoices.RocketLauncher,
-                        (int) WeaponChoices.MachineGun,
-                        (int) WeaponChoices.Sniper,
-                        (int) WeaponChoices.Pistol,
-                        (int) WeaponChoices.Shotgun
-                    };
-                }
                 
+                    return;
+                }
+
+                // Attackers and the collector use the rocket launcher first.
+                _weaponPriority = new[]
+                {
+                    (int) WeaponChoices.RocketLauncher,
+                    (int) WeaponChoices.MachineGun,
+                    (int) WeaponChoices.Sniper,
+                    (int) WeaponChoices.Pistol,
+                    (int) WeaponChoices.Shotgun
+                };
+
                 return;
             }
 
+            // If close range, all roles use close-range weapons first.
             if (distance <= SoldierAgentManager.SoldierAgentManagerSingleton.distanceClose)
             {
                 _weaponPriority = new[]
@@ -513,6 +727,7 @@ namespace Project.Agents
                 return;
             }
             
+            // Otherwise, it is medium range, with the only difference being defenders using a sniper before a shotgun.
             if (_role == SoliderRole.Defender)
             {
                 _weaponPriority = new[]
@@ -523,22 +738,26 @@ namespace Project.Agents
                     (int) WeaponChoices.Sniper,
                     (int) WeaponChoices.Pistol
                 };
+                
+                return;
             }
-            else
+
+            _weaponPriority = new[]
             {
-                _weaponPriority = new[]
-                {
-                    (int) WeaponChoices.MachineGun,
-                    (int) WeaponChoices.RocketLauncher,
-                    (int) WeaponChoices.Sniper,
-                    (int) WeaponChoices.Shotgun,
-                    (int) WeaponChoices.Pistol
-                };
-            }
+                (int) WeaponChoices.MachineGun,
+                (int) WeaponChoices.RocketLauncher,
+                (int) WeaponChoices.Sniper,
+                (int) WeaponChoices.Shotgun,
+                (int) WeaponChoices.Pistol
+            };
         }
 
+        /// <summary>
+        /// Choose the weapon to use.
+        /// </summary>
         private void ChooseWeapon()
         {
+            // Go through the weapon priority and select the first weapon which has ammo.
             foreach (int w in _weaponPriority)
             {
                 if (Weapons[w].Ammo <= 0 && Weapons[w].maxAmmo >= 0)
@@ -551,22 +770,37 @@ namespace Project.Agents
             }
         }
 
+        /// <summary>
+        /// Respawn the soldier after being killed.
+        /// </summary>
+        /// <returns>Nothing.</returns>
         private IEnumerator Respawn()
         {
+            // Set that the soldier has died.
             _role = SoliderRole.Dead;
             ToggleAlive();
+            
+            // Reassign team roles.
             AssignRoles();
+            
+            // Clear data the soldier had.
             EnemiesDetected.Clear();
             Target = null;
             ClearPath();
             StopLookAtTarget();
             MoveVelocity = Vector2.zero;
             
+            // Wait to spawn.
             yield return new WaitForSeconds(SoldierAgentManager.SoldierAgentManagerSingleton.respawn);
             
+            // Spawn the soldier.
             Spawn();
         }
 
+        /// <summary>
+        /// Get all members of this soldier's team.
+        /// </summary>
+        /// <returns>All soldiers on this solder's team by closest to the enemy flag.</returns>
         private SoldierAgent[] GetTeam()
         {
             IEnumerable<SoldierAgent> team = (RedTeam ? TeamRed : TeamBlue).Where(s => s.Alive);
@@ -588,6 +822,9 @@ namespace Project.Agents
             return team.ToArray();
         }
 
+        /// <summary>
+        /// Toggle all meshes, colliders, and weapons based on if the soldier is alive.
+        /// </summary>
         private void ToggleAlive()
         {
             foreach (MeshRenderer meshRenderer in colorVisuals)
@@ -608,31 +845,46 @@ namespace Project.Agents
             WeaponVisible();
         }
 
+        /// <summary>
+        /// Select a given weapon.
+        /// </summary>
+        /// <param name="i">The weapon index selected.</param>
         private void SelectWeapon(int i)
         {
+            // Set the new selected weapon.
             WeaponIndex = Mathf.Clamp(i, 0, Weapons.Length - 1);
+            
+            // Limit agent rotation speed based on their weapon.
             lookSpeed = Weapons[WeaponIndex].rotationSpeed;
+            
+            // Ensure weapons are properly visible.
             WeaponVisible();
         }
 
+        /// <summary>
+        /// Ensure only the selected weapon is visible.
+        /// </summary>
         private void WeaponVisible()
         {
             for (int i = 0; i < Weapons.Length; i++)
             {
+                // Only the selected weapon is visible, and none are visible if the soldier is dead.
                 Weapons[i].Visible(Alive && i == WeaponIndex);
             }
         }
 
-        public IEnumerable<SoldierAgent> SeeEnemies()
-        {
-            return GetEnemies().Where(enemy => !Physics.Linecast(headPosition.position, enemy.headPosition.position, AgentManager.Singleton.obstacleLayers)).ToArray();
-        }
-
+        /// <summary>
+        /// Remove all detected enemies..
+        /// </summary>
         private void Cleanup()
         {
+            // Loop through all detected enemies.
             for (int i = 0; i < EnemiesDetected.Count; i++)
             {
+                // Increment how long the enemy has been in memory.
                 EnemiesDetected[i].DeltaTime += DeltaTime;
+                
+                // If the detected enemy is too old or they have died, remove it.
                 if (EnemiesDetected[i].DeltaTime > SoldierAgentManager.SoldierAgentManagerSingleton.memoryTime || EnemiesDetected[i].Enemy._role == SoliderRole.Dead)
                 {
                     EnemiesDetected.RemoveAt(i--);
@@ -640,15 +892,26 @@ namespace Project.Agents
             }
         }
 
+        /// <summary>
+        /// Choose the target for this soldier.
+        /// </summary>
+        /// <returns>The target or null if there is no target.</returns>
         private TargetData? ChooseTarget()
         {
+            // If no enemies are detected, return null so the soldier will just look where it is walking.
             if (EnemiesDetected.Count == 0)
             {
                 return null;
             }
             
-            EnemyMemory target = EnemiesDetected.OrderBy(e => e.HasFlag).ThenBy(e => e.Visible).ThenBy(e => e.DeltaTime).ThenBy(e => Vector3.Distance(transform.position, e.Position)).First();
+            // For all detected enemies, prioritize who to take aim at.
+            // 1. If the enemy is visible.
+            // 2. If the enemy has the flag.
+            // 3. How recently seen/heard the enemy was.
+            // 4. How close the enemy is.
+            EnemyMemory target = EnemiesDetected.OrderBy(e => e.Visible).ThenBy(e => e.HasFlag).ThenBy(e => e.DeltaTime).ThenBy(e => Vector3.Distance(transform.position, e.Position)).First();
             
+            // Define the target based upon the most ideal enemy to aim at.
             return new TargetData
             {
                 Enemy = target.Enemy,
@@ -657,6 +920,10 @@ namespace Project.Agents
             };
         }
 
+        /// <summary>
+        /// Delay for a random amount of time how long to wait before choosing a new position to move to.
+        /// </summary>
+        /// <returns>Nothing.</returns>
         private IEnumerator PointDelay()
         {
             yield return new WaitForSeconds(Random.Range(0, SoldierAgentManager.SoldierAgentManagerSingleton.maxWaitTime));

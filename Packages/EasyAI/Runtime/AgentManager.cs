@@ -1380,8 +1380,7 @@ public class AgentManager : MonoBehaviour
         }
 
         // Unity has a built-in shader that is useful for drawing simple colored things.
-        Shader shader = Shader.Find("Hidden/Internal-Colored");
-        _lineMaterial = new Material(shader)
+        _lineMaterial = new Material(Shader.Find("Hidden/Internal-Colored"))
         {
             hideFlags = HideFlags.HideAndDontSave
         };
@@ -1962,19 +1961,21 @@ public class AgentManager : MonoBehaviour
 
         // Display all actions.
         Action[] actions = SelectedAgent.Actions?.Where(a => a != null).ToArray();
-        if (actions != null && actions.Length > 0)
+        if (actions is not { Length: > 0 })
         {
-            y = NextItem(y, h, p);
-            GuiBox(x, y, w, h, p, 1 + actions.Length);
-            
-            GuiLabel(x, y, w, h, p, actions.Length == 1 ? "1 Action" :$"{actions.Length} Actions");
+            return;
+        }
 
-            foreach (Action action in actions)
-            {
-                string msg = action.DetailsDisplay();
-                y = NextItem(y, h, p);
-                GuiLabel(x, y, w, h, p, action + (string.IsNullOrWhiteSpace(msg) ? string.Empty : $": {msg}"));
-            }
+        y = NextItem(y, h, p);
+        GuiBox(x, y, w, h, p, 1 + actions.Length);
+
+        GuiLabel(x, y, w, h, p, actions.Length == 1 ? "1 Action" : $"{actions.Length} Actions");
+
+        foreach (Action action in actions)
+        {
+            string msg = action.DetailsDisplay();
+            y = NextItem(y, h, p);
+            GuiLabel(x, y, w, h, p, action + (string.IsNullOrWhiteSpace(msg) ? string.Empty : $": {msg}"));
         }
     }
         

@@ -223,11 +223,6 @@ namespace Project.Managers
                 SoldierAgent bestAlive = Sorted.FirstOrDefault(s => s.Alive);
                 SetSelectedAgent(bestAlive != null ? bestAlive : Sorted[0]);
             }
-            
-            if (selectedCamera != null)
-            {
-                transform.position = selectedCamera.transform.position;
-            }
         }
         
         /// <summary>
@@ -276,6 +271,10 @@ namespace Project.Managers
             foreach (SoldierAgent soldier in Sorted)
             {
                 soldier.Spawn();
+                soldier.Kills = 0;
+                soldier.Deaths = 0;
+                soldier.Captures = 0;
+                soldier.Returns = 0;
             }
             
             foreach (HealthWeaponPickup pickup in _healthWeaponPickups)
