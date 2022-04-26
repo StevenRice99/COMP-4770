@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace Project.Weapons
 {
+    /// <summary>
+    /// Raycast/hit scan weapon.
+    /// </summary>
     public class RaycastWeapon : Weapon
     {
         [SerializeField]
@@ -21,19 +24,29 @@ namespace Project.Weapons
         [Tooltip("How much spread should the shots have.")]
         private float spread;
 
-        [HideInInspector]
-        public LayerMask layerMask;
+        /// <summary>
+        /// The layer mask for hits.
+        /// </summary>
+        private LayerMask _layerMask;
 
+        /// <summary>
+        /// Shoot hit scan rounds.
+        /// </summary>
+        /// <param name="positions">Where the shots hit.</param>
         protected override void Shoot(out Vector3[] positions)
         {
             positions = new Vector3[rounds];
 
+            // Get the direction to shoot in.
             Vector3 forward = Soldier.shootPosition.TransformDirection(Vector3.forward);
 
+            // Hold what soldiers get attacked.
             List<AttackedInfo> attackedInfos = new();
 
+            // Shoot all shots.
             for (int i = 0; i < rounds; i++)
             {
+                // Randomly spread the shot.
                 Vector3 direction = forward + new Vector3(
                     Random.Range(-spread, spread),
                     Random.Range(-spread, spread),
@@ -41,61 +54,72 @@ namespace Project.Weapons
                 );
                 direction.Normalize();
                 
-                if (Physics.Raycast(Soldier.shootPosition.position, direction, out RaycastHit hit, Mathf.Infinity, layerMask))
+                // Take the shot.
+                if (!Physics.Raycast(Soldier.shootPosition.position, direction, out RaycastHit hit, Mathf.Infinity, _layerMask))
                 {
-                    positions[i] = hit.point;
-                    SoldierAgent attacked;
-                    Transform tr = hit.collider.transform;
-                    do
-                    {
-                        attacked = tr.GetComponent<SoldierAgent>();
-                        tr = tr.parent;
-                    } while (attacked == null && tr != null);
+                    // If the shot doesn't hit, shoot off into the distance.
+                    positions[i] = Soldier.shootPosition.position + direction * 1000;
+                    continue;
+                }
 
-                    if (attacked == null)
+                // Add the hit point.
+                positions[i] = hit.point;
+
+                // Look to see if a soldier was hit.
+                SoldierAgent attacked;
+                Transform tr = hit.collider.transform;
+                do
+                {
+                    attacked = tr.GetComponent<SoldierAgent>();
+                    tr = tr.parent;
+                } while (attacked == null && tr != null);
+
+                // If no soldier was hit or they are on the same team, continue to the next shot.
+                if (attacked == null || attacked.RedTeam == Soldier.RedTeam)
+                {
+                    continue;
+                }
+
+                // See if this enemy has already been hit and if so increment the number of hits it took.
+                bool found = false;
+                for (int j = 0; j < attackedInfos.Count; j++)
+                {
+                    if (attackedInfos[j].Attacked != attacked)
                     {
                         continue;
                     }
 
-                    if (attacked.RedTeam != Soldier.RedTeam)
-                    {
-                        bool found = false;
-                        for (int j = 0; j < attackedInfos.Count; j++)
-                        {
-                            if (attackedInfos[j].Attacked != attacked)
-                            {
-                                continue;
-                            }
-
-                            AttackedInfo attackedInfo = attackedInfos[j];
-                            attackedInfo.Hits++;
-                            attackedInfos[j] = attackedInfo;
-                            found = true;
-                            break;
-                        }
-
-                        if (!found)
-                        {
-                            attackedInfos.Add(new AttackedInfo { Attacked = attacked, Hits = 1 });
-                        }
-                    }
-                    
-                    continue;
+                    AttackedInfo attackedInfo = attackedInfos[j];
+                    attackedInfo.Hits++;
+                    attackedInfos[j] = attackedInfo;
+                    found = true;
+                    break;
                 }
 
-                positions[i] = Soldier.shootPosition.position + direction * 1000;
+                // Otherwise, add a new item to store its hits.
+                if (!found)
+                {
+                    attackedInfos.Add(new AttackedInfo {Attacked = attacked, Hits = 1});
+                }
             }
 
+            // Damage all enemies that were hit.
             foreach (AttackedInfo attackedInfo in attackedInfos)
             {
                 attackedInfo.Attacked.Damage(damage * attackedInfo.Hits, Soldier);
             }
         }
 
+        /// <summary>
+        /// Add in more visuals for the hit scan impacts.
+        /// </summary>
+        /// <param name="positions">The impact positions.</param>
         protected override void ShootVisuals(Vector3[] positions)
         {
+            // Go through every impact position.
             foreach (Vector3 v in positions)
             {
+                // Add a bullet trail.
                 GameObject bullet = new($"{name} Trail");
                 LineRenderer lr = bullet.AddComponent<LineRenderer>();
                 lr.material = material;
@@ -107,6 +131,7 @@ namespace Project.Weapons
                 lr.SetPositions(new [] { barrelPosition, v });
                 StartCoroutine(FadeLine(lr));
 
+                // Play audio and create impact effect.
                 ImpactAudio(v, positions.Length);
                 ImpactVisual(v, barrelPosition);
             }
@@ -118,20 +143,30 @@ namespace Project.Weapons
         {
             base.Awake();
             
+            // Ensure the bullet trail time does not exceed the shot delay time.
             if (time > delay)
             {
                 time = delay;
             }
             
-            layerMask = LayerMask.GetMask("Default", "Obstacle", "Ground", "Projectile", "HitBox");
+            // Define the layer mask that shots can hit.
+            _layerMask = LayerMask.GetMask("Default", "Obstacle", "Ground", "Projectile", "HitBox");
         }
         
+        /// <summary>
+        /// Fade the bullet trail over time.
+        /// </summary>
+        /// <param name="lr">The line renderer itself.</param>
+        /// <returns>Nothing.</returns>
         private IEnumerator FadeLine(LineRenderer lr)
         {
+            // Get variables.
             Material mat = lr.material;
             Color color = mat.color;
             float startAlpha = lr.startColor.a;
             float duration = 0;
+            
+            // Loop until fully faded.
             while (duration < 1)
             {
                 float alpha = startAlpha * (1 - duration);
@@ -139,6 +174,8 @@ namespace Project.Weapons
                 duration += Time.deltaTime / time;
                 yield return null;
             }
+            
+            // Destroy the bullet trail.
             Destroy(lr.gameObject);
         }
     }
