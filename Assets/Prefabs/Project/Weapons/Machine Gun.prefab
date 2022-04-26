@@ -59,9 +59,6 @@ MonoBehaviour:
   material: {fileID: 2100000, guid: cbd379e569acb9f45b7df8c9dc155a0e, type: 2}
   rounds: 1
   spread: 0.015
-  layerMask:
-    serializedVersion: 2
-    m_Bits: 0
 --- !u!82 &7130578204843744006
 AudioSource:
   m_ObjectHideFlags: 0

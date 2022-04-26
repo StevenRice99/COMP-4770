@@ -38,11 +38,77 @@
 
 1. **Document your work. Explain what parts you attempted, how your approach is supposed to work, which parts of the code you modified, removed or added.**
 
-- TODO.
+- Every method is fully commented, including the hundreds of lines for the project (and all of the assignments), and the thousands of lines I've written when creating [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI"). I'm hoping all of this documentation will make it easy to port of specific features that could be useful in future versions of libraries for COMP-3770 and COMP-4770.
+- Unlike when doing assignments, where I would first look at the provided template to base my own implementation off of, I challenged myself to do the project based solely off the outline and did not look at the provided template, so my implementation is going to be very different from the template.
 
 2. **Tune the parameters and evaluators. Some parameters in Parameters.cs are not used or not tuned. You can remove unused parameters (or make use of them). You should also adjust the values of the parameters to be sensible. For example, what should the sound range for the shotgun be? What should the rate of fire be? How many searches should be allowed per update? Document your changes and rationale.**
 
-- TODO.
+- Given my approach was completely from scratch, parameters are different, so I will outline those which I have created below.
+  - Core Parameters on the "Soldier Agent Manager":
+    - **Soldiers Per Team**: How many soldiers to have on each team which can be between 1 and 15. My computer was easily capable of running 15, but I didn't bother trying more as the map was packed with 30 total soldiers as was.
+    - **Health**: How much health soldiers have.
+    - **Respawn**: The respawn time in seconds.
+    - **Pickup Timer**: How long pickups are disabled for after being picked up.
+    - **Memory Time**: How long enemies that soldiers see or hear will remain in memory.
+    - **Low Health**: The health limit of which below a soldier will consider itself as being at low health.
+    - **Max Wait Time**: After reaching a destination, this is the maximum time in seconds a soldier will stay in the same place before deciding on a new place to move to.
+    - **Distance Close**: If an enemy is closer than this many units it will be considered close.
+    - **Distance Far**: If an enemy is farther than this many units it will be considered far.
+    - **Volume**: How loud the sounds are. _This has no impact on soldiers, they will still "hear" shots themselves, this is simply for your own audio level._
+  - Weapons Parameters:
+    - All Weapons Parameters:
+      - **Max Ammo**: How much ammo a soldier can carry for this weapon.
+        - Machine Gun: 30
+        - Shotgun: 10
+        - Sniper: 5
+        - Rocket Launcher: 1
+        - Pistol: Unlimited
+      - **Damage**: How much damage a shot from the weapon does.
+        - Machine Gun: 10
+        - Shotgun: 30
+        - Sniper: 100
+        - Rocket Launcher: 200
+        - Pistol: 10
+      - **Delay**: How much time in seconds between shots.
+        - Machine Gun: 0.1
+        - Shotgun: 1
+        - Sniper: 1.5
+        - Rocket Launcher: 3
+        - Pistol: 0.25
+      - **Time**: How long the bullet trail (for raycast/hit scan weapons) or projectile (for projectile weapons) lasts.
+        - Machine Gun: 0.1
+        - Shotgun: 0.1
+        - Sniper: 1.5
+        - Rocket Launcher: 30
+        - Pistol: 0.1
+      - **Rotation Speed**: How quick in degrees per second a soldier can rotate when using a certain weapon.
+        - Machine Gun: 15
+        - Shotgun: 30
+        - Sniper: 3
+        - Rocket Launcher: 3
+        - Pistol: 15
+      - **Sound Range**: How far away other soldiers can hear a shot from this weapon in units.
+        - Machine Gun: 20
+        - Shotgun: 20
+        - Sniper: 1000
+        - Rocket Launcher: 1000
+        - Pistol: 10
+    - Raycast/Hit Scan Weapons Parameters:
+      - **Rounds**: How many rounds to fire during a single shot.
+        - Machine Gun: 1
+        - Shotgun: 10
+        - Sniper: 1
+        - Pistol: 1
+      - **Spread**: How much random spread to add to bullets.
+        - Machine Gun: 0.015
+        - Shotgun: 0.085
+        - Sniper: 0
+        - Pistol: 0.015
+    - Projectile Weapons Parameters:
+      - **Velocity**: How fast projectiles travel in units per second.
+        - Rocket Launcher: 50
+      - **Distance**: How far splash damage from projectiles can be applied.
+        - Rocket Launcher: 10
 
 3. **Design and implement an additional goal-oriented behaviour and a corresponding evaluator and relevant features. For example, MoveToCover or CaptureTheFlag. Document what you did and how it works.**
 
