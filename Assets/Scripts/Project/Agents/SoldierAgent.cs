@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Project.Managers;
@@ -33,7 +34,7 @@ namespace Project.Agents
         /// <summary>
         /// The indexes of weapons the soldier can use.
         /// </summary>
-        private enum WeaponChoices
+        public enum WeaponChoices
         {
             MachineGun = 0,
             Shotgun = 1,
@@ -345,6 +346,9 @@ namespace Project.Agents
             Health = 0;
             Deaths++;
             shotBy.Kills++;
+            
+            AddMessage($"Killed by {shotBy.name}.");
+            shotBy.AddMessage($"Killed {name}");
 
             if (RedTeam)
             {
@@ -560,7 +564,11 @@ namespace Project.Agents
             // If carrying the flag, attempt to move directly back to base.
             if (CarryingFlag)
             {
-                Navigate(Base);
+                if (Navigate(Base))
+                {
+                    AddMessage("Have the flag, returning it to base.");
+                }
+
                 return;
             }
 
@@ -568,12 +576,20 @@ namespace Project.Agents
             {
                 // If the flag collector, move to collect the enemy flag.
                 case SoliderRole.Collector:
-                    Navigate(EnemyFlag);
+                    if (Navigate(EnemyFlag))
+                    {
+                        AddMessage("Moving to collect enemy flag.");
+                    }
+
                     return;
                 
                 // If a defender and the flag has been taken, move to it to kill the enemy flag carried and return it.
                 case SoliderRole.Defender when !FlagAtBase:
-                    Navigate(TeamFlag);
+                    if (Navigate(TeamFlag))
+                    {
+                        AddMessage("Moving to return flag.");
+                    }
+                    
                     _findNewPoint = true;
                     return;
                 
@@ -584,7 +600,11 @@ namespace Project.Agents
                         Vector3? destination = SoldierAgentManager.SoldierAgentManagerSingleton.GetHealth(transform.position);
                         if (destination != null)
                         {
-                            Navigate(destination.Value);
+                            if (Navigate(destination.Value))
+                            {
+                                AddMessage("Moving to pickup health.");
+                            }
+                            
                             _findNewPoint = true;
                             return;
                         }
@@ -599,7 +619,11 @@ namespace Project.Agents
                             Vector3? destination = SoldierAgentManager.SoldierAgentManagerSingleton.GetHealth(transform.position);
                             if (destination != null)
                             {
-                                Navigate(destination.Value);
+                                if (Navigate(destination.Value))
+                                {
+                                    AddMessage("Moving to pickup health.");
+                                }
+                                
                                 _findNewPoint = true;
                                 return;
                             }
@@ -619,7 +643,18 @@ namespace Project.Agents
                                 continue;
                             }
 
-                            Navigate(destination.Value);
+                            if (Navigate(destination.Value))
+                            {
+                                AddMessage("Moving to pickup ammo for " + (WeaponChoices) w switch
+                                {
+                                    WeaponChoices.MachineGun => "machine gun.",
+                                    WeaponChoices.Shotgun => "shotgun.",
+                                    WeaponChoices.Sniper => "sniper.",
+                                    WeaponChoices.RocketLauncher => "rocket launcher.",
+                                    _=> "pistol."
+                                });
+                            }
+                            
                             _findNewPoint = true;
                             return;
                         }
@@ -635,7 +670,10 @@ namespace Project.Agents
                     if (_findNewPoint || (Role == SoliderRole.Attacker && Target is { Visible: true }))
                     {
                         _findNewPoint = false;
-                        Navigate(SoldierAgentManager.SoldierAgentManagerSingleton.GetPoint(RedTeam, Role == SoliderRole.Defender));
+                        if (Navigate(SoldierAgentManager.SoldierAgentManagerSingleton.GetPoint(RedTeam, Role == SoliderRole.Defender)))
+                        {
+                            AddMessage(Role == SoliderRole.Attacker ? "Moving to offensive position." : "Moving to defensive position.");
+                        }
                         return;
                     }
 
@@ -656,6 +694,8 @@ namespace Project.Agents
                 // Defenders predict needing to use long range weapons like snipers.
                 if (Role == SoliderRole.Defender)
                 {
+                    AddMessage("No targets, prioritizing sniper.");
+                    
                     _weaponPriority = new[]
                     {
                         (int) WeaponChoices.Sniper,
@@ -667,6 +707,8 @@ namespace Project.Agents
                     
                     return;
                 }
+                
+                AddMessage("No targets, prioritizing shotgun.");
 
                 // Attackers and the collector predict needing to use short range weapons like shotguns.
                 _weaponPriority = new[]
@@ -689,6 +731,8 @@ namespace Project.Agents
                 // Defenders use the sniper first.
                 if (Role == SoliderRole.Defender)
                 {
+                    AddMessage("Far target, prioritizing sniper.");
+                    
                     _weaponPriority = new[]
                     {
                         (int) WeaponChoices.Sniper,
@@ -700,6 +744,8 @@ namespace Project.Agents
                 
                     return;
                 }
+                
+                AddMessage("Far target, prioritizing rocket launcher.");
 
                 // Attackers and the collector use the rocket launcher first.
                 _weaponPriority = new[]
@@ -717,6 +763,8 @@ namespace Project.Agents
             // If close range, all roles use close-range weapons first.
             if (distance <= SoldierAgentManager.SoldierAgentManagerSingleton.distanceClose)
             {
+                AddMessage("Close target, prioritizing shotgun.");
+                
                 _weaponPriority = new[]
                 {
                     (int) WeaponChoices.Shotgun,
@@ -728,6 +776,8 @@ namespace Project.Agents
                 
                 return;
             }
+            
+            AddMessage("Medium target, prioritizing machine gun.");
             
             // Otherwise, it is medium range, with the only difference being defenders using a sniper before a shotgun.
             if (Role == SoliderRole.Defender)
@@ -853,8 +903,22 @@ namespace Project.Agents
         /// <param name="i">The weapon index selected.</param>
         private void SelectWeapon(int i)
         {
+            int lastWeapon = WeaponIndex;
+            
             // Set the new selected weapon.
             WeaponIndex = Mathf.Clamp(i, 0, Weapons.Length - 1);
+
+            if (lastWeapon != WeaponIndex)
+            {
+                AddMessage((WeaponChoices) WeaponIndex switch
+                {
+                    WeaponChoices.MachineGun => "Selecting machine gun.",
+                    WeaponChoices.Shotgun => "Selecting shotgun.",
+                    WeaponChoices.Sniper => "Selecting sniper.",
+                    WeaponChoices.RocketLauncher => "Selecting rocket launcher.",
+                    _=> "Selecting pistol."
+                });
+            }
             
             // Limit agent rotation speed based on their weapon.
             lookSpeed = Weapons[WeaponIndex].rotationSpeed;

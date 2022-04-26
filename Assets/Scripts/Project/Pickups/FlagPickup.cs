@@ -64,6 +64,7 @@ namespace Project.Pickups
             if (soldier != null)
             {
                 soldier.Returns++;
+                soldier.AddMessage("Returned the flag.");
                 SoldierAgentManager.SoldierAgentManagerSingleton.UpdateSorted();
             }
 
@@ -105,6 +106,7 @@ namespace Project.Pickups
         {
             // Set carrying.
             carryingPlayer = soldier;
+            carryingPlayer.AddMessage("Picked up the flag.");
             
             // Attach to the soldier.
             Transform tr = transform;
@@ -161,6 +163,7 @@ namespace Project.Pickups
             }
 
             // Add the capture to the player.
+            carryingPlayer.AddMessage("Captured the flag.");
             carryingPlayer.Captures++;
 
             // Finally return the flag and reassign roles.

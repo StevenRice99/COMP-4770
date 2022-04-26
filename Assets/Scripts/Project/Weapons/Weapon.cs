@@ -183,6 +183,15 @@ namespace Project.Weapons
             {
                 return;
             }
+            
+            Soldier.AddMessage((SoldierAgent.WeaponChoices) Soldier.WeaponIndex switch
+            {
+                SoldierAgent.WeaponChoices.MachineGun => "Shooting machine gun.",
+                SoldierAgent.WeaponChoices.Shotgun => "Shooting shotgun.",
+                SoldierAgent.WeaponChoices.Sniper => "Shooting sniper.",
+                SoldierAgent.WeaponChoices.RocketLauncher => "Shooting rocket launcher.",
+                _=> "Shooting pistol."
+            });
 
             // Shoot and display visuals.
             Shoot(out Vector3[] positions);

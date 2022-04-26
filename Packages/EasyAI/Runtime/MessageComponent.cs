@@ -49,7 +49,7 @@ public class MessageComponent : MonoBehaviour
     {
         AgentManager.Singleton.AddGlobalMessage($"{name} - {message}");
             
-        switch (AgentManager.Singleton.MessageMode)
+        switch (AgentManager.Singleton.messageMode)
         {
             case AgentManager.MessagingMode.Compact when Messages.Count > 0 && Messages[0] == message:
                 return;

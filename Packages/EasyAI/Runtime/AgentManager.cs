@@ -276,6 +276,14 @@ public class AgentManager : MonoBehaviour
     )]
     private NavigationState navigation = NavigationState.Selected;
 
+    [Tooltip(
+        "Determine what mode messages are stored in.\n" +
+        "All - All messages are captured.\n" +
+        "Compact - All messages are captured, but, duplicate messages that appear immediately after each other will be merged into only a single instance of the message.\n" +
+        "Unique - No messages will be duplicated with the prior instance of the message being removed from its list when an identical message is added again."
+    )]
+    public MessagingMode messageMode = MessagingMode.Compact;
+
     [Tooltip("The currently selected camera. Set this to start with that camera active. Leaving empty will default to the first camera by alphabetic order.")]
     public Camera selectedCamera;
 
@@ -315,11 +323,6 @@ public class AgentManager : MonoBehaviour
     /// If the scene is currently playing or not.
     /// </summary>
     public bool Playing => !_stepping && Time.timeScale > 0;
-
-    /// <summary>
-    /// The current message mode.
-    /// </summary>
-    public MessagingMode MessageMode { get; private set; }
         
     /// <summary>
     /// The global messages.
@@ -903,7 +906,7 @@ public class AgentManager : MonoBehaviour
     /// <param name="message">The message to add.</param>
     public void AddGlobalMessage(string message)
     {
-        switch (MessageMode)
+        switch (messageMode)
         {
             case MessagingMode.Compact when GlobalMessages.Count > 0 && GlobalMessages[0] == message:
                 return;
@@ -1019,16 +1022,16 @@ public class AgentManager : MonoBehaviour
     /// </summary>
     public void ChangeMessageMode()
     {
-        if (MessageMode == MessagingMode.Unique)
+        if (messageMode == MessagingMode.Unique)
         {
-            MessageMode = MessagingMode.All;
+            messageMode = MessagingMode.All;
         }
         else
         {
-            MessageMode++;
+            messageMode++;
         }
 
-        if (MessageMode == MessagingMode.Unique)
+        if (messageMode == MessagingMode.Unique)
         {
             ClearMessages();
         }
@@ -1040,7 +1043,7 @@ public class AgentManager : MonoBehaviour
     /// <param name="mode">The mode to change to.</param>
     public void ChangeMessageMode(MessagingMode mode)
     {
-        MessageMode = mode;
+        messageMode = mode;
     }
 
     /// <summary>
@@ -1594,7 +1597,7 @@ public class AgentManager : MonoBehaviour
     {
         // Button to change messaging mode.
         y = NextItem(y, h, p);
-        if (GuiButton(x, y, w / 2 - p, h, MessageMode switch
+        if (GuiButton(x, y, w / 2 - p, h, messageMode switch
             {
                 MessagingMode.Compact => "Message Mode: Compact",
                 MessagingMode.All => "Message Mode: All",
@@ -2100,7 +2103,7 @@ public class AgentManager : MonoBehaviour
                 Step();
             }
         }
-            
+        
         // Button to change gizmos mode.
         y = NextItem(y, h, p);
         if (GuiButton(x, y, w, h, gizmos switch

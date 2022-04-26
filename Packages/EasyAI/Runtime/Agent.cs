@@ -378,14 +378,16 @@ public abstract class Agent : MessageComponent
     /// Calculate a path towards a position.
     /// </summary>
     /// <param name="goal">The position to navigate to.</param>
-    public void Navigate(Vector3 goal)
+    /// <returns>True if the path has been set, false if the agent was already navigating towards this point.</returns>
+    public bool Navigate(Vector3 goal)
     {
         if (Destination == goal)
         {
-            return;
+            return false;
         }
         
         Path = AgentManager.Singleton.LookupPath(transform.position, goal);
+        return true;
     }
     
     /// <summary>
