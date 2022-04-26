@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
@@ -1330,6 +1331,25 @@ public class AgentManager : MonoBehaviour
         
         // Move agents that do not require physics.
         MoveAgents(_updateAgents);
+
+        // Click to select an agent.
+        if (!Mouse.current.leftButton.wasPressedThisFrame || !Physics.Raycast(selectedCamera.ScreenPointToRay(new Vector3(Mouse.current.position.x.ReadValue(), Mouse.current.position.y.ReadValue(), 0)), out RaycastHit hit, Mathf.Infinity))
+        {
+            return;
+        }
+
+        // See if an agent was actually hit with the click and select it if so.
+        Transform tr = hit.collider.transform;
+        do
+        {
+            Agent clicked = tr.GetComponent<Agent>();
+            if (clicked != null)
+            {
+                SelectedAgent = clicked;
+                return;
+            }
+            tr = tr.parent;
+        } while (tr != null);
     }
 
     protected void FixedUpdate()

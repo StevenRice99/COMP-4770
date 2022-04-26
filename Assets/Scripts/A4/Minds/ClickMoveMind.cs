@@ -7,7 +7,7 @@ namespace A4.Minds
     {
         private void Update()
         {
-            if (AgentManager.Singleton.SelectedAgent == Agent && Mouse.current.rightButton.wasPressedThisFrame && Physics.Raycast(AgentManager.Singleton.selectedCamera.ScreenPointToRay(new Vector3(Mouse.current.position.x.ReadValue(), Mouse.current.position.y.ReadValue(), 0)), out RaycastHit hit, AgentManager.Singleton.groundLayers | AgentManager.Singleton.obstacleLayers))
+            if (AgentManager.Singleton.SelectedAgent == Agent && Mouse.current.rightButton.wasPressedThisFrame && Physics.Raycast(AgentManager.Singleton.selectedCamera.ScreenPointToRay(new Vector3(Mouse.current.position.x.ReadValue(), Mouse.current.position.y.ReadValue(), 0)), out RaycastHit hit, Mathf.Infinity, AgentManager.Singleton.groundLayers | AgentManager.Singleton.obstacleLayers))
             {
                 Agent.Navigate(hit.point);
             }
