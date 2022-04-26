@@ -23,9 +23,9 @@
 
 # Overview
 
-- If you would like access to the GitHub repository, email me your GitHub account and I will add you to the repository [here](https://github.com/StevenRice99/COMP-4770 "COMP 4770 Repository") which otherwise I am keeping private so others in the class do not have access to my solutions.
+- **Note that Unity 2021 LTS has released and this project has been upgraded to that to take advantage of new C# features. It can no longer be opened with Unity 2020.**
+- Since the class is now finishing, I have made the GitHub repository public [here](https://github.com/StevenRice99/COMP-4770 "COMP 4770 Repository") so feel free to view there.
 - This project uses my own AI library, [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI"), so there will likely be some differences between my solutions and those using Dr. Goodwin's library although [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI") is based upon Dr. Goodwin's library. I will explain any of these differences when they occur.
-  - **I have shared this library with Dr. Goodwin since the first assignment and he was okay with me building and using my own.**
   - I developed [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI") directly in this project and its fully commented source code can be found under "Packages > Easy AI".
 
 # Project
@@ -112,7 +112,15 @@
 
 3. **Design and implement an additional goal-oriented behaviour and a corresponding evaluator and relevant features. For example, MoveToCover or CaptureTheFlag. Document what you did and how it works.**
 
-- TODO.
+- **All soldier logic can be found in "Assets > Scripts > Project > Agents > SoldierAgent.cs" where all code is fully documented to go into even more detail than this.**
+- My soldiers are capable of collecting and capturing the enemy flag as well as hunting down an enemy which is carrying the flag and then moving to return their flag.
+  - Each team designates a soldier as the collector which will with a path to the enemy flag and once having it will find a path back to their base to capture it.
+  - Each team has designated defenders that will move to kill an enemy which has taken the flag and return it to their base.
+- Agents can move to designated offensive or defensive positions.
+  - Attacker soldiers will move between offensive positions.
+  - Defender soldiers will move between defensive positions.
+- Agents can move to pickup health and ammo picks.
+- Agents will pick an ideal weapon to use based on whether or not they are an attacker or defender, how far away they are from the enemy they are engaging, and what weapons they have ammo in.
 
 4. **Improve the game. Here are some ideas.**
    1. **BestPathTable.cs contains a pre-computed path table similar to the ones discussed in the lectures. Modify the PathPlanner and/or PathManager to use this table instead of A Star Search and Dijkstra's Search. That should improve the efficiency of the game.**
@@ -142,7 +150,7 @@
 
 5. **Have fun!**
 
-- TODO.
+- This has been my favourite class out of all my years at the University of Windsor, definitely had a lot of fun with this course!
 
 # Assignment 4
 
