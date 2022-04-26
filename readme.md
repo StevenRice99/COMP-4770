@@ -124,29 +124,38 @@
 
 4. **Improve the game. Here are some ideas.**
    1. **BestPathTable.cs contains a pre-computed path table similar to the ones discussed in the lectures. Modify the PathPlanner and/or PathManager to use this table instead of A Star Search and Dijkstra's Search. That should improve the efficiency of the game.**
-      1. TODO.
-   2. **Implement the ability to pickup the enemy flag at the base and carry it back to your base. If you are killed while carrying the flag, simply return the flag to its base or implement a means for the flag to be dropped where you died so either a team-mate or the enemy can pick it up. This may require implementing a new form of rigger.**
-      1. TODO.
+      1. I have made a custom implementation for this which I did during [Assignment 4](#assignment-4 "Assignment 4").
+      2. The lookup data for the project can be found in the root of the Unity project and going to "Navigation > Project.txt".
+      3. For more details on how this was implemented, go to the end of the [A4 Requirements](#a4-requirements "A4 Requirements") section where it is fully explained.
+   2. **Implement the ability to pickup the enemy flag at the base and carry it back to your base. If you are killed while carrying the flag, simply return the flag to its base or implement a means for the flag to be dropped where you died so either a team-mate or the enemy can pick it up. This may require implementing a new form of trigger.**
+      1. Flags can be picked up, captured, dropped when a carry is killed, and retrieved to be returned to base.
+      2. The code for the flags can be found in "Assets > Scripts > Project > Pickups > FlagPickup.cs".
    3. **Improve issues with the frame rate so that the game plays smoothly with 3, 4 or 5 weebles per team.**
-      1. TODO.
+      1. My implementation has been able to run without any issues at very high frame rates with thirty soldiers on the field, and I simply did not try with more because I was running out of map space.
    4. **Improve the various message displays to provide even more useful info.**
-      1. TODO.
-   5. **Replace the old style IMGUI windows with new UI system windows.**
-      1. TODO.
-   6. **Provide additional buttons or key inputs to control various functionality.**
-      1. TODO.
-   7. **Add a team score (currently, only individual scores are recorded).**
-      1. TODO.
-   8. **Add ability to minimize and resize message windows (current only draggable).**
-      1. TODO.
-   9. **Add ability to open a weeble’s EntityConsole by clicking on the weeble.**
-      1. TODO.
-   10. **Design and implement even more goal-oriented behaviours and a corresponding evaluators and relevant features. Make use of the low walls and elevated areas for cover and good sniping locations.**
-       1. TODO.
-   11. **Find and document bugs. Suggest design improvement. Suggest new features.**
-       1. TODO.
-   12. **Go nuts. Add sound effects, explosions, etc. Make your game cool.**
-       1. TODO.
+      1. Although my GUI implementation has both pros and cons to those in the provided library, I like it as it is fully automatically generated without the need to add any additional objects or components into the scene making it great for testing purposes, especially for this class where we are more focused on the logic behind agents in games rather than the visuals and UI of a game.
+   5. **Provide additional buttons or key inputs to control various functionality.**
+      1. Buttons to easily expand or collapse the entire GUI.
+      2. Button to reset the level.
+      3. Button to toggle between following the best soldier or to allow for manual selection.
+      4. Buttons to toggle all gizmos for where soldiers are looking and what paths are shown.
+      5. Buttons to switch between all cameras.
+      6. Left clicking on a soldier will switch to following that agent **provided you have it set to manual selection and not automatically following the best soldier.**
+   6. **Add a team score (currently, only individual scores are recorded).**
+      1. The number of flag captures and kills each team has gotten are tracked and display in the GUI.
+   7. **Add ability to minimize and resize message windows (current only draggable).**
+      1. As said above, there are buttons to easily expand or collapse the entire GUI.
+   8. **Add ability to open a weeble’s EntityConsole by clicking on the weeble.**
+      1. As said above, left clicking on a soldier will switch to following that agent **provided you have it set to manual selection and not automatically following the best soldier.**
+   9. **Design and implement even more goal-oriented behaviours and a corresponding evaluators and relevant features. Make use of the low walls and elevated areas for cover and good sniping locations.**
+      1. These were detailed earlier with agents being able to move into advantageous offensive and defensive positions.
+   10. **Find and document bugs. Suggest design improvement. Suggest new features.**
+       1. Everything is fully documented, and all features are welcome to be added into future libraries for COMP-3770 and COMP-4770.
+   11. **Go nuts. Add sound effects, explosions, etc. Make your game cool.**
+       1. Made a castle-style level while keeping the same general shape of the original level.
+       2. Added in weapon models.
+       3. Added in shoot and impact sound effects.
+       4. Bullet impact and rocket explosion effects.
 
 5. **Have fun!**
 

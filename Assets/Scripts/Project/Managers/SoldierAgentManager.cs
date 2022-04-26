@@ -345,7 +345,7 @@ namespace Project.Managers
             
             // Toggle between manually selecting soldiers and following the best one.
             y = NextItem(y, h, p);
-            if (GuiButton(x, y, w, h, _best ? "Manual Selection" : "Follow Best"))
+            if (GuiButton(x, y, w, h, _best ? "Following Best" : "Manual Selections"))
             {
                 _best = !_best;
             }
