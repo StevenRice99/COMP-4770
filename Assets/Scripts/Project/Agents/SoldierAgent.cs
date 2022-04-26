@@ -22,7 +22,7 @@ namespace Project.Agents
         /// Attacker - Move between locations on the enemy's side of the map.
         /// Defender - Move between locations on their side of the map and move to return their flag if it has been taken.
         /// </summary>
-        private enum SoliderRole : byte
+        public enum SoliderRole : byte
         {
             Dead = 0,
             Collector = 1,
@@ -148,12 +148,12 @@ namespace Project.Agents
         /// <summary>
         /// If the soldier is alive or not.
         /// </summary>
-        public bool Alive => _role != SoliderRole.Dead;
+        public bool Alive => Role != SoliderRole.Dead;
         
         /// <summary>
         /// The soldier's current role on the team.
         /// </summary>
-        private SoliderRole _role;
+        public SoliderRole Role { get; private set; }
 
         /// <summary>
         /// The colliders that are attached to this soldier.
@@ -235,7 +235,7 @@ namespace Project.Agents
             y = AgentManager.NextItem(y, h, p);
 
             // Display the role of this soldier.
-            AgentManager.GuiLabel(x, y, w, h, p, _role == SoliderRole.Dead ? "Respawning" : $"Role: {_role}");
+            AgentManager.GuiLabel(x, y, w, h, p, Role == SoliderRole.Dead ? "Respawning" : $"Role: {Role}");
             y = AgentManager.NextItem(y, h, p);
 
             // Display the health of this soldier.
@@ -243,7 +243,7 @@ namespace Project.Agents
             y = AgentManager.NextItem(y, h, p);
 
             // Display the weapon this soldier is using.
-            AgentManager.GuiLabel(x, y, w, h, p, _role == SoliderRole.Dead ? "Weapon: None" : WeaponIndex switch
+            AgentManager.GuiLabel(x, y, w, h, p, Role == SoliderRole.Dead ? "Weapon: None" : WeaponIndex switch
             {
                 (int) WeaponChoices.MachineGun => $"Weapon: Machine Gun | Ammo: {Weapons[WeaponIndex].Ammo} / {Weapons[WeaponIndex].maxAmmo}",
                 (int) WeaponChoices.Shotgun => $"Weapon: Shotgun | Ammo: {Weapons[WeaponIndex].Ammo} / {Weapons[WeaponIndex].maxAmmo}",
@@ -286,7 +286,7 @@ namespace Project.Agents
         public override void Perform()
         {
             // Do nothing when dead.
-            if (_role == SoliderRole.Dead)
+            if (Role == SoliderRole.Dead)
             {
                 return;
             }
@@ -327,7 +327,7 @@ namespace Project.Agents
         public void Damage(int amount, SoldierAgent shotBy)
         {
             // If already dead, do nothing.
-            if (_role == SoliderRole.Dead)
+            if (Role == SoliderRole.Dead)
             {
                 return;
             }
@@ -404,7 +404,7 @@ namespace Project.Agents
         public void Heal()
         {
             // Cannot heal if dead.
-            if (_role == SoliderRole.Dead)
+            if (Role == SoliderRole.Dead)
             {
                 return;
             }
@@ -439,17 +439,17 @@ namespace Project.Agents
                 // The closest soldier to the enemy flag becomes the collector.
                 if (i == 0)
                 {
-                    team[i]._role = SoliderRole.Collector;
+                    team[i].Role = SoliderRole.Collector;
                 }
                 // The nearest half become attackers.
                 else if (i <= team.Length / 2)
                 {
-                    team[i]._role = SoliderRole.Attacker;
+                    team[i].Role = SoliderRole.Attacker;
                 }
                 // The furthest become defenders.
                 else
                 {
-                    team[i]._role = SoliderRole.Defender;
+                    team[i].Role = SoliderRole.Defender;
                 }
             }
         }
@@ -484,7 +484,7 @@ namespace Project.Agents
             CharacterController.enabled = true;
             
             // Set a dummy role to indicate the soldier is no longer dead.
-            _role = SoliderRole.Collector;
+            Role = SoliderRole.Collector;
             
             // Get new roles, heal, start with the machine gun, and reset to find a new point.
             AssignRoles();
@@ -497,6 +497,8 @@ namespace Project.Agents
             {
                 weapon.Replenish();
             }
+            
+            SoldierAgentManager.SoldierAgentManagerSingleton.UpdateSorted();
         }
 
         /// <summary>
@@ -562,7 +564,7 @@ namespace Project.Agents
                 return;
             }
 
-            switch (_role)
+            switch (Role)
             {
                 // If the flag collector, move to collect the enemy flag.
                 case SoliderRole.Collector:
@@ -630,10 +632,10 @@ namespace Project.Agents
                     }
 
                     // Find a point to move to, either in the offense or defense side depending on the soldier's role.
-                    if (_findNewPoint || (_role == SoliderRole.Attacker && Target is { Visible: true }))
+                    if (_findNewPoint || (Role == SoliderRole.Attacker && Target is { Visible: true }))
                     {
                         _findNewPoint = false;
-                        Navigate(SoldierAgentManager.SoldierAgentManagerSingleton.GetPoint(RedTeam, _role == SoliderRole.Defender));
+                        Navigate(SoldierAgentManager.SoldierAgentManagerSingleton.GetPoint(RedTeam, Role == SoliderRole.Defender));
                         return;
                     }
 
@@ -652,7 +654,7 @@ namespace Project.Agents
             if (Target == null)
             {
                 // Defenders predict needing to use long range weapons like snipers.
-                if (_role == SoliderRole.Defender)
+                if (Role == SoliderRole.Defender)
                 {
                     _weaponPriority = new[]
                     {
@@ -685,7 +687,7 @@ namespace Project.Agents
             if (distance >= SoldierAgentManager.SoldierAgentManagerSingleton.distanceFar)
             {
                 // Defenders use the sniper first.
-                if (_role == SoliderRole.Defender)
+                if (Role == SoliderRole.Defender)
                 {
                     _weaponPriority = new[]
                     {
@@ -728,7 +730,7 @@ namespace Project.Agents
             }
             
             // Otherwise, it is medium range, with the only difference being defenders using a sniper before a shotgun.
-            if (_role == SoliderRole.Defender)
+            if (Role == SoliderRole.Defender)
             {
                 _weaponPriority = new[]
                 {
@@ -777,7 +779,7 @@ namespace Project.Agents
         private IEnumerator Respawn()
         {
             // Set that the soldier has died.
-            _role = SoliderRole.Dead;
+            Role = SoliderRole.Dead;
             ToggleAlive();
             
             // Reassign team roles.
@@ -885,7 +887,7 @@ namespace Project.Agents
                 EnemiesDetected[i].DeltaTime += DeltaTime;
                 
                 // If the detected enemy is too old or they have died, remove it.
-                if (EnemiesDetected[i].DeltaTime > SoldierAgentManager.SoldierAgentManagerSingleton.memoryTime || EnemiesDetected[i].Enemy._role == SoliderRole.Dead)
+                if (EnemiesDetected[i].DeltaTime > SoldierAgentManager.SoldierAgentManagerSingleton.memoryTime || EnemiesDetected[i].Enemy.Role == SoliderRole.Dead)
                 {
                     EnemiesDetected.RemoveAt(i--);
                 }

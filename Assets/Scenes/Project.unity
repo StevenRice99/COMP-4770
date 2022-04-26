@@ -9301,8 +9301,8 @@ MonoBehaviour:
   maxMessages: 100
   detailsWidth: 500
   controlsWidth: 120
-  gizmos: 1
-  navigation: 0
+  gizmos: 2
+  navigation: 3
   selectedCamera: {fileID: 1559026829}
   groundLayers:
     serializedVersion: 2

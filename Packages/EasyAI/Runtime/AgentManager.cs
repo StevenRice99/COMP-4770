@@ -187,12 +187,14 @@ public class AgentManager : MonoBehaviour
     /// Off - No lines are drawn.
     /// All - Every line for every connection is drawn.
     /// Active - Only lines for connections being used by agents are drawn.
+    /// Selected - Only lines for the connections being used by the selected agent are drawn.
     /// </summary>
     public enum NavigationState : byte
     {
         Off,
         All,
-        Active
+        Active,
+        Selected
     }
     
     /// <summary>
@@ -262,16 +264,17 @@ public class AgentManager : MonoBehaviour
         "All - Every line from every agent, sensor, and actuator is drawn.\n" +
         "Selected - If an agent is selected, only it and its sensors and actuators are drawn. If an individual sensor or actuator is selected, only it is drawn."
     )]
-    private GizmosState gizmos = GizmosState.All;
+    private GizmosState gizmos = GizmosState.Selected;
     
     [SerializeField]
     [Tooltip(
         "Determine what navigation lines are drawn.\n" +
         "Off - No lines are drawn.\n" +
         "All - Every line for every connection is drawn.\n" +
-        "Active - Only lines for connections being used by agents are drawn."
+        "Active - Only lines for connections being used by agents are drawn.\n"+
+        "Selected - Only lines for the connections being used by the selected agent are drawn."
     )]
-    private NavigationState navigation = NavigationState.All;
+    private NavigationState navigation = NavigationState.Selected;
 
     [Tooltip("The currently selected camera. Set this to start with that camera active. Leaving empty will default to the first camera by alphabetic order.")]
     public Camera selectedCamera;
@@ -1059,7 +1062,7 @@ public class AgentManager : MonoBehaviour
     /// </summary>
     public void ChangeNavigationState()
     {
-        if (navigation == NavigationState.Active)
+        if (navigation == NavigationState.Selected)
         {
             navigation = NavigationState.Off;
             return;
@@ -1481,7 +1484,7 @@ public class AgentManager : MonoBehaviour
         GL.Begin(GL.LINES);
 
         // Render navigation nodes if either all or only active nodes should be shown.
-        if (navigation is NavigationState.All or NavigationState.Active)
+        if (navigation is not NavigationState.Off)
         {
             // Render all nodes as white if they should be.
             if (navigation == NavigationState.All)
@@ -1498,16 +1501,29 @@ public class AgentManager : MonoBehaviour
                 }
             }
 
-            // Render active nodes in green.
-            GL.Color(Color.green);
-            foreach (Agent agent in Agents.Where(agent => agent.Path != null && agent.Path.Count != 0))
+            // Render active nodes in green for either all agents or only the selected agent.
+            if (navigation is not NavigationState.Selected)
             {
-                GL.Vertex(agent.transform.position);
-                GL.Vertex(agent.Path[0]);
-                for (int i = 0; i < agent.Path.Count - 1; i++)
+                GL.Color(Color.green);
+                foreach (Agent agent in Agents.Where(agent => agent.Path != null && agent.Path.Count != 0))
                 {
-                    GL.Vertex(agent.Path[i]);
-                    GL.Vertex(agent.Path[i + 1]);
+                    GL.Vertex(agent.transform.position);
+                    GL.Vertex(agent.Path[0]);
+                    for (int i = 0; i < agent.Path.Count - 1; i++)
+                    {
+                        GL.Vertex(agent.Path[i]);
+                        GL.Vertex(agent.Path[i + 1]);
+                    }
+                }
+            }
+            else if (SelectedAgent != null && SelectedAgent.Path != null && SelectedAgent.Path.Count != 0)
+            {
+                GL.Vertex(SelectedAgent.transform.position);
+                GL.Vertex(SelectedAgent.Path[0]);
+                for (int i = 0; i < SelectedAgent.Path.Count - 1; i++)
+                {
+                    GL.Vertex(SelectedAgent.Path[i]);
+                    GL.Vertex(SelectedAgent.Path[i + 1]);
                 }
             }
         }
@@ -2105,7 +2121,8 @@ public class AgentManager : MonoBehaviour
                 {
                     NavigationState.Off => "Nodes: Off",
                     NavigationState.Active => "Nodes: Active",
-                    _ => "Nodes: All"
+                    NavigationState.All => "Nodes: All",
+                    _ => "Nodes: Selected"
                 }))
             {
                 ChangeNavigationState();

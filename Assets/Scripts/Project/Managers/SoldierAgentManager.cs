@@ -179,7 +179,7 @@ namespace Project.Managers
         /// </summary>
         public void UpdateSorted()
         {
-            Sorted = Sorted.OrderByDescending(s => s.Captures).ThenByDescending(s => s.Kills).ThenBy(s => s.Deaths).ThenByDescending(s => s.Returns).ToList();
+            Sorted = Sorted.OrderByDescending(s => s.Captures).ThenByDescending(s => s.Kills).ThenBy(s => s.Deaths).ThenByDescending(s => s.Returns).ThenByDescending(s => s.Role == SoldierAgent.SoliderRole.Collector).ToList();
             MostCaptures = Sorted.OrderByDescending(s => s.Captures).First().Captures;
             MostReturns = Sorted.OrderByDescending(s => s.Returns).First().Returns;
             MostKills = Sorted.OrderByDescending(s => s.Kills).First().Kills;
