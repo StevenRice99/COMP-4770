@@ -32,7 +32,18 @@
 
 ## Project Getting Started
 
-- TODO.
+- Under "Assets", go to "Scenes" and open "Project".
+- All scripts for the project are located in "Assets > Scripts > Project".
+- Clicking the "Details" button in the top left will allow for viewing team score and how the selected soldier is doing as well as messages.
+- Clicking the "Controls" button in the top right will show buttons to change settings.
+  - Reset: Restart the match.
+  - Following Best / Manual Selection: Toggle between automatically following the best soldier and being able to click on soldiers to select them.
+    - **If this is set to "Following Best", you will not be able to left click on soldiers to select them, and the "Back to Overview" button in the "Details" GUI section will not work either. You will be locked to the best soldier. Click this button to have it say "Manual Selection" if you want to be able to left click on soldiers to select them or switch soldiers through the GUI itself.**
+  - Pause / Resume / Step: Pause, resume, or take a single time step.
+  - Gizmos: Switch between showing gizmos for the current soldier, all soldiers, or none to see which soldiers are looking where.
+  - Nodes: Switch between showing all navigation paths in the level, those being used by all soldiers, those being used only by the selected soldier, or none.
+  - Buttons to switch between all cameras.
+  - The scenes buttons are not relevant for the project, these will take you between the scenes for the assignments.
 
 ## Project Requirements
 
