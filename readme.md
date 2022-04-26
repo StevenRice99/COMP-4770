@@ -1,6 +1,9 @@
 # COMP 4770 - Artificial Intelligence for Games
 
 - [Overview](#overview "Overview")
+- [Project](#project "Project")
+  - [Project Getting Started](#project-getting-started "Project Getting Started")
+  - [Project Requirements](#project-requirements "Project Requirements")
 - [Assignment 4](#assignment-4 "Assignment 4")
   - [A4 Getting Started](#a4-getting-started "A4 Getting Started")
   - [A4 Requirements](#a4-requirements "A4 Requirements")
@@ -24,6 +27,56 @@
 - This project uses my own AI library, [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI"), so there will likely be some differences between my solutions and those using Dr. Goodwin's library although [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI") is based upon Dr. Goodwin's library. I will explain any of these differences when they occur.
   - **I have shared this library with Dr. Goodwin since the first assignment and he was okay with me building and using my own.**
   - I developed [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI") directly in this project and its fully commented source code can be found under "Packages > Easy AI".
+
+# Project
+
+## Project Getting Started
+
+- TODO.
+
+## Project Requirements
+
+1. **Document your work. Explain what parts you attempted, how your approach is supposed to work, which parts of the code you modified, removed or added.**
+
+- TODO.
+
+2. **Tune the parameters and evaluators. Some parameters in Parameters.cs are not used or not tuned. You can remove unused parameters (or make use of them). You should also adjust the values of the parameters to be sensible. For example, what should the sound range for the shotgun be? What should the rate of fire be? How many searches should be allowed per update? Document your changes and rationale.**
+
+- TODO.
+
+3. **Design and implement an additional goal-oriented behaviour and a corresponding evaluator and relevant features. For example, MoveToCover or CaptureTheFlag. Document what you did and how it works.**
+
+- TODO.
+
+4. **Improve the game. Here are some ideas.**
+   1. **BestPathTable.cs contains a pre-computed path table similar to the ones discussed in the lectures. Modify the PathPlanner and/or PathManager to use this table instead of A Star Search and Dijkstra's Search. That should improve the efficiency of the game.**
+      1. TODO.
+   2. **Implement the ability to pickup the enemy flag at the base and carry it back to your base. If you are killed while carrying the flag, simply return the flag to its base or implement a means for the flag to be dropped where you died so either a team-mate or the enemy can pick it up. This may require implementing a new form of rigger.**
+      1. TODO.
+   3. **Improve issues with the frame rate so that the game plays smoothly with 3, 4 or 5 weebles per team.**
+      1. TODO.
+   4. **Improve the various message displays to provide even more useful info.**
+      1. TODO.
+   5. **Replace the old style IMGUI windows with new UI system windows.**
+      1. TODO.
+   6. **Provide additional buttons or key inputs to control various functionality.**
+      1. TODO.
+   7. **Add a team score (currently, only individual scores are recorded).**
+      1. TODO.
+   8. **Add ability to minimize and resize message windows (current only draggable).**
+      1. TODO.
+   9. **Add ability to open a weeble’s EntityConsole by clicking on the weeble.**
+      1. TODO.
+   10. **Design and implement even more goal-oriented behaviours and a corresponding evaluators and relevant features. Make use of the low walls and elevated areas for cover and good sniping locations.**
+       1. TODO.
+   11. **Find and document bugs. Suggest design improvement. Suggest new features.**
+       1. TODO.
+   12. **Go nuts. Add sound effects, explosions, etc. Make your game cool.**
+       1. TODO.
+
+5. **Have fun!**
+
+- TODO.
 
 # Assignment 4
 
