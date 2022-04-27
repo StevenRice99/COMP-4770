@@ -1,4 +1,4 @@
-# COMP-4770 - Artificial Intelligence for Games
+# COMP-4770 Artificial Intelligence for Games
 
 - [Overview](#overview "Overview")
 - [Project](#project "Project")
