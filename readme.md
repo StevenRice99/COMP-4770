@@ -19,11 +19,14 @@
 - [Assignment 1](#assignment-1 "Assignment 1")
   - [A1 Getting Started](#a1-getting-started "A1 Getting Started")
   - [A1 Requirements](#a1-requirements "A1 Requirements")
+- [Assets](#assets "Assets")
+  - [Project Assets](#project-assets "Project Assets")
+  - [Assignment 2 Assets](#assignment-2-assets "Assignment 2 Assets")
 - [Details](#details "Details")
 
 # Overview
 
-- **Note that Unity 2021 LTS has released and this project has been upgraded to that to take advantage of new C# features. It can no longer be opened with Unity 2020.**
+- **Note that Unity 2021 LTS has released and this project has been upgraded to it to take advantage of new C# features. It can not be opened with Unity 2020.**
 - Since the class is now finishing, I have made the GitHub repository public [here](https://github.com/StevenRice99/COMP-4770 "COMP 4770 Repository") so feel free to view there.
 - This project uses my own AI library, [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI"), so there will likely be some differences between my solutions and those using Dr. Goodwin's library although [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI") is based upon Dr. Goodwin's library. I will explain any of these differences when they occur.
   - I developed [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI") directly in this project and its fully commented source code can be found under "Packages > Easy AI".
@@ -56,16 +59,16 @@
 
 - Given my approach was completely from scratch, parameters are different, so I will outline those which I have created below.
   - Core Parameters on the "Soldier Agent Manager":
-    - **Soldiers Per Team**: How many soldiers to have on each team which can be between 1 and 15. My computer was easily capable of running 15, but I didn't bother trying more as the map was packed with 30 total soldiers as was.
-    - **Health**: How much health soldiers have.
-    - **Respawn**: The respawn time in seconds.
-    - **Pickup Timer**: How long pickups are disabled for after being picked up.
-    - **Memory Time**: How long enemies that soldiers see or hear will remain in memory.
-    - **Low Health**: The health limit of which below a soldier will consider itself as being at low health.
-    - **Max Wait Time**: After reaching a destination, this is the maximum time in seconds a soldier will stay in the same place before deciding on a new place to move to.
-    - **Distance Close**: If an enemy is closer than this many units it will be considered close.
-    - **Distance Far**: If an enemy is farther than this many units it will be considered far.
-    - **Volume**: How loud the sounds are. _This has no impact on soldiers, they will still "hear" shots themselves, this is simply for your own audio level._
+    - **Soldiers Per Team**: How many soldiers to have on each team which can be between 1 and 15. My computer was easily capable of running 15, but I didn't bother trying more as the map was packed with 30 total soldiers as was. Set to 15.
+    - **Health**: How much health soldiers have. Set to 100.
+    - **Respawn**: The respawn time in seconds. Set to 10 seconds.
+    - **Pickup Timer**: How long pickups are disabled for after being picked up. Set to 10 seconds.
+    - **Memory Time**: How long enemies that soldiers see or hear will remain in memory. Set to 5 seconds.
+    - **Low Health**: The health limit of which below a soldier will consider itself as being at low health. Set to 50.
+    - **Max Wait Time**: After reaching a destination, this is the maximum time in seconds a soldier will stay in the same place before deciding on a new place to move to. Set to 5 seconds.
+    - **Distance Close**: If an enemy is closer than this many units it will be considered close. Set to 10 units.
+    - **Distance Far**: If an enemy is farther than this many units it will be considered far. Set to 20 units.
+    - **Volume**: How loud the sounds are. _This has no impact on soldiers, they will still "hear" shots themselves, this is simply for your own audio level._ Set to 1%.
   - Weapons Parameters:
     - All Weapons Parameters:
       - **Max Ammo**: How much ammo a soldier can carry for this weapon.
@@ -124,6 +127,14 @@
 3. **Design and implement an additional goal-oriented behaviour and a corresponding evaluator and relevant features. For example, MoveToCover or CaptureTheFlag. Document what you did and how it works.**
 
 - **All soldier logic can be found in "Assets > Scripts > Project > Agents > SoldierAgent.cs" where all code is fully documented to go into even more detail than this.**
+  - At first glance, this method may not directly seem like goal-oriented behaviour design in terms of how the provided library or Buckland's book outlines it, but, this is just a result how I designed [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI") over this semester as I will explain:
+    - I designed [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI") with the idea of it being very approachable to someone with limited Unity experience and thus classes are larger and not as component based as I would normally do with Unity.
+      - On this topic, one of the greatest difficulties other students in the class that would ask me for help would tend to have was they tended to get lost or overwhelmed with how modular and components based the templates were. I would explain to them that modular components are a best practice for Unity, but, given most students only have Unity experience from COMP-3770 and nothing else, trying to understand all components of such a large library seemed to overwhelm them at times. Thus, why I took a completely opposite approach with [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI") to limit the number of components needed, which could be something to consider with developing class libraries for future COMP-3770 and COMP-4770 classes (perhaps more so for COMP-4770 where the focus isn't necessarily Unity specific, and keep more modular components for COMP-3770 to teach students best Unity practices).
+    - Since I built up functionality over each assignment, the "goals" are often all part of the same class but how the behaviours are built on top of each other can still be seen:
+      - The soldiers make their top-level decisions taking into account what their role on the team is, if they or the enemy has the flag, how much health they have, what weapons have ammo, and how far the enemy they are fighting is or if they even see or hear any enemies to begin with. These then will decide where the enemy will move to which is done with pathfinding.
+      - A path is then determined and the soldier's base agent class starts the behaviour of following the path.
+      - This pathfinding behaviour then calls the steer behaviour towards the next point in the path.
+      - Upon being close enough to the point in the path, the agent will remove it from the path to begin seeking towards the next point.
 - My soldiers are capable of collecting and capturing the enemy flag as well as hunting down an enemy which is carrying the flag and then moving to return their flag.
   - Each team designates a soldier as the collector which will with a path to the enemy flag and once having it will find a path back to their base to capture it.
   - Each team has designated defenders that will move to kill an enemy which has taken the flag and return it to their base.
@@ -161,7 +172,7 @@
    9. **Design and implement even more goal-oriented behaviours and a corresponding evaluators and relevant features. Make use of the low walls and elevated areas for cover and good sniping locations.**
       1. These were detailed earlier with agents being able to move into advantageous offensive and defensive positions.
    10. **Find and document bugs. Suggest design improvement. Suggest new features.**
-       1. Everything is fully documented, and all features are welcome to be added into future libraries for COMP-3770 and COMP-4770.
+       1. Everything is fully documented, and all features are welcome to be added into future libraries for COMP-3770 and COMP-4770. As I said above, one of the greatest difficulties other students in the class that would ask me for help would tend to have was they tended to get lost or overwhelmed with how modular and components based the templates were. I would explain to them that modular components are a best practice for Unity, but, given most students only have Unity experience from COMP-3770 and nothing else, trying to understand all components of such a large library seemed to overwhelm them at times. Thus, why I took a completely opposite approach with [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI") to limit the number of components needed, which could be something to consider with developing class libraries for future COMP-3770 and COMP-4770 classes (perhaps more so for COMP-4770 where the focus isn't necessarily Unity specific, and keep more modular components for COMP-3770 to teach students best Unity practices).
    11. **Go nuts. Add sound effects, explosions, etc. Make your game cool.**
        1. Made a castle-style level while keeping the same general shape of the original level.
        2. Added in weapon models.
@@ -465,9 +476,22 @@
   - Then, it adds the positions of all floor tiles that are likely to get dirty again which will shift this midpoint as now these tiles have been added to the sum twice given they are twice as likely to get dirty.
   - Then, the agent moves to this location. Given the nature of this being a square floor, this will still be close to the center of the floor, and depending upon how the floor was randomly generated, may be the exact center, however, it is often slightly off center to be at the weighted center of the floor tiles.
 
+# Assets
+
+## Project Assets
+
+- Environment - [Retro Medieval Kit | Kenney](https://www.kenney.nl/assets/retro-medieval-kit "Retro Medieval Kit | Kenney")
+- Weapons - [Blaster Kit | Kenney](https://kenney.nl/assets/blaster-kit "Blaster Kit | Kenney")
+- Effects - [War FX | Jean Moreno (JMO)](https://assetstore.unity.com/packages/vfx/particles/war-fx-5669 "War FX | Jean Moreno (JMO)")
+- Sounds - [Free Sound Effects Pack | Olivier Girardot](https://assetstore.unity.com/packages/audio/sound-fx/free-sound-effects-pack-155776 "Free Sound Effects Pack | Olivier Girardot")
+
+## Assignment 2 Assets
+
+- Sounds - [Sci-Fi Sounds | Kenney](https://www.kenney.nl/assets/sci-fi-sounds "Sci-Fi Sounds | Kenney")
+
 # Details
 
 - Created using Unity 2021.3.1f1.
 - Created using [Easy AI](https://github.com/StevenRice99/Easy-AI "Easy AI").
-- Project setup using the [Universal Render Pipeline](https://unity.com/srp/universal-render-pipeline "Universal Render Pipeline").
-- Project setup using Unity's [Input System](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.1/manual/index.html "Input System").
+- Created using the [Universal Render Pipeline](https://unity.com/srp/universal-render-pipeline "Universal Render Pipeline").
+- Created using Unity's [Input System](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.1/manual/index.html "Input System").
