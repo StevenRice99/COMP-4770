@@ -1,4 +1,4 @@
-# COMP 4770 - Artificial Intelligence for Games
+# COMP-4770 - Artificial Intelligence for Games
 
 - [Overview](#overview "Overview")
 - [Project](#project "Project")
@@ -35,6 +35,7 @@
 
 ## Project Getting Started
 
+- **I made a [demo video](https://youtu.be/LHIdydNjBt0 "COMP-4770 Project Demo") showing how to get the project open and use the GUI.**
 - Under "Assets", go to "Scenes" and open "Project".
 - All scripts for the project are located in "Assets > Scripts > Project".
 - Clicking the "Details" button in the top left will allow for viewing team score and how the selected soldier is doing as well as messages.
