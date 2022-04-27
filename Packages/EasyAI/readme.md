@@ -53,6 +53,6 @@ You can install Easy AI either through the package manager or by manually downlo
 
 # Dependencies
 
-- Although there are no known version-specific requirements, this library has been developed on Unity 2020.3 and thus is it recommended to use this version to avoid any potential issues.
-- Easy AI requires Unity's [Input System](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.1/manual/index.html "Input System") for zooming in and out with the included cameras.
-- Unity's [Mathematics](https://docs.unity3d.com/Packages/com.unity.mathematics@1.1/manual/index.html "Mathematics") package for use with nodes and navigation.
+- Requires at least Unity 2021.3.
+- Requires Unity's [Input System](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.1/manual/index.html "Input System") for zooming in and out with the included cameras.
+- Requires Unity's [Mathematics](https://docs.unity3d.com/Packages/com.unity.mathematics@1.1/manual/index.html "Mathematics") package for use with nodes and navigation.
